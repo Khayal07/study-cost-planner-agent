@@ -23,10 +23,23 @@ storing its source URL. Scope approved: existing 5 countries first
 | Batch | Country | Universities | Status |
 |-------|---------|--------------|--------|
 | 1 | 🇩🇪 Germany | TUM, Humboldt Berlin, RWTH Aachen | ✅ seeded + verified |
-| 2 | 🇳🇱 Netherlands | — | ⏳ pending |
+| 2 | 🇳🇱 Netherlands | UvA, TU Delft, TU Eindhoven | ✅ seeded + verified |
 | 3 | 🇵🇱 Poland | — | ⏳ pending |
 | 4 | 🇭🇺 Hungary | — | ⏳ pending |
 | 5 | 🇹🇷 Turkey | — | ⏳ pending |
+
+**Reseed workflow note:** the backend image bundles the seed JSON at build time
+(`COPY . .`). After editing `data.real.json`, either rebuild the image, or bind-mount
+the live file for the reseed run:
+`docker compose run --rm -v "${PWD}/db/seed:/code/db/seed" backend python -m app.cli reseed`
+(run from the `backend/` dir; WORKDIR in the image is `/code`).
+
+**Batch 2 — Netherlands notes:** all three are non-EEA institutional master fees,
+sourced from official pages — UvA M.Sc. Computer Science EUR 23,490/yr (2025-26, joint
+with VU), TU Delft EUR 22,290/yr (2025-26), TU Eindhoven EUR 21,700/yr (2026-27, uniform
+master rate). Residence permit EUR 243 (IND, sourced). Living from Numbeo (estimate+URL);
+rents shown as student room/shared-flat values with the Numbeo 1-bed figure noted.
+Verifier: 5/5 pass per country.
 
 **Batch 1 — Germany notes:** key correction vs mock — TUM now charges non-EU tuition
 (EUR 6,000/semester STEM master, from WS2024/25 = EUR 12,000/yr; old data said EUR 0).
