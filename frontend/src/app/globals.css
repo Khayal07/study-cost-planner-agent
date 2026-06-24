@@ -2,10 +2,182 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   Design tokens — "Verified Ledger"
+   teal = sourced/verified · amber = estimate (the data model's confidence axis)
+   Values are space-separated RGB channels so Tailwind's <alpha-value> works.
+   ========================================================================== */
 :root {
+  --background: 246 247 249;
+  --surface: 255 255 255;
+  --surface-2: 247 249 251;
+  --foreground: 11 18 32;
+  --muted: 90 100 114;
+  --border: 226 230 235;
+  --ring: 13 148 136;
+
+  --primary: 13 148 136;       /* teal-600 — "verified" */
+  --primary-fg: 255 255 255;
+  --primary-weak: 224 246 243;
+
+  --accent: 194 120 30;        /* amber — "estimate" */
+  --accent-weak: 251 240 224;
+
+  --success: 13 148 116;
+  --warning: 194 120 30;
+  --danger: 200 54 54;
+
+  --shadow-color: 15 30 50;
+
   color-scheme: light;
 }
 
-body {
-  @apply bg-slate-50 text-ink antialiased;
+.dark {
+  --background: 8 11 17;        /* deep ink, blue-tinted near-black */
+  --surface: 17 22 31;
+  --surface-2: 23 30 41;
+  --foreground: 229 233 240;
+  --muted: 147 159 177;
+  --border: 35 43 56;
+  --ring: 20 184 166;
+
+  --primary: 20 184 166;       /* teal-500, brighter on dark */
+  --primary-fg: 6 12 14;
+  --primary-weak: 14 39 38;
+
+  --accent: 233 168 90;
+  --accent-weak: 41 32 18;
+
+  --success: 45 212 175;
+  --warning: 233 168 90;
+  --danger: 248 113 113;
+
+  --shadow-color: 0 0 0;
+
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
+  }
+  /* Themed, slim scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--border)) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgb(var(--border));
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--muted) / 0.5);
+    background-clip: padding-box;
+  }
+  /* Consistent, visible keyboard focus */
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection {
+    background: rgb(var(--primary) / 0.22);
+  }
+}
+
+@layer components {
+  /* Card surface used across the app */
+  .card {
+    @apply rounded-2xl border border-border bg-surface shadow-sm;
+  }
+  /* Glassy elevated surface (navbar, sticky form) */
+  .glass {
+    background: rgb(var(--surface) / 0.72);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+  }
+  /* Tabular monospace figures — the ledger motif */
+  .figure {
+    @apply font-mono tabular-nums tracking-tight;
+  }
+  /* Form controls */
+  .field-label {
+    @apply mb-1.5 block text-xs font-medium text-muted;
+  }
+  .input {
+    @apply w-full rounded-xl border border-border bg-surface-2 px-3.5 py-2.5 text-sm text-foreground
+           shadow-xs transition-colors placeholder:text-muted/70
+           hover:border-muted/40 focus:border-primary focus:outline-none
+           focus:ring-2 focus:ring-primary/25;
+  }
+  select.input {
+    @apply cursor-pointer appearance-none bg-[length:1rem] bg-[right_0.75rem_center] bg-no-repeat pr-9;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm
+           font-semibold text-primary-fg shadow-sm transition-all
+           hover:shadow-glow hover:brightness-[1.05] active:scale-[0.985]
+           disabled:pointer-events-none disabled:opacity-55;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-3.5 py-2
+           text-sm font-medium text-foreground transition-colors
+           hover:border-primary/40 hover:text-primary;
+  }
+  /* Status chips */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium;
+  }
+  /* Subtle gridded / glow backdrop for the hero */
+  .hero-grid {
+    background-image:
+      radial-gradient(60rem 30rem at 12% -10%, rgb(var(--primary) / 0.10), transparent 60%),
+      radial-gradient(50rem 28rem at 100% 0%, rgb(var(--accent) / 0.08), transparent 55%),
+      linear-gradient(rgb(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 3rem 3rem, 3rem 3rem;
+    -webkit-mask-image: linear-gradient(to bottom, black, transparent 92%);
+    mask-image: linear-gradient(to bottom, black, transparent 92%);
+  }
+  /* Shimmer skeleton */
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg bg-surface-2;
+  }
+  .skeleton::after {
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    content: "";
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--muted) / 0.10),
+      transparent
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

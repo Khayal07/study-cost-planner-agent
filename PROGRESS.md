@@ -1,5 +1,41 @@
 # Progress Log
 
+## 2026-06-24 — Frontend redesign: premium "Verified Ledger" UI + dark mode
+
+**Status: ✅ Done & verified (build + Playwright in light/dark/mobile).**
+
+Transformed the plain blue/white UI into a modern, production-grade SaaS interface.
+Scope was UI only — no backend, agent, chat, or data logic changed; all functionality
+(form → plan, chat, PDF export, citations) still works.
+
+**Design system (new):** token-based theming via CSS variables in `globals.css`
+(light + dark), mapped to semantic Tailwind colors in `tailwind.config.ts`
+(`background/surface/foreground/muted/border/primary/accent/...`) — **no hardcoded
+colors**, so one class works in both themes. Concept: *teal = sourced, amber = estimate*
+(the data model's own confidence axis becomes the brand). Fonts: Bricolage Grotesque
+(display) + Inter (body) + JetBrains Mono (figures, a "ledger" motif). Radius/shadow
+scales, keyframes (fade/scale/shimmer/pulse), reduced-motion support.
+
+**Dark mode:** full system in `src/lib/theme.tsx` — `ThemeProvider` + `useTheme`,
+class-based, localStorage persistence (`scp-theme`), system-preference detection +
+live OS-change following, and an inline no-flash init script in `layout.tsx`.
+`ThemeToggle` sun/moon control in the navbar.
+
+**Components:** new `Navbar` (glass, sticky, status pill, GitHub, toggle), `Hero`
+(thesis headline + animated count-up stats reflecting the real dataset 5/15/76),
+`Footer`, `Skeletons` (shimmer loading). Redesigned `BudgetForm` (iconed header,
+segmented lifestyle control), `PlanResults` (theme-reactive Recharts with gradient
+bars + custom tooltip via `useChartColors`, ranked candidate cards with hover-lift,
+ledger-mono breakdown table, scenario tiles, verification panel), `CitationChip`
+(semantic sourced/estimate), `ChatPanel` (chat bubbles, sample chips, typing dots).
+`page.tsx`: segmented tabs, refined empty/error states, loading skeleton.
+
+**Verified:** `next build` clean (fonts fetched, types valid); Playwright screenshots
+in light, dark, and 390px mobile (no overflow, navbar collapses gracefully). Docker
+`frontend` image rebuilt; live on `localhost:3000`.
+
+---
+
 ## 2026-06-24 — Replace mock data with real, web-sourced data (in progress)
 
 Goal: replace the placeholder seed with internet-sourced figures, each cost entry
