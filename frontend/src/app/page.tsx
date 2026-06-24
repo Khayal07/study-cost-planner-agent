@@ -1,58 +1,84 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getHealth, type HealthResponse } from "@/lib/api";
+import { useState } from "react";
+import { postPlan, type PlanningRequest, type PlanResult } from "@/lib/api";
+import { BudgetForm } from "@/components/BudgetForm";
+import { PlanResults } from "@/components/PlanResults";
+import { ChatPanel } from "@/components/ChatPanel";
 
 export default function Home() {
-  const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [tab, setTab] = useState<"form" | "chat">("form");
+  const [plan, setPlan] = useState<PlanResult | null>(null);
+  const [request, setRequest] = useState<PlanningRequest | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    getHealth().then(setHealth).catch((e) => setError(String(e)));
-  }, []);
+  async function handlePlan(req: PlanningRequest) {
+    setLoading(true);
+    setError(null);
+    setRequest(req);
+    try {
+      setPlan(await postPlan(req));
+    } catch (e) {
+      setError(String(e));
+      setPlan(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const reportCurrency = request?.report_currency ?? "EUR";
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-20">
-      <p className="mb-3 text-sm font-medium uppercase tracking-widest text-brand">
-        Study Cost Planning Agent
-      </p>
-      <h1 className="text-4xl font-bold leading-tight text-ink">
-        Plan the <span className="text-brand">total real cost</span> of studying abroad.
-      </h1>
-      <p className="mt-4 max-w-2xl text-lg text-muted">
-        Tuition is only part of the story. This multi-agent planner adds living costs,
-        insurance, visa, transport and hidden expenses — every figure grounded in a
-        cited source, never invented.
-      </p>
+    <main className="mx-auto max-w-6xl px-6 py-10">
+      <header className="mb-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-brand">
+          Study Cost Planning Agent
+        </p>
+        <h1 className="mt-1 text-3xl font-bold">
+          The <span className="text-brand">total real cost</span> of studying abroad
+        </h1>
+        <p className="mt-2 max-w-2xl text-muted">
+          Tuition, living, insurance, visa, transport and hidden costs — every figure
+          grounded in a cited source.
+        </p>
+      </header>
 
-      <div className="mt-10 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-muted">Backend status</h2>
-        {error && <p className="mt-2 text-red-600">Cannot reach backend: {error}</p>}
-        {!error && !health && <p className="mt-2 text-muted">Checking…</p>}
-        {health && (
-          <ul className="mt-2 space-y-1 text-sm">
-            <li>
-              <span className="text-muted">Service:</span>{" "}
-              <span className="font-medium">{health.service}</span>{" "}
-              <span className="ml-1 rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                {health.status}
-              </span>
-            </li>
-            <li>
-              <span className="text-muted">Report currency:</span>{" "}
-              <span className="font-medium">{health.report_currency}</span>
-            </li>
-            <li>
-              <span className="text-muted">LLM (chat) enabled:</span>{" "}
-              <span className="font-medium">{health.llm_enabled ? "yes" : "no — set OPENROUTER_API_KEY"}</span>
-            </li>
-          </ul>
-        )}
+      <div className="mb-6 inline-flex rounded-lg border border-slate-200 bg-white p-1">
+        {(["form", "chat"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize ${
+              tab === t ? "bg-brand text-white" : "text-muted hover:text-ink"
+            }`}
+          >
+            {t === "form" ? "Budget form" : "Chat"}
+          </button>
+        ))}
       </div>
 
-      <p className="mt-8 text-sm text-muted">
-        Phase 0 scaffold. Budget form, chat and reports land in the next phases.
-      </p>
+      {tab === "form" ? (
+        <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+          <div>
+            <BudgetForm onSubmit={handlePlan} loading={loading} />
+            {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+          </div>
+          <div>
+            {plan ? (
+              <PlanResults plan={plan} request={request!} />
+            ) : (
+              <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-center text-muted">
+                Fill the form to see ranked options, charts, scenarios and citations.
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="max-w-3xl">
+          <ChatPanel reportCurrency={reportCurrency} />
+        </div>
+      )}
     </main>
   );
 }

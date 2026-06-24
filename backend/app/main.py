@@ -40,9 +40,8 @@ def health() -> dict:
 # Feature routers (added per phase)
 from app.api.plan import router as plan_router
 from app.api.chat import router as chat_router
+from app.api.export import router as export_router
 
 app.include_router(plan_router)
 app.include_router(chat_router)
-
-# from app.api.export import router as export_router
-# app.include_router(export_router)
+app.include_router(export_router)
