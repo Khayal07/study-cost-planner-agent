@@ -1,5 +1,43 @@
 # Progress Log
 
+## 2026-06-24 — Replace mock data with real, web-sourced data (in progress)
+
+Goal: replace the placeholder seed with internet-sourced figures, each cost entry
+storing its source URL. Scope approved: existing 5 countries first
+(Germany, Netherlands, Poland, Hungary, Turkey), web-verified JSON + reproducible loader.
+
+**Infrastructure (done):**
+- `data.json` → renamed `db/seed/data.mock.json` (kept as dev/fallback dataset).
+- New default dataset `db/seed/data.real.json` (web-sourced), selected by
+  `SEED_DATASET` env (`real` default | `mock` fallback); loader falls back to mock
+  if `data.real.json` is absent. See `app/data/seed.py`, `app/core/config.py`.
+- Loader enhancement (backward compatible): each city living item may carry its **own**
+  source (e.g. a semester fee cited to the university, not the city's Numbeo source).
+- New CLI `reseed` (reset + migrate + seed) for re-running during the incremental build.
+- New reusable verification harness `scripts/verify_seed.py` (DB-wide source/currency/range
+  audit + runs the real Verifier Agent per country). Run: `python -m scripts.verify_seed`.
+- No app UI / agent logic / chat flow changed. OpenRouter key untouched.
+
+**Coverage so far:**
+
+| Batch | Country | Universities | Status |
+|-------|---------|--------------|--------|
+| 1 | 🇩🇪 Germany | TUM, Humboldt Berlin, RWTH Aachen | ✅ seeded + verified |
+| 2 | 🇳🇱 Netherlands | — | ⏳ pending |
+| 3 | 🇵🇱 Poland | — | ⏳ pending |
+| 4 | 🇭🇺 Hungary | — | ⏳ pending |
+| 5 | 🇹🇷 Turkey | — | ⏳ pending |
+
+**Batch 1 — Germany notes:** key correction vs mock — TUM now charges non-EU tuition
+(EUR 6,000/semester STEM master, from WS2024/25 = EUR 12,000/yr; old data said EUR 0).
+Berlin (Humboldt) and NRW (RWTH) remain tuition-free; their real cost is the semester
+contribution (EUR 355 / EUR 329 per semester), encoded as city-scoped `hidden_misc` with
+the university as source (one university per German city in this dataset). Living costs
+from Numbeo (flagged `estimate` with URLs); visa EUR 75 (Federal Foreign Office, sourced);
+public student health insurance ~EUR 136/mo (estimate, varies by age). Verifier: 5/5 pass.
+
+---
+
 ## 2026-06-24 — Local Postgres access for external tooling (VS Code DB client)
 
 **Status: ✅ Done & verified from host.**

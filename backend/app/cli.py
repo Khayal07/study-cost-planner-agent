@@ -35,7 +35,18 @@ def reset() -> None:
     print("[cli] reset: all tables dropped")
 
 
-COMMANDS = {"migrate": migrate, "seed": seed, "reset": reset}
+def reseed() -> None:
+    """Dev convenience: wipe and reload the active seed dataset from scratch.
+
+    Useful while building the real dataset incrementally (the plain ``seed`` is
+    idempotent and skips when data is already present).
+    """
+    reset()
+    migrate()
+    seed()
+
+
+COMMANDS = {"migrate": migrate, "seed": seed, "reset": reset, "reseed": reseed}
 
 
 def main(argv: list[str]) -> int:

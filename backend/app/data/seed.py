@@ -13,6 +13,7 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.data.db import SessionLocal
 from app.data.models import (
     CONFIDENCE,
@@ -26,7 +27,19 @@ from app.data.models import (
     University,
 )
 
-SEED_PATH = Path(__file__).resolve().parent.parent.parent / "db" / "seed" / "data.json"
+SEED_DIR = Path(__file__).resolve().parent.parent.parent / "db" / "seed"
+# Available datasets. "real" = web-sourced figures (default); "mock" = original demo data.
+SEED_FILES = {"real": "data.real.json", "mock": "data.mock.json"}
+
+
+def _seed_path() -> Path:
+    """Resolve the active seed file from settings, falling back to mock if the
+    real dataset has not been generated yet."""
+    name = SEED_FILES.get(settings.seed_dataset, SEED_FILES["real"])
+    path = SEED_DIR / name
+    if not path.exists() and settings.seed_dataset == "real":
+        path = SEED_DIR / SEED_FILES["mock"]
+    return path
 
 
 def _parse_date(value: str | None) -> date | None:
@@ -82,8 +95,9 @@ def load_seed(session: Session | None = None) -> dict:
         if session.scalar(select(Country).limit(1)) is not None:
             return {"status": "skipped", "reason": "countries already present"}
 
-        data = json.loads(SEED_PATH.read_text(encoding="utf-8"))
-        counts = {"countries": 0, "cities": 0, "universities": 0, "programs": 0, "cost_items": 0, "sources": 0}
+        path = _seed_path()
+        data = json.loads(path.read_text(encoding="utf-8"))
+        counts = {"countries": 0, "cities": 0, "universities": 0, "programs": 0, "cost_items": 0, "sources": 0, "dataset": path.name}
 
         for c in data["countries"]:
             country = Country(name=c["name"], iso_code=c["iso_code"], default_currency=c["default_currency"])
@@ -117,8 +131,16 @@ def load_seed(session: Session | None = None) -> dict:
                 living_src = _make_source(session, cd["living_source"])
                 counts["sources"] += 1
                 for item in cd.get("living", []):
+                    # Each item may carry its own source (e.g. a semester fee cited to
+                    # the university, a transit pass cited to the transport authority);
+                    # otherwise it inherits the city's shared living source.
+                    if item.get("source"):
+                        item_src = _make_source(session, item["source"])
+                        counts["sources"] += 1
+                    else:
+                        item_src = living_src
                     _make_cost(session, raw=item, cost_type=item["cost_type"],
-                               scope_level="city", scope_id=city.id, source_id=living_src.id)
+                               scope_level="city", scope_id=city.id, source_id=item_src.id)
                     counts["cost_items"] += 1
 
             # Universities + programs + program-scoped tuition

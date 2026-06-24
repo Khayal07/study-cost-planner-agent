@@ -1,0 +1,73 @@
+{
+  "disclaimer": "Web-sourced dataset for an AI Engineering capstone. Each figure carries the source URL where it was verified and an 'accessed_date'. 'sourced' = an official/published policy figure (tuition, visa, semester fee); 'estimate' = a typical value that varies by individual (most living costs, drawn from Numbeo). Tuition/living costs change over time — verify at the cited source before deciding. Built country-by-country; see PROGRESS.md for coverage.",
+  "countries": [
+    {
+      "name": "Germany",
+      "iso_code": "DE",
+      "default_currency": "EUR",
+      "visa": {
+        "amount": 75, "currency": "EUR", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-09-01",
+        "note": "National (type D) long-stay student visa processing fee",
+        "source": {"url": "https://www.auswaertiges-amt.de/en/visa-service/215870-215870", "title": "Visas for Germany — fees", "publisher": "Federal Foreign Office (Auswaertiges Amt)", "source_type": "government", "accessed_date": "2026-06-24"}
+      },
+      "insurance": {
+        "amount": 136, "currency": "EUR", "period": "monthly", "confidence": "estimate", "valid_as_of": "2025-09-01",
+        "note": "Public student health insurance (statutory, e.g. Techniker Krankenkasse). Ranges ~EUR 130-146/month depending on age and long-term-care surcharge; ~136 typical for students under 30.",
+        "source": {"url": "https://www.studying-in-germany.org/insurances-germany/health-insurance/tk-insurance/", "title": "TK Health Insurance for International Students in Germany", "publisher": "Studying in Germany", "source_type": "statistical_portal", "accessed_date": "2026-06-24"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Munich",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Munich", "title": "Cost of Living in Munich", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 1180, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo: 1-bedroom apartment outside centre (~EUR 1,180); a shared room is typically cheaper"},
+           {"cost_type": "food", "amount": 350, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 300-400)"},
+           {"cost_type": "transport", "amount": 63, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular EUR 63); students can use the discounted Deutschlandticket"},
+           {"cost_type": "utilities", "amount": 150, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 343 for an 85 m2 flat"},
+           {"cost_type": "hidden_misc", "amount": 194, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "TUM semester fee EUR 97/semester (Munich campus), 2 semesters/year",
+            "source": {"url": "https://www.tum.de/en/studies/fees", "title": "Study fees and costs — TUM", "publisher": "Technical University of Munich", "source_type": "official_university", "accessed_date": "2026-06-24"}}
+         ]},
+        {"name": "Berlin",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Berlin", "title": "Cost of Living in Berlin", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 940, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo: 1-bedroom apartment outside centre (~EUR 941); a shared room is typically cheaper"},
+           {"cost_type": "food", "amount": 300, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 250-350)"},
+           {"cost_type": "transport", "amount": 63, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular EUR 63); largely covered by the semester ticket in the HU semester contribution"},
+           {"cost_type": "utilities", "amount": 150, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 361 for an 85 m2 flat"},
+           {"cost_type": "hidden_misc", "amount": 710, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Humboldt University semester contribution ~EUR 355/semester (includes Berlin public-transport semester ticket), 2 semesters/year",
+            "source": {"url": "https://www.hu-berlin.de/en/studies/counselling/financing", "title": "Financing your studies — semester contribution", "publisher": "Humboldt University of Berlin", "source_type": "official_university", "accessed_date": "2026-06-24"}}
+         ]},
+        {"name": "Aachen",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Aachen", "title": "Cost of Living in Aachen", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 530, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo: 1-bedroom apartment outside centre (~EUR 529); a shared student room is typically cheaper"},
+           {"cost_type": "food", "amount": 300, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 250-350)"},
+           {"cost_type": "transport", "amount": 63, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular EUR 63); for RWTH students the Deutschlandticket is included in the semester contribution"},
+           {"cost_type": "utilities", "amount": 150, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 341 for an 85 m2 flat"},
+           {"cost_type": "hidden_misc", "amount": 658, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "RWTH Aachen semester contribution EUR 329/semester (includes the Deutschlandticket semester ticket), 2 semesters/year",
+            "source": {"url": "https://www.asta.rwth-aachen.de/en/semester-contribution/", "title": "Semester contribution (Semester Fee)", "publisher": "AStA der RWTH Aachen", "source_type": "official_university", "accessed_date": "2026-06-24"}}
+         ]}
+      ],
+      "universities": [
+        {"name": "Technical University of Munich", "city": "Munich", "official_url": "https://www.tum.de",
+         "fee_source": {"url": "https://www.tum.de/en/studies/fees/tuition", "title": "Tuition Fees for Students from Non-EU Countries — TUM", "publisher": "Technical University of Munich", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Informatics", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 12000, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Non-EU/EEA tuition EUR 6,000/semester for STEM master programmes (from winter semester 2024/25); = EUR 12,000/year. EU/EEA students and waiver holders pay no tuition."}}
+         ]},
+        {"name": "Humboldt University of Berlin", "city": "Berlin", "official_url": "https://www.hu-berlin.de",
+         "fee_source": {"url": "https://www.hu-berlin.de/en/studies/counselling/financing", "title": "Financing your studies", "publisher": "Humboldt University of Berlin", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 0, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "No tuition fees at Berlin public universities for consecutive master programmes (incl. non-EU); only the semester contribution applies (see hidden cost)."}}
+         ]},
+        {"name": "RWTH Aachen University", "city": "Aachen", "official_url": "https://www.rwth-aachen.de",
+         "fee_source": {"url": "https://www.rwth-aachen.de/cms/root/studium/vor-dem-studium/internationale-studieninteressierte/organisation-des-studienaufenthaltes/internationale-studierende/~bqmo/kosten/?lidx=1", "title": "Costs — RWTH Aachen University", "publisher": "RWTH Aachen University", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 0, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "North Rhine-Westphalia does not charge tuition fees to international students; only the semester contribution applies (see hidden cost)."}}
+         ]}
+      ]
+    }
+  ]
+}
