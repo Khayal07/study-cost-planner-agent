@@ -1,0 +1,32 @@
+# Web framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# Data / ORM
+sqlalchemy==2.0.36
+psycopg[binary]==3.2.3
+pgvector==0.3.6
+
+# Config / validation
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# LLM (OpenRouter via OpenAI-compatible API)
+openai==1.59.6
+
+# HTTP (currency API)
+httpx==0.28.1
+
+# RAG embeddings (ONNX-based, lightweight — no torch)
+fastembed==0.5.1
+
+# PDF + charts
+weasyprint==63.1
+matplotlib==3.10.0
+
+# Utils
+python-dateutil==2.9.0.post0
+
+# Dev / test
+pytest==8.3.4
+pytest-asyncio==0.25.2
