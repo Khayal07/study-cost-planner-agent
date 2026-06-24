@@ -1,24 +1,41 @@
 """Small management CLI used by docker-compose on boot.
 
-    python -m app.cli migrate   # create schema + pgvector extension (idempotent)
+    python -m app.cli migrate   # create pgvector extension + schema (idempotent)
     python -m app.cli seed      # load curated seed data (idempotent)
-
-Phase 0 ships safe stubs so `docker compose up` succeeds; Phase 1 fills these in.
+    python -m app.cli reset     # drop all tables (dev convenience)
 """
 from __future__ import annotations
 
 import sys
 
+from sqlalchemy import text
+
+from app.data.db import Base, engine
+
+# Importing models registers them on Base.metadata.
+from app.data import models  # noqa: F401
+
 
 def migrate() -> None:
-    print("[cli] migrate: no-op stub (schema lands in Phase 1)")
+    with engine.begin() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+    Base.metadata.create_all(bind=engine)
+    print("[cli] migrate: schema ready (pgvector enabled)")
 
 
 def seed() -> None:
-    print("[cli] seed: no-op stub (seed data lands in Phase 1)")
+    from app.data.seed import load_seed
+
+    result = load_seed()
+    print(f"[cli] seed: {result}")
 
 
-COMMANDS = {"migrate": migrate, "seed": seed}
+def reset() -> None:
+    Base.metadata.drop_all(bind=engine)
+    print("[cli] reset: all tables dropped")
+
+
+COMMANDS = {"migrate": migrate, "seed": seed, "reset": reset}
 
 
 def main(argv: list[str]) -> int:
