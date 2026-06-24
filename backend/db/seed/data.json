@@ -1,0 +1,295 @@
+{
+  "disclaimer": "Curated demonstration dataset for an AI Engineering capstone. Figures are approximate and may be outdated; each carries a source URL where the current value should be verified. 'sourced' = a published/official policy figure; 'estimate' = a typical value that varies by individual.",
+  "countries": [
+    {
+      "name": "Germany",
+      "iso_code": "DE",
+      "default_currency": "EUR",
+      "visa": {
+        "amount": 75, "currency": "EUR", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-01-01",
+        "note": "National (type D) student visa fee",
+        "source": {"url": "https://www.auswaertiges-amt.de/en/visa-service", "title": "Visa regulations — Federal Foreign Office", "publisher": "Auswaertiges Amt", "source_type": "government", "accessed_date": "2025-06-01"}
+      },
+      "insurance": {
+        "amount": 125, "currency": "EUR", "period": "monthly", "confidence": "estimate", "valid_as_of": "2025-01-01",
+        "note": "Public student health insurance (approx. monthly)",
+        "source": {"url": "https://www.tk.de/en/insurance/students", "title": "Health insurance for students", "publisher": "Techniker Krankenkasse", "source_type": "official_university", "accessed_date": "2025-06-01"}
+      },
+      "hidden": [
+        {"cost_type": "hidden_misc", "amount": 300, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01",
+         "note": "Semester contribution / enrolment fee (varies ~100-350 per semester)",
+         "source": {"url": "https://www.studying-in-germany.org/german-semester-contribution/", "title": "German semester contribution explained", "publisher": "Studying in Germany", "source_type": "statistical_portal", "accessed_date": "2025-06-01"}}
+      ],
+      "cities": [
+        {"name": "Munich",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Munich", "title": "Cost of Living in Munich", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 850, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Single room / small studio, near centre"},
+           {"cost_type": "food", "amount": 300, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Groceries + occasional eating out"},
+           {"cost_type": "transport", "amount": 60, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Public transport student pass"},
+           {"cost_type": "utilities", "amount": 120, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Electricity, heating, internet"}
+         ]},
+        {"name": "Berlin",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Berlin", "title": "Cost of Living in Berlin", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 700, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Single room / small studio"},
+           {"cost_type": "food", "amount": 280, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 60, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student transit pass"},
+           {"cost_type": "utilities", "amount": 110, "currency": "EUR", "period": "monthly", "confidence": "estimate"}
+         ]},
+        {"name": "Aachen",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Aachen", "title": "Cost of Living in Aachen", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 450, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student room"},
+           {"cost_type": "food", "amount": 250, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 40, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Semester ticket included for students"},
+           {"cost_type": "utilities", "amount": 100, "currency": "EUR", "period": "monthly", "confidence": "estimate"}
+         ]}
+      ],
+      "universities": [
+        {"name": "Technical University of Munich", "city": "Munich", "official_url": "https://www.tum.de",
+         "fee_source": {"url": "https://www.tum.de/en/studies/fees", "title": "TUM — Fees", "publisher": "Technical University of Munich", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Informatics", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 0, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-01-01", "note": "No tuition at public Bavarian universities; semester fee only"}}
+         ]},
+        {"name": "Humboldt University of Berlin", "city": "Berlin", "official_url": "https://www.hu-berlin.de",
+         "fee_source": {"url": "https://www.hu-berlin.de/en/studies/counselling/financing", "title": "Financing your studies", "publisher": "Humboldt University of Berlin", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 0, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-01-01", "note": "No tuition at public Berlin universities; semester fee only"}}
+         ]},
+        {"name": "RWTH Aachen University", "city": "Aachen", "official_url": "https://www.rwth-aachen.de",
+         "fee_source": {"url": "https://www.rwth-aachen.de/cms/root/studium/im-studium/beitraege-gebuehren", "title": "Fees and contributions", "publisher": "RWTH Aachen University", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 0, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-01-01", "note": "No tuition at public NRW universities; semester fee only"}}
+         ]}
+      ]
+    },
+    {
+      "name": "Netherlands",
+      "iso_code": "NL",
+      "default_currency": "EUR",
+      "visa": {
+        "amount": 210, "currency": "EUR", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-01-01",
+        "note": "Residence permit (VVR) application fee",
+        "source": {"url": "https://ind.nl/en/residence-permits/study", "title": "Residence permit for study", "publisher": "IND Netherlands", "source_type": "government", "accessed_date": "2025-06-01"}
+      },
+      "insurance": {
+        "amount": 130, "currency": "EUR", "period": "monthly", "confidence": "estimate", "valid_as_of": "2025-01-01",
+        "note": "Student / health insurance (approx. monthly)",
+        "source": {"url": "https://www.studyinnl.org/finances/insurance", "title": "Insurance for international students", "publisher": "Study in NL", "source_type": "government", "accessed_date": "2025-06-01"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Amsterdam",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Amsterdam", "title": "Cost of Living in Amsterdam", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 1000, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Room in shared flat / studio"},
+           {"cost_type": "food", "amount": 350, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 90, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "utilities", "amount": 170, "currency": "EUR", "period": "monthly", "confidence": "estimate"}
+         ]},
+        {"name": "Delft",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Delft", "title": "Cost of Living in Delft", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 700, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "food", "amount": 320, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 60, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "utilities", "amount": 150, "currency": "EUR", "period": "monthly", "confidence": "estimate"}
+         ]},
+        {"name": "Eindhoven",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Eindhoven", "title": "Cost of Living in Eindhoven", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 750, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "food", "amount": 320, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 60, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "utilities", "amount": 150, "currency": "EUR", "period": "monthly", "confidence": "estimate"}
+         ]}
+      ],
+      "universities": [
+        {"name": "University of Amsterdam", "city": "Amsterdam", "official_url": "https://www.uva.nl",
+         "fee_source": {"url": "https://www.uva.nl/en/education/fees-and-funding/tuition-fees", "title": "Tuition fees", "publisher": "University of Amsterdam", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 15000, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "Non-EU/EEA institutional tuition (approx); EU rate much lower"}}
+         ]},
+        {"name": "Delft University of Technology", "city": "Delft", "official_url": "https://www.tudelft.nl",
+         "fee_source": {"url": "https://www.tudelft.nl/en/education/practical-matters/tuition-fees", "title": "Tuition fees", "publisher": "Delft University of Technology", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 19500, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "Non-EU/EEA institutional tuition (approx)"}}
+         ]},
+        {"name": "Eindhoven University of Technology", "city": "Eindhoven", "official_url": "https://www.tue.nl",
+         "fee_source": {"url": "https://www.tue.nl/en/education/tuition-fees", "title": "Tuition fees", "publisher": "Eindhoven University of Technology", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Science and Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 16000, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "Non-EU/EEA institutional tuition (approx)"}}
+         ]}
+      ]
+    },
+    {
+      "name": "Poland",
+      "iso_code": "PL",
+      "default_currency": "PLN",
+      "visa": {
+        "amount": 80, "currency": "EUR", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-01-01",
+        "note": "National (type D) student visa fee",
+        "source": {"url": "https://www.gov.pl/web/diplomacy/visa", "title": "Visa information", "publisher": "Republic of Poland — MFA", "source_type": "government", "accessed_date": "2025-06-01"}
+      },
+      "insurance": {
+        "amount": 140, "currency": "PLN", "period": "monthly", "confidence": "estimate", "valid_as_of": "2025-01-01",
+        "note": "Voluntary NFZ / private student health insurance (approx)",
+        "source": {"url": "https://www.nfz.gov.pl/", "title": "National Health Fund (NFZ)", "publisher": "NFZ Poland", "source_type": "government", "accessed_date": "2025-06-01"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Warsaw",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Warsaw", "title": "Cost of Living in Warsaw", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 2500, "currency": "PLN", "period": "monthly", "confidence": "estimate", "note": "Room / small studio"},
+           {"cost_type": "food", "amount": 1200, "currency": "PLN", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 110, "currency": "PLN", "period": "monthly", "confidence": "estimate", "note": "Student monthly pass"},
+           {"cost_type": "utilities", "amount": 600, "currency": "PLN", "period": "monthly", "confidence": "estimate"}
+         ]},
+        {"name": "Krakow",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Krakow", "title": "Cost of Living in Krakow", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 2200, "currency": "PLN", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "food", "amount": 1100, "currency": "PLN", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 100, "currency": "PLN", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "utilities", "amount": 550, "currency": "PLN", "period": "monthly", "confidence": "estimate"}
+         ]}
+      ],
+      "universities": [
+        {"name": "University of Warsaw", "city": "Warsaw", "official_url": "https://www.uw.edu.pl",
+         "fee_source": {"url": "https://www.uw.edu.pl/en/candidates/tuition-fees", "title": "Tuition fees", "publisher": "University of Warsaw", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 3000, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "English-taught programme fee for international students (approx)"}}
+         ]},
+        {"name": "AGH University of Krakow", "city": "Krakow", "official_url": "https://www.agh.edu.pl",
+         "fee_source": {"url": "https://www.agh.edu.pl/en/candidates", "title": "Candidates — fees", "publisher": "AGH University of Krakow", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 3500, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "English-taught programme fee for international students (approx)"}}
+         ]},
+        {"name": "Warsaw University of Technology", "city": "Warsaw", "official_url": "https://www.pw.edu.pl",
+         "fee_source": {"url": "https://www.pw.edu.pl/engpw/Candidates/Tuition-fees", "title": "Tuition fees", "publisher": "Warsaw University of Technology", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 3000, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "English-taught programme fee for international students (approx)"}}
+         ]}
+      ]
+    },
+    {
+      "name": "Hungary",
+      "iso_code": "HU",
+      "default_currency": "EUR",
+      "visa": {
+        "amount": 110, "currency": "EUR", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-01-01",
+        "note": "Residence permit for study purposes (approx)",
+        "source": {"url": "https://konzuliszolgalat.kormany.hu/en", "title": "Consular services — visa", "publisher": "Hungary Consular Service", "source_type": "government", "accessed_date": "2025-06-01"}
+      },
+      "insurance": {
+        "amount": 100, "currency": "EUR", "period": "monthly", "confidence": "estimate", "valid_as_of": "2025-01-01",
+        "note": "Student health insurance (approx. monthly)",
+        "source": {"url": "https://studyinhungary.hu/living-in-hungary/menu/practical-information/insurance.html", "title": "Insurance — Study in Hungary", "publisher": "Study in Hungary", "source_type": "government", "accessed_date": "2025-06-01"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Budapest",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Budapest", "title": "Cost of Living in Budapest", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 550, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Room / small studio"},
+           {"cost_type": "food", "amount": 280, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 30, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student monthly pass"},
+           {"cost_type": "utilities", "amount": 130, "currency": "EUR", "period": "monthly", "confidence": "estimate"}
+         ]},
+        {"name": "Szeged",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Szeged", "title": "Cost of Living in Szeged", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 350, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "food", "amount": 230, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 25, "currency": "EUR", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "utilities", "amount": 110, "currency": "EUR", "period": "monthly", "confidence": "estimate"}
+         ]}
+      ],
+      "universities": [
+        {"name": "Eotvos Lorand University", "city": "Budapest", "official_url": "https://www.elte.hu",
+         "fee_source": {"url": "https://www.elte.hu/en/tuition-fees", "title": "Tuition fees", "publisher": "Eotvos Lorand University", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 5000, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "International programme fee (approx)"}}
+         ]},
+        {"name": "Budapest University of Technology and Economics", "city": "Budapest", "official_url": "https://www.bme.hu",
+         "fee_source": {"url": "https://www.bme.hu/?language=en", "title": "International admissions", "publisher": "Budapest University of Technology and Economics", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 6500, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "International programme fee (approx)"}}
+         ]},
+        {"name": "University of Szeged", "city": "Szeged", "official_url": "https://u-szeged.hu",
+         "fee_source": {"url": "https://u-szeged.hu/english/admissions", "title": "Admissions — fees", "publisher": "University of Szeged", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 4500, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "International programme fee (approx)"}}
+         ]}
+      ]
+    },
+    {
+      "name": "Turkey",
+      "iso_code": "TR",
+      "default_currency": "TRY",
+      "visa": {
+        "amount": 60, "currency": "USD", "period": "one_time", "confidence": "estimate", "valid_as_of": "2025-01-01",
+        "note": "Student residence permit / visa cost (approx, varies by nationality)",
+        "source": {"url": "https://www.goc.gov.tr/ikamet-izni-harclari", "title": "Residence permit fees", "publisher": "Presidency of Migration Management", "source_type": "government", "accessed_date": "2025-06-01"}
+      },
+      "insurance": {
+        "amount": 500, "currency": "TRY", "period": "monthly", "confidence": "estimate", "valid_as_of": "2025-01-01",
+        "note": "Student health insurance (approx. monthly)",
+        "source": {"url": "https://www.sgk.gov.tr/", "title": "Social Security Institution", "publisher": "SGK Turkey", "source_type": "government", "accessed_date": "2025-06-01"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Istanbul",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Istanbul", "title": "Cost of Living in Istanbul", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 18000, "currency": "TRY", "period": "monthly", "confidence": "estimate", "note": "Room / small flat; high volatility due to inflation"},
+           {"cost_type": "food", "amount": 8000, "currency": "TRY", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 1000, "currency": "TRY", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "utilities", "amount": 3000, "currency": "TRY", "period": "monthly", "confidence": "estimate"}
+         ]},
+        {"name": "Ankara",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Ankara", "title": "Cost of Living in Ankara", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2025-06-01"},
+         "living": [
+           {"cost_type": "rent", "amount": 13000, "currency": "TRY", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "food", "amount": 7000, "currency": "TRY", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "transport", "amount": 900, "currency": "TRY", "period": "monthly", "confidence": "estimate"},
+           {"cost_type": "utilities", "amount": 2500, "currency": "TRY", "period": "monthly", "confidence": "estimate"}
+         ]}
+      ],
+      "universities": [
+        {"name": "Bogazici University", "city": "Istanbul", "official_url": "https://www.boun.edu.tr",
+         "fee_source": {"url": "https://www.boun.edu.tr/en_US", "title": "International students", "publisher": "Bogazici University", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 600, "currency": "USD", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "State university international tuition (approx, per year)"}}
+         ]},
+        {"name": "Middle East Technical University", "city": "Ankara", "official_url": "https://www.metu.edu.tr",
+         "fee_source": {"url": "https://www.metu.edu.tr/tuition-fees", "title": "Tuition fees", "publisher": "Middle East Technical University", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 1000, "currency": "USD", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "State university international tuition (approx, per year)"}}
+         ]},
+        {"name": "Istanbul Technical University", "city": "Istanbul", "official_url": "https://www.itu.edu.tr",
+         "fee_source": {"url": "https://www.itu.edu.tr/en", "title": "International students", "publisher": "Istanbul Technical University", "source_type": "official_university", "accessed_date": "2025-06-01"},
+         "programs": [
+           {"name": "M.Sc. Computer Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 800, "currency": "USD", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-01-01", "note": "State university international tuition (approx, per year)"}}
+         ]}
+      ]
+    }
+  ]
+}
