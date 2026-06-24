@@ -184,6 +184,60 @@
             "tuition": {"amount": 3600, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "AGH fee EUR 1,800/semester for Computer Science and Intelligent Systems = EUR 3,600/yr. Payable in PLN at the NBP rate on the payment date."}}
          ]}
       ]
+    },
+    {
+      "name": "Hungary",
+      "iso_code": "HU",
+      "default_currency": "HUF",
+      "visa": {
+        "amount": 110, "currency": "EUR", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-09-01",
+        "note": "Residence permit for study purposes, administrative service fee for applications submitted abroad (in person at a Hungarian mission)",
+        "source": {"url": "https://oif.gov.hu/factsheets/residence-of-the-student-pupil", "title": "Residence of the student, pupil — fees", "publisher": "National Directorate-General for Aliens Policing (OIF)", "source_type": "government", "accessed_date": "2026-06-24"}
+      },
+      "insurance": {
+        "amount": 22000, "currency": "HUF", "period": "monthly", "confidence": "estimate", "valid_as_of": "2025-09-01",
+        "note": "Private student health insurance ~HUF 20,000-30,000/month (~EUR 55-75)",
+        "source": {"url": "https://studyinhungary.hu/living-in-hungary/menu/practical-information/insurance.html", "title": "Insurance — Study in Hungary", "publisher": "Study in Hungary (Tempus Public Foundation)", "source_type": "government", "accessed_date": "2026-06-24"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Budapest",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Budapest", "title": "Cost of Living in Budapest", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 150000, "currency": "HUF", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat (Numbeo lists ~HUF 215,000 for a 1-bedroom outside centre)"},
+           {"cost_type": "food", "amount": 90000, "currency": "HUF", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person"},
+           {"cost_type": "transport", "amount": 9000, "currency": "HUF", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular HUF 9,000); the student monthly pass is ~HUF 3,450"},
+           {"cost_type": "utilities", "amount": 30000, "currency": "HUF", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~HUF 55,000 for an 85 m2 flat"}
+         ]},
+        {"name": "Szeged",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Szeged", "title": "Cost of Living in Szeged", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 90000, "currency": "HUF", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat (Numbeo lists ~HUF 123,000 for a 1-bedroom outside centre)"},
+           {"cost_type": "food", "amount": 75000, "currency": "HUF", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person"},
+           {"cost_type": "transport", "amount": 9600, "currency": "HUF", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular HUF 9,600); students pay a reduced fare"},
+           {"cost_type": "utilities", "amount": 22000, "currency": "HUF", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~HUF 42,000 for an 85 m2 flat"}
+         ]}
+      ],
+      "universities": [
+        {"name": "Eotvos Lorand University", "city": "Budapest", "official_url": "https://www.elte.hu",
+         "fee_source": {"url": "https://study-in-hungary.com/eotvos-lorand-university/computer-science-msc/", "title": "Computer Science MSc — Eotvos Lorand University", "publisher": "Study in Hungary", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 6400, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "ELTE Computer Science MSc EUR 3,200/semester for international students = EUR 6,400/yr"}}
+         ]},
+        {"name": "Budapest University of Technology and Economics", "city": "Budapest", "official_url": "https://www.bme.hu",
+         "fee_source": {"url": "https://xplore.bme.hu/tuition-fees/", "title": "Tuition fees — BME Xplore", "publisher": "Budapest University of Technology and Economics", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Science Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 7000, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2026-09-01", "note": "Faculty of Electrical Engineering and Informatics, Computer Science Engineering, non-EU EUR 3,500/semester = EUR 7,000/yr (BME graduates: EUR 3,200/sem)"}}
+         ]},
+        {"name": "University of Szeged", "city": "Szeged", "official_url": "https://u-szeged.hu",
+         "fee_source": {"url": "https://u-szeged.hu/tuition-fees-2025", "title": "Tuition & Fees of International Programmes 2025-2026", "publisher": "University of Szeged", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 8200, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "University of Szeged Computer Science MSc EUR 4,100/semester for international students = EUR 8,200/yr"}}
+         ]}
+      ]
     }
   ]
 }

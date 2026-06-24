@@ -25,7 +25,7 @@ storing its source URL. Scope approved: existing 5 countries first
 | 1 | 🇩🇪 Germany | TUM, Humboldt Berlin, RWTH Aachen | ✅ seeded + verified |
 | 2 | 🇳🇱 Netherlands | UvA, TU Delft, TU Eindhoven | ✅ seeded + verified |
 | 3 | 🇵🇱 Poland | Univ. of Warsaw, Warsaw Tech (MiNI), AGH Krakow | ✅ seeded + verified |
-| 4 | 🇭🇺 Hungary | — | ⏳ pending |
+| 4 | 🇭🇺 Hungary | ELTE, BME, Univ. of Szeged | ✅ seeded + verified |
 | 5 | 🇹🇷 Turkey | — | ⏳ pending |
 
 **Reseed workflow note:** the backend image bundles the seed JSON at build time
@@ -33,6 +33,12 @@ storing its source URL. Scope approved: existing 5 countries first
 the live file for the reseed run:
 `docker compose run --rm -v "${PWD}/db/seed:/code/db/seed" backend python -m app.cli reseed`
 (run from the `backend/` dir; WORKDIR in the image is `/code`).
+
+**Batch 4 — Hungary notes:** living costs and insurance in **HUF** (second FX currency,
+HUF→EUR conversion verified). Tuition all official and `sourced`: ELTE M.Sc. Computer
+Science EUR 6,400/yr (EUR 3,200/sem), BME Computer Science Engineering EUR 7,000/yr
+(EUR 3,500/sem), Szeged M.Sc. Computer Science EUR 8,200/yr (EUR 4,100/sem). Residence
+permit EUR 110 (OIF, sourced). Verifier: 5/5 pass for all four countries.
 
 **Batch 3 — Poland notes:** first non-EUR country — living costs stored in **PLN**,
 which exercises the Currency Agent (PLN→EUR via Frankfurter); `totals_consistency` passes
