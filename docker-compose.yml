@@ -1,0 +1,45 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-studyplanner}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-studyplanner}
+      POSTGRES_DB: ${POSTGRES_DB:-studyplanner}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-studyplanner} -d ${POSTGRES_DB:-studyplanner}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      # Override host so the backend reaches the db service on the compose network
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-studyplanner}:${POSTGRES_PASSWORD:-studyplanner}@db:5432/${POSTGRES_DB:-studyplanner}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    # On boot: run migrations, seed (idempotent), then start the API
+    command: >
+      sh -c "python -m app.cli migrate &&
+             python -m app.cli seed &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  frontend:
+    build: ./frontend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
