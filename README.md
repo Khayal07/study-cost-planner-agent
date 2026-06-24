@@ -72,15 +72,44 @@ npm install
 npm run dev
 ```
 
-## Roadmap (phases)
+## Run the tests
 
-0. Scaffold (this commit) — docker-compose, FastAPI + Next skeleton, `/health`.
-1. Data layer — schema, pgvector, curated seed with source URLs.
-2. Core agents + orchestrator — tuition, living, currency; form path.
-3. Scenario + budget matching + verifier.
-4. Chat + RAG grounded answers.
-5. Outputs — comparison charts + PDF export.
-6. Polish — tests, docs, Docker finishing.
+Deterministic-math and intent unit tests (no DB/network needed):
+
+```bash
+docker compose exec backend python -m pytest app/tests -q
+```
+
+## API endpoints
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/health` | Liveness + whether the LLM is configured |
+| POST | `/plan` | Structured budget form → ranked, cited plan |
+| POST | `/chat` | Natural-language → grounded, cited answer or full plan |
+| POST | `/export/pdf` | Re-run the plan and download a PDF report |
+
+Interactive docs at http://localhost:8000/docs.
+
+## Roadmap (status)
+
+- [x] **0. Scaffold** — docker-compose, FastAPI + Next skeleton, `/health`.
+- [x] **1. Data layer** — schema, pgvector, curated seed (5 countries) with source URLs.
+- [x] **2. Core agents + orchestrator** — tuition, living, currency; form path.
+- [x] **3. Scenario + budget matching + verifier**.
+- [x] **4. Chat** — intent extraction (LLM + fallback) + grounded answers.
+- [x] **5. Outputs** — comparison charts + PDF export.
+- [x] **6. Polish** — unit tests, docs, Docker.
+
+### Notes & known simplifications
+- **LLM is optional.** Without `OPENROUTER_API_KEY` the system still works end-to-end:
+  intent extraction falls back to a deterministic parser, and narratives/summaries use
+  templates. A key makes chat answers and summaries more fluent.
+- **Grounded retrieval** for chat currently uses **structured SQL lookups** (more accurate
+  for this small, structured dataset). The `knowledge_chunks` pgvector column is in place
+  and reserved for semantic retrieval as a future enhancement.
+- **Seed data** is curated and approximate; each figure cites a source URL and is labelled
+  `sourced` or `estimate`. Verify at the source before relying on a number.
 
 ## License
 
