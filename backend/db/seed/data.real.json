@@ -130,6 +130,60 @@
             "tuition": {"amount": 21700, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2026-09-01", "note": "Institutional fee for non-EEA master students (uniform across programmes), 2026-2027 official rate. EU/EEA students pay the statutory fee."}}
          ]}
       ]
+    },
+    {
+      "name": "Poland",
+      "iso_code": "PL",
+      "default_currency": "PLN",
+      "visa": {
+        "amount": 135, "currency": "EUR", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-09-01",
+        "note": "National (type D) long-stay visa fee, raised to EUR 135 from 1 June 2024",
+        "source": {"url": "https://www.gov.pl/web/diplomacy/increase-in-national-visa-fees", "title": "Increase in national visa fees", "publisher": "Republic of Poland — Ministry of Foreign Affairs", "source_type": "government", "accessed_date": "2026-06-24"}
+      },
+      "insurance": {
+        "amount": 80, "currency": "PLN", "period": "monthly", "confidence": "estimate", "valid_as_of": "2025-09-01",
+        "note": "NFZ voluntary student health insurance (~PLN 55-80/month); private international cover costs more",
+        "source": {"url": "https://www.nfz.gov.pl/", "title": "Narodowy Fundusz Zdrowia (National Health Fund)", "publisher": "NFZ Poland", "source_type": "government", "accessed_date": "2026-06-24"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Warsaw",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Warsaw", "title": "Cost of Living in Warsaw", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 2400, "currency": "PLN", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat (Numbeo lists ~PLN 3,639 for a 1-bedroom outside centre)"},
+           {"cost_type": "food", "amount": 1300, "currency": "PLN", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~PLN 1,200-1,500)"},
+           {"cost_type": "transport", "amount": 110, "currency": "PLN", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular PLN 110); students get a reduced fare"},
+           {"cost_type": "utilities", "amount": 600, "currency": "PLN", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~PLN 1,272 for an 85 m2 flat"}
+         ]},
+        {"name": "Krakow",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Krakow-Cracow", "title": "Cost of Living in Krakow", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 2000, "currency": "PLN", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat (Numbeo lists ~PLN 2,900 for a 1-bedroom outside centre)"},
+           {"cost_type": "food", "amount": 1250, "currency": "PLN", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~PLN 1,200-1,500)"},
+           {"cost_type": "transport", "amount": 130, "currency": "PLN", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular PLN 130); students get a reduced fare"},
+           {"cost_type": "utilities", "amount": 550, "currency": "PLN", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~PLN 1,261 for an 85 m2 flat"}
+         ]}
+      ],
+      "universities": [
+        {"name": "University of Warsaw", "city": "Warsaw", "official_url": "https://www.uw.edu.pl",
+         "fee_source": {"url": "https://welcome.uw.edu.pl/before-you-arrive/tuition-fees/", "title": "Tuition fees — Welcome Point", "publisher": "University of Warsaw", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 2800, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-09-01", "note": "UW publishes English-programme fees only as a PDF schedule (not machine-readable); English-taught second-cycle programmes at UW are typically ~EUR 2,500-3,300/yr. Verify the exact figure in the linked 2025/2026 schedule."}}
+         ]},
+        {"name": "Warsaw University of Technology", "city": "Warsaw", "official_url": "https://www.pw.edu.pl",
+         "fee_source": {"url": "https://ww4.mini.pw.edu.pl/application-process/tuition-fees/", "title": "Tuition fees — Faculty of Mathematics and Information Science", "publisher": "Warsaw University of Technology", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Data Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 6540, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Non-EU tuition for the English-taught M.Sc. Data Science (Faculty of Mathematics and Information Science), 2025/2026. The M.Sc. Computer Science track is the corresponding earlier-cohort programme."}}
+         ]},
+        {"name": "AGH University of Krakow", "city": "Krakow", "official_url": "https://www.agh.edu.pl",
+         "fee_source": {"url": "https://old.international.agh.edu.pl/eng/regular-studies/tuition-fees/", "title": "Tuition fees — Department for International Students", "publisher": "AGH University of Krakow", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Science and Intelligent Systems", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 3600, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "AGH fee EUR 1,800/semester for Computer Science and Intelligent Systems = EUR 3,600/yr. Payable in PLN at the NBP rate on the payment date."}}
+         ]}
+      ]
     }
   ]
 }
