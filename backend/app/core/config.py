@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://studyplanner:studyplanner@localhost:5432/studyplanner"
 
     # --- Currency ---
-    frankfurter_base_url: str = "https://api.frankfurter.app"
+    frankfurter_base_url: str = "https://api.frankfurter.dev/v1"
     fx_cache_hours: int = 24
 
     # --- App behaviour ---
