@@ -1,5 +1,5 @@
-// Thin client for the backend API. The base URL is inlined at build time from
-// NEXT_PUBLIC_API_BASE_URL (see Dockerfile / .env).
+// Thin client + shared types for the backend API. Base URL is inlined at build
+// time from NEXT_PUBLIC_API_BASE_URL (see Dockerfile / .env).
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
@@ -11,8 +11,146 @@ export type HealthResponse = {
   report_currency: string;
 };
 
+export type Citation = {
+  publisher: string;
+  url: string | null;
+  accessed_date: string | null;
+  source_type: string;
+};
+
+export type CostLine = {
+  label: string;
+  cost_type: string;
+  amount: number;
+  currency: string;
+  original_amount: number;
+  original_currency: string;
+  original_period: string;
+  confidence: "sourced" | "estimate";
+  note: string | null;
+  converted: boolean;
+  citation: Citation;
+};
+
+export type ScenarioBreakdown = {
+  name: string;
+  multiplier: number;
+  annual_total: number;
+  monthly_living: number;
+  budget_gap: number;
+  narrative: string | null;
+};
+
+export type CandidatePlan = {
+  program_id: number;
+  program_name: string;
+  field: string;
+  degree_level: string;
+  language: string;
+  duration_years: number;
+  university_name: string;
+  university_url: string | null;
+  city_name: string;
+  country_name: string;
+  country_iso: string;
+  report_currency: string;
+  lines: CostLine[];
+  annual_tuition: number;
+  annual_living: number;
+  annual_one_time: number;
+  annual_hidden: number;
+  total_annual: number;
+  monthly_living: number;
+  fx_notes: string[];
+  scenarios: ScenarioBreakdown[];
+  budget_gap: number | null;
+  affordable: boolean | null;
+  rank: number | null;
+};
+
+export type VerificationCheck = { name: string; status: string; detail: string };
+export type VerificationReport = {
+  overall: string;
+  checks: VerificationCheck[];
+  summary: string | null;
+};
+
+export type PlanningRequest = {
+  country?: string | null;
+  field?: string | null;
+  degree_level?: string | null;
+  budget_amount: number;
+  budget_currency: string;
+  report_currency: string;
+  lifestyle?: string;
+  max_results?: number;
+};
+
+export type PlanResult = {
+  request: PlanningRequest;
+  report_currency: string;
+  candidates: CandidatePlan[];
+  verification: VerificationReport | null;
+  recommendations: string[];
+  generated_at: string;
+  disclaimer: string;
+};
+
+export type CitedFigure = {
+  label: string;
+  amount: number;
+  currency: string;
+  confidence: string;
+  citation: Citation;
+};
+
+export type ChatResponse = {
+  mode: "plan" | "answer" | "clarify";
+  answer: string;
+  extracted: Record<string, unknown>;
+  figures: CitedFigure[];
+  plan: PlanResult | null;
+};
+
 export async function getHealth(): Promise<HealthResponse> {
   const res = await fetch(`${API_BASE_URL}/health`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Backend unhealthy: ${res.status}`);
   return res.json();
+}
+
+export async function postPlan(req: PlanningRequest): Promise<PlanResult> {
+  const res = await fetch(`${API_BASE_URL}/plan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) throw new Error(`Plan failed: ${res.status}`);
+  return res.json();
+}
+
+export async function postChat(message: string, report_currency: string): Promise<ChatResponse> {
+  const res = await fetch(`${API_BASE_URL}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, report_currency }),
+  });
+  if (!res.ok) throw new Error(`Chat failed: ${res.status}`);
+  return res.json();
+}
+
+// Download the PDF: POST JSON, receive a blob, trigger a browser download.
+export async function exportPdf(req: PlanningRequest): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/export/pdf`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) throw new Error(`PDF export failed: ${res.status}`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "study-cost-plan.pdf";
+  a.click();
+  URL.revokeObjectURL(url);
 }
