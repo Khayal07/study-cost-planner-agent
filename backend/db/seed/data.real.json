@@ -68,6 +68,68 @@
             "tuition": {"amount": 0, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "North Rhine-Westphalia does not charge tuition fees to international students; only the semester contribution applies (see hidden cost)."}}
          ]}
       ]
+    },
+    {
+      "name": "Netherlands",
+      "iso_code": "NL",
+      "default_currency": "EUR",
+      "visa": {
+        "amount": 243, "currency": "EUR", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-09-01",
+        "note": "IND application fee for the student residence permit (incl. MVV entry visa), 2025",
+        "source": {"url": "https://ind.nl/en/residence-permits/study/student-residence-permit-for-university-or-higher-professional-education", "title": "Student residence permit for university or higher professional education", "publisher": "IND (Immigration and Naturalisation Service)", "source_type": "government", "accessed_date": "2026-06-24"}
+      },
+      "insurance": {
+        "amount": 120, "currency": "EUR", "period": "monthly", "confidence": "estimate", "valid_as_of": "2025-09-01",
+        "note": "International-student health insurance (e.g. AON/Zorgverzekering style cover); typically ~EUR 100-130/month",
+        "source": {"url": "https://www.studyinnl.org/finances/insurance", "title": "Insurance for international students", "publisher": "Study in NL (Nuffic)", "source_type": "government", "accessed_date": "2026-06-24"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Amsterdam",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Amsterdam", "title": "Cost of Living in Amsterdam", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 1100, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat (Amsterdam is expensive; Numbeo lists ~EUR 1,724 for a 1-bedroom outside centre)"},
+           {"cost_type": "food", "amount": 350, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 300-400)"},
+           {"cost_type": "transport", "amount": 100, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly public transport pass"},
+           {"cost_type": "utilities", "amount": 150, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 264 for an 85 m2 flat"}
+         ]},
+        {"name": "Delft",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Delft", "title": "Cost of Living in Delft", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 850, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat (Numbeo lists ~EUR 1,258 for a 1-bedroom outside centre)"},
+           {"cost_type": "food", "amount": 320, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person"},
+           {"cost_type": "transport", "amount": 66, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly public transport pass"},
+           {"cost_type": "utilities", "amount": 150, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 238 for an 85 m2 flat"}
+         ]},
+        {"name": "Eindhoven",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Eindhoven", "title": "Cost of Living in Eindhoven", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 820, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat (Numbeo lists ~EUR 1,213 for a 1-bedroom outside centre)"},
+           {"cost_type": "food", "amount": 300, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 250-350)"},
+           {"cost_type": "transport", "amount": 100, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly public transport pass"},
+           {"cost_type": "utilities", "amount": 150, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 197 for an 85 m2 flat"}
+         ]}
+      ],
+      "universities": [
+        {"name": "University of Amsterdam", "city": "Amsterdam", "official_url": "https://www.uva.nl",
+         "fee_source": {"url": "https://www.uva.nl/en/education/fees-and-funding/tuition-fees/tuition-fees-2025-2026/tuition-fees-2025-2026.html", "title": "Tuition fees 2025-2026", "publisher": "University of Amsterdam", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 23490, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Institutional fee for non-EEA students, M.Sc. Computer Science (joint programme with VU), 2025-2026. EU/EEA students pay the statutory fee (~EUR 2,694)."}}
+         ]},
+        {"name": "Delft University of Technology", "city": "Delft", "official_url": "https://www.tudelft.nl",
+         "fee_source": {"url": "https://www.tudelft.nl/en/education/study-programme-orientation/practical-matters/tuition-fee-finances", "title": "Tuition Fee & Finances", "publisher": "Delft University of Technology", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 22290, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Institutional tuition fee for non-EU/EFTA master students, 2025-2026. EU/EEA students pay the statutory fee."}}
+         ]},
+        {"name": "Eindhoven University of Technology", "city": "Eindhoven", "official_url": "https://www.tue.nl",
+         "fee_source": {"url": "https://www.tue.nl/en/education/become-a-tue-student/tuition-fees-and-other-study-costs/tuition-fee", "title": "Tuition fee", "publisher": "Eindhoven University of Technology", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Science and Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 21700, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2026-09-01", "note": "Institutional fee for non-EEA master students (uniform across programmes), 2026-2027 official rate. EU/EEA students pay the statutory fee."}}
+         ]}
+      ]
     }
   ]
 }
