@@ -238,6 +238,60 @@
             "tuition": {"amount": 8200, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "University of Szeged Computer Science MSc EUR 4,100/semester for international students = EUR 8,200/yr"}}
          ]}
       ]
+    },
+    {
+      "name": "Turkey",
+      "iso_code": "TR",
+      "default_currency": "TRY",
+      "visa": {
+        "amount": 810, "currency": "TRY", "period": "one_time", "confidence": "estimate", "valid_as_of": "2025-09-01",
+        "note": "Residence-permit card fee (TRY 810, charged to all applicants in 2025). The student residence-permit fee itself is low/often nominal; total typically ~USD 30-100 depending on nationality and duration.",
+        "source": {"url": "https://en.goc.gov.tr/documents-for-residence-permit-fee-amount", "title": "Documents for Residence Permit — Fee Amount", "publisher": "Presidency of Migration Management (Goc Idaresi)", "source_type": "government", "accessed_date": "2026-06-24"}
+      },
+      "insurance": {
+        "amount": 2500, "currency": "TRY", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-09-01",
+        "note": "Private student health insurance for the residence permit (~TRY 1,300-2,500/year)",
+        "source": {"url": "https://www.sgk.gov.tr/", "title": "Social Security Institution (SGK)", "publisher": "SGK Turkey", "source_type": "government", "accessed_date": "2026-06-24"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Istanbul",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Istanbul", "title": "Cost of Living in Istanbul", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 20000, "currency": "TRY", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat; high inflation volatility (Numbeo lists ~TRY 30,000 for a 1-bedroom outside centre)"},
+           {"cost_type": "food", "amount": 8000, "currency": "TRY", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (inflation-volatile)"},
+           {"cost_type": "transport", "amount": 2750, "currency": "TRY", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular TRY 2,750); students get a reduced fare"},
+           {"cost_type": "utilities", "amount": 3000, "currency": "TRY", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~TRY 4,200 for an 85 m2 flat"}
+         ]},
+        {"name": "Ankara",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Ankara", "title": "Cost of Living in Ankara", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-24"},
+         "living": [
+           {"cost_type": "rent", "amount": 15000, "currency": "TRY", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat (Numbeo lists ~TRY 26,000 for a 1-bedroom outside centre)"},
+           {"cost_type": "food", "amount": 7000, "currency": "TRY", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (inflation-volatile)"},
+           {"cost_type": "transport", "amount": 1000, "currency": "TRY", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass; students get a reduced fare"},
+           {"cost_type": "utilities", "amount": 2800, "currency": "TRY", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~TRY 4,000 for an 85 m2 flat"}
+         ]}
+      ],
+      "universities": [
+        {"name": "Bogazici University", "city": "Istanbul", "official_url": "https://www.boun.edu.tr",
+         "fee_source": {"url": "https://intl.bogazici.edu.tr/tuition-undergraduate-and-graduate-degree-programs", "title": "Tuition for Undergraduate and Graduate Degree Programs", "publisher": "Bogazici University — Office of International Relations", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 3000, "currency": "USD", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-09-01", "note": "Bogazici graduate fees for foreign nationals are credit-based (e.g. TRY 13,000-19,500 per credit for some programmes); a thesis master totals roughly USD 2,500-4,000/yr. Verify via the university's OBIKAS fee calculator."}}
+         ]},
+        {"name": "Istanbul Technical University", "city": "Istanbul", "official_url": "https://www.itu.edu.tr",
+         "fee_source": {"url": "https://www.sis.itu.edu.tr/EN/student/intenational-students/tuitions.php", "title": "Tuitions — International Students", "publisher": "Istanbul Technical University", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 3000, "currency": "USD", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-09-01", "note": "ITU international graduate tuition is published per academic year in a fees table (TRY, USD-indexed); engineering master programmes run roughly USD 2,000-5,000/yr. Verify the exact 2025-2026 figure in the linked fees table."}}
+         ]},
+        {"name": "Middle East Technical University", "city": "Ankara", "official_url": "https://www.metu.edu.tr",
+         "fee_source": {"url": "https://iso.metu.edu.tr/en/tuition-fee", "title": "Tuition Fee — International Students Office", "publisher": "Middle East Technical University", "source_type": "official_university", "accessed_date": "2026-06-24"},
+         "programs": [
+           {"name": "M.Sc. Computer Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 1500, "currency": "USD", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-09-01", "note": "METU international graduate rate ~USD 750/semester (2024-2025 official) = ~USD 1,500/yr, paid in TRY at the minimum gazetted amount. Verify the 2025-2026 figure in the linked PDF."}}
+         ]}
+      ]
     }
   ]
 }

@@ -26,13 +26,26 @@ storing its source URL. Scope approved: existing 5 countries first
 | 2 | 🇳🇱 Netherlands | UvA, TU Delft, TU Eindhoven | ✅ seeded + verified |
 | 3 | 🇵🇱 Poland | Univ. of Warsaw, Warsaw Tech (MiNI), AGH Krakow | ✅ seeded + verified |
 | 4 | 🇭🇺 Hungary | ELTE, BME, Univ. of Szeged | ✅ seeded + verified |
-| 5 | 🇹🇷 Turkey | — | ⏳ pending |
+| 5 | 🇹🇷 Turkey | Bogazici, ITU, METU | ✅ seeded + verified |
+
+**All 5 approved countries done** → real dataset: 5 countries, 12 cities, 15 universities,
+15 programs, **76 cost items, 40 sources** (18 sourced / 58 labelled estimate). Verifier
+5/5 pass per country. Currencies exercised: EUR, PLN, HUF, TRY, USD (all convert to the
+report currency consistently). Remaining optional expansion (Czech, Italy, Georgia) was
+deferred per the approved scope.
 
 **Reseed workflow note:** the backend image bundles the seed JSON at build time
 (`COPY . .`). After editing `data.real.json`, either rebuild the image, or bind-mount
 the live file for the reseed run:
 `docker compose run --rm -v "${PWD}/db/seed:/code/db/seed" backend python -m app.cli reseed`
 (run from the `backend/` dir; WORKDIR in the image is `/code`).
+
+**Batch 5 — Turkey notes:** highest sourcing difficulty — state universities (Bogazici,
+ITU, METU) charge credit-based / USD-indexed fees published only in PDFs or fee calculators,
+so all three tuitions are flagged `estimate` with reasoning and the official fee page as
+source (Bogazici ~USD 3,000/yr, ITU ~USD 3,000/yr, METU ~USD 1,500/yr). Living costs in
+**TRY** (volatile — Currency Agent adds an FX-risk note); tuition in **USD**. Residence-permit
+card fee and private insurance sourced to Goc Idaresi / SGK. Verifier: 5/5 pass.
 
 **Batch 4 — Hungary notes:** living costs and insurance in **HUF** (second FX currency,
 HUF→EUR conversion verified). Tuition all official and `sourced`: ELTE M.Sc. Computer
