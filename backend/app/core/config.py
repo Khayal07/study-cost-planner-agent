@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     default_report_currency: str = "EUR"
     source_stale_months: int = 18
 
+    # Which seed dataset to load: "real" (web-sourced, the default) or "mock"
+    # (the original curated demo dataset, kept as a dev/fallback). See app/data/seed.py.
+    seed_dataset: str = "real"
+
     @property
     def llm_enabled(self) -> bool:
         """LLM features are only active when an API key is configured."""
