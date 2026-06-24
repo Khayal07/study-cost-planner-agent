@@ -109,3 +109,26 @@ class PlanResult(BaseModel):
     recommendations: list[str] = Field(default_factory=list)
     generated_at: datetime
     disclaimer: str
+
+
+class ChatRequest(BaseModel):
+    message: str
+    report_currency: str = "EUR"
+
+
+class CitedFigure(BaseModel):
+    """A single grounded figure used in a chat answer."""
+
+    label: str
+    amount: float
+    currency: str
+    confidence: str
+    citation: Citation
+
+
+class ChatResponse(BaseModel):
+    mode: str                        # plan | answer | clarify
+    answer: str
+    extracted: dict = Field(default_factory=dict)
+    figures: list[CitedFigure] = Field(default_factory=list)
+    plan: PlanResult | None = None
