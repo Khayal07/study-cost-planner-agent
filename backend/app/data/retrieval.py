@@ -30,6 +30,11 @@ def find_candidates(session: Session, request: PlanningRequest, limit: int = 50)
         .join(City, University.city_id == City.id)
         .join(Country, University.country_id == Country.id)
     )
+    # Explicit program filter (chat detail/compare mode) short-circuits the others.
+    if request.program_ids:
+        stmt = stmt.where(Program.id.in_(request.program_ids)).limit(limit)
+        rows = session.execute(stmt).all()
+        return [CandidateRefs(program=p, university=u, city=c, country=co) for p, u, c, co in rows]
     if request.field:
         stmt = stmt.where(Program.field.ilike(f"%{request.field}%"))
     if request.degree_level:
