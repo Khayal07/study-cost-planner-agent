@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import httpx
 from sqlalchemy import select
@@ -86,6 +86,16 @@ class CurrencyService:
                     "FX fetch %s->%s failed (attempt %d/2): %s", base, quote, attempt, exc
                 )
 
+        # 2b) Secondary provider for currencies frankfurter/ECB doesn't cover (e.g. AZN).
+        # ECB pairs always succeed above, so this never changes their rates (parity).
+        try:
+            secondary = self._fetch_fallback(base, quote)
+            if secondary is not None:
+                return secondary
+        except Exception as exc:
+            self.session.rollback()
+            logger.warning("Secondary FX %s->%s failed: %s", base, quote, exc)
+
         # 3) Fall back to the most recent cached rate, flagged stale.
         if cached:
             logger.warning(
@@ -94,6 +104,40 @@ class CurrencyService:
             )
             return Conversion(float(cached.rate), cached.as_of_date, "stale")
         raise last_exc
+
+    def _fetch_fallback(self, base: str, quote: str) -> Conversion | None:
+        """Resolve a pair via the secondary provider (covers non-ECB currencies).
+
+        open.er-api.com returns every quote for a given base and needs no API key.
+        Returns None if the provider can't supply this pair (caller then falls back
+        to a stale cached rate or raises).
+        """
+        resp = httpx.get(
+            f"{settings.fallback_fx_base_url}/latest/{base}",
+            timeout=10.0,
+            follow_redirects=True,
+        )
+        resp.raise_for_status()
+        payload = resp.json()
+        if payload.get("result") != "success":
+            return None
+        raw = payload.get("rates", {}).get(quote)
+        if raw is None:
+            return None
+        rate = float(raw)
+
+        as_of = date.today()
+        ts = payload.get("time_last_update_unix")
+        if isinstance(ts, (int, float)):
+            try:
+                as_of = datetime.fromtimestamp(ts, tz=timezone.utc).date()
+            except (OverflowError, OSError, ValueError):
+                pass
+
+        self.session.add(FxRate(base=base, quote=quote, rate=rate, as_of_date=as_of))
+        self.session.commit()
+        logger.info("FX %s->%s resolved via fallback provider (%.4f)", base, quote, rate)
+        return Conversion(rate, as_of, "live")
 
     def convert(self, amount: float, base: str, quote: str) -> tuple[float, Conversion]:
         conv = self.get_rate(base, quote)

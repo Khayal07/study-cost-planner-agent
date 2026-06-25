@@ -84,6 +84,8 @@ export type PlanningRequest = {
   report_currency: string;
   lifestyle?: string;
   max_results?: number;
+  // The university the report should feature (selected card / discussed in chat).
+  focus_program_id?: number | null;
 };
 
 export type PlanResult = {
@@ -193,6 +195,8 @@ export function profileToPlanRequest(profile: ChatProfile): PlanningRequest {
     budget_currency: profile.budget_currency ?? profile.report_currency,
     report_currency: profile.report_currency,
     lifestyle: profile.lifestyle ?? "moderate",
+    // Feature the university the advisor is focused on (the one discussed/asked about).
+    focus_program_id: profile.focus_program_id,
   };
 }
 

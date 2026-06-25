@@ -1,5 +1,41 @@
 # Progress Log
 
+## 2026-06-26 — Fixes: any-currency reports, selected-university export, chat history
+
+Three user-reported issues, all fixed and verified end-to-end (pytest 16/16, live API +
+Playwright in the running stack).
+
+**1 — Report in any currency (e.g. AZN).** Picking AZN as the report/budget currency
+returned **HTTP 500**: frankfurter (ECB) has no AZN rate. Added a free, no-key fallback
+provider (`open.er-api.com`) in `CurrencyService`, used **only** when frankfurter can't
+resolve a pair — so every existing ECB conversion is byte-for-byte unchanged (parity), and
+AZN (and other non-ECB currencies) now work. `config.py` gains `fallback_fx_base_url`.
+Verified: `/plan` with `report_currency=AZN` → 200, full plan + breakdown + scenarios all
+in AZN; EUR plan totals unchanged.
+
+**2 — Export the *selected* university, not the first.** The form's "Export PDF" always
+featured the top-ranked option regardless of which card was selected. Added
+`focus_program_id` to `PlanningRequest`; the PDF now features that university (detailed
+breakdown, breakdown chart, and a "Focused on …" tag), falling back to rank 1 when unset.
+`PlanResults` passes the selected card's `program_id` and shows "PDF features <university>"
+in the header. Verified: selecting a different card changes the featured university and the
+exported PDF bytes.
+
+**3 — Chat history, New chat, and smarter per-university reports.** The chat had no history
+or way to start over. `ChatPanel` now keeps a **conversation rail** with a **New chat**
+button, multiple saved conversations (titled from the first message), switch + delete, all
+persisted in `localStorage` (`scp-chats-v1`) so they survive reloads. The advisor now sets
+`focus_program_id` whenever a university is referenced (by name or "the second one"), so
+"generate a report for METU" produces a report **for METU** — `_pdf_offer` names the
+university, and the chat Download button passes the focus through `profileToPlanRequest`.
+Verified: New chat / switch / delete / reload persistence, and the report wording + focus
+target the discussed university.
+
+No business logic, routes, schema meaning, or existing flows changed beyond these fixes;
+the deterministic pipeline and citation contract are untouched.
+
+---
+
 ## 2026-06-25 — Hardening audit, Phase D: container/runtime hardening
 
 **Status: ✅ Done & verified (all 3 containers healthy, non-root, parity + PDF).**

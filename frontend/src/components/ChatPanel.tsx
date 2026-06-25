@@ -12,6 +12,15 @@ import {
 import { CitationChip } from "./CitationChip";
 
 type Turn = { role: "user" | "assistant"; text: string; res?: ChatResponse };
+type Conversation = {
+  id: string;
+  title: string;
+  turns: Turn[];
+  profile: ChatProfile | null;
+  updatedAt: number;
+};
+
+const STORE_KEY = "scp-chats-v1";
 
 const SAMPLES = [
   "I want to study Computer Science in Germany, my budget is €12,000/year",
@@ -25,6 +34,16 @@ const SYMBOL: Record<string, string> = {
 };
 const money = (amount: number, currency: string) =>
   `${SYMBOL[currency] ?? currency + " "}${Math.round(amount).toLocaleString()}`;
+
+const newId = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+const emptyConversation = (): Conversation => ({
+  id: newId(), title: "New chat", turns: [], profile: null, updatedAt: Date.now(),
+});
+const titleFrom = (turns: Turn[]): string => {
+  const first = turns.find((t) => t.role === "user");
+  if (!first) return "New chat";
+  return first.text.length > 38 ? first.text.slice(0, 38) + "…" : first.text;
+};
 
 /** Render the advisor's lightweight markdown (**bold** + line breaks). */
 function RichText({ text }: { text: string }) {
@@ -140,34 +159,110 @@ function SourceLedger({ c }: { c: CandidatePlan }) {
 }
 
 export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
-  const [turns, setTurns] = useState<Turn[]>([]);
-  const [profile, setProfile] = useState<ChatProfile | null>(null);
+  const [convos, setConvos] = useState<Conversation[]>([]);
+  const [activeId, setActiveId] = useState("");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const loadedRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Load persisted conversations once (client only).
+  useEffect(() => {
+    let initial: Conversation[] = [];
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) initial = JSON.parse(raw);
+    } catch {
+      initial = [];
+    }
+    if (!Array.isArray(initial) || initial.length === 0) initial = [emptyConversation()];
+    setConvos(initial);
+    setActiveId(initial[0].id);
+    loadedRef.current = true;
+  }, []);
+
+  // Persist on change (after the initial load).
+  useEffect(() => {
+    if (!loadedRef.current) return;
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(convos));
+    } catch {
+      /* quota / private mode — non-fatal */
+    }
+  }, [convos]);
+
+  const active = convos.find((c) => c.id === activeId) ?? null;
+  const turns = active?.turns ?? [];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [turns, loading]);
 
+  function patchActive(fn: (c: Conversation) => Conversation) {
+    setConvos((prev) => prev.map((c) => (c.id === activeId ? fn(c) : c)));
+  }
+
   async function send(message: string) {
-    if (!message.trim() || loading) return;
-    setTurns((t) => [...t, { role: "user", text: message }]);
+    if (!message.trim() || loading || !active) return;
+    const sentProfile = active.profile;
+    const userTurn: Turn = { role: "user", text: message };
+    patchActive((c) => ({
+      ...c,
+      turns: [...c.turns, userTurn],
+      title: c.turns.length === 0 ? titleFrom([userTurn]) : c.title,
+      updatedAt: Date.now(),
+    }));
     setInput("");
     setLoading(true);
     try {
-      const res = await postChat(message, reportCurrency, profile);
-      setProfile(res.profile);
-      setTurns((t) => [...t, { role: "assistant", text: res.answer, res }]);
+      const res = await postChat(message, reportCurrency, sentProfile);
+      patchActive((c) => ({
+        ...c,
+        turns: [...c.turns, { role: "assistant", text: res.answer, res }],
+        profile: res.profile,
+        updatedAt: Date.now(),
+      }));
     } catch {
-      setTurns((t) => [
-        ...t,
-        { role: "assistant", text: "I couldn't reach the planning service. Please check the backend is running and try again." },
-      ]);
+      patchActive((c) => ({
+        ...c,
+        turns: [...c.turns, { role: "assistant", text: "I couldn't reach the planning service. Please check the backend is running and try again." }],
+        updatedAt: Date.now(),
+      }));
     } finally {
       setLoading(false);
+      inputRef.current?.focus();
     }
+  }
+
+  function newChat() {
+    if (active && active.turns.length === 0) {
+      inputRef.current?.focus();
+      return;
+    }
+    const c = emptyConversation();
+    setConvos((prev) => [c, ...prev]);
+    setActiveId(c.id);
+    setInput("");
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
+  function selectConvo(id: string) {
+    setActiveId(id);
+    setInput("");
+  }
+
+  function deleteConvo(id: string) {
+    const next = convos.filter((c) => c.id !== id);
+    if (next.length === 0) {
+      const c = emptyConversation();
+      setConvos([c]);
+      setActiveId(c.id);
+      return;
+    }
+    setConvos(next);
+    if (id === activeId) setActiveId(next[0].id);
   }
 
   async function downloadReport(p: ChatProfile) {
@@ -176,14 +271,17 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
     try {
       await exportPdf(profileToPlanRequest(p));
     } catch {
-      setTurns((t) => [
-        ...t,
-        { role: "assistant", text: "I couldn't generate the PDF just now. Please try again in a moment." },
-      ]);
+      patchActive((c) => ({
+        ...c,
+        turns: [...c.turns, { role: "assistant", text: "I couldn't generate the PDF just now. Please try again in a moment." }],
+        updatedAt: Date.now(),
+      }));
     } finally {
       setExporting(false);
     }
   }
+
+  const listConvos = [...convos].sort((a, b) => b.updatedAt - a.updatedAt);
 
   function renderAssistant(res: ChatResponse) {
     const showCards = res.mode === "discovery" || res.mode === "compare";
@@ -261,103 +359,150 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
   }
 
   return (
-    <div className="card flex h-[640px] flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b border-border bg-surface-2/60 px-5 py-3.5">
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-weak text-primary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
+    <div className="grid gap-4 lg:grid-cols-[15rem_1fr]">
+      {/* Conversation rail */}
+      <aside className="lg:sticky lg:top-24 lg:self-start">
+        <button
+          onClick={newChat}
+          className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" />
           </svg>
-        </span>
-        <div>
-          <h2 className="font-display text-sm font-semibold leading-none">Study Abroad Advisor</h2>
-          <p className="mt-1 text-xs text-muted">Remembers your plan · every figure is cited</p>
-        </div>
-      </div>
+          New chat
+        </button>
 
-      {/* Messages */}
-      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
-        {turns.length === 0 && (
-          <div className="animate-fade-in">
-            <p className="mb-3 text-sm text-muted">
-              Tell me your budget and where you&apos;d like to study — I&apos;ll find universities that
-              fit and explain every cost. Try:
-            </p>
-            <div className="flex flex-col gap-2">
-              {SAMPLES.map((s) => (
+        <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+          {listConvos.map((c) => {
+            const isActive = c.id === activeId;
+            return (
+              <div key={c.id} className="group relative shrink-0 lg:shrink">
                 <button
-                  key={s}
-                  onClick={() => send(s)}
-                  className="group flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-2/50 px-3.5 py-2.5 text-left text-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
+                  onClick={() => selectConvo(c.id)}
+                  className={`w-44 truncate rounded-xl border px-3 py-2 pr-7 text-left text-sm transition-colors lg:w-full ${
+                    isActive
+                      ? "border-primary/50 bg-primary-weak/50 text-foreground"
+                      : "border-border bg-surface-2/40 text-muted hover:border-primary/30 hover:text-foreground"
+                  }`}
+                  title={c.title}
                 >
-                  <span>{s}</span>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-muted transition-colors group-hover:text-primary" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  {c.title}
+                </button>
+                <button
+                  onClick={() => deleteConvo(c.id)}
+                  aria-label="Delete conversation"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted opacity-0 transition-opacity hover:bg-danger/10 hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M18 6 6 18M6 6l12 12" />
                   </svg>
                 </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {turns.map((t, i) => (
-          <div key={i} className={`flex animate-fade-up ${t.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={t.role === "user" ? "max-w-[85%]" : "w-full max-w-[92%]"}>
-              <div
-                className={`rounded-2xl px-4 py-2.5 ${
-                  t.role === "user"
-                    ? "rounded-br-md bg-primary text-primary-fg shadow-sm"
-                    : "rounded-bl-md border border-border bg-surface-2/70 text-foreground"
-                }`}
-              >
-                {t.role === "user" ? (
-                  <span className="whitespace-pre-wrap text-sm leading-relaxed">{t.text}</span>
-                ) : (
-                  <RichText text={t.text} />
-                )}
               </div>
-              {t.role === "assistant" && t.res && renderAssistant(t.res)}
-            </div>
-          </div>
-        ))}
+            );
+          })}
+        </div>
+      </aside>
 
-        {loading && (
-          <div className="flex justify-start">
-            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-border bg-surface-2/70 px-4 py-3">
-              {[0, 1, 2].map((d) => (
-                <span
-                  key={d}
-                  className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted"
-                  style={{ animationDelay: `${d * 0.15}s` }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Composer */}
-      <div className="border-t border-border bg-surface-2/40 p-3">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            send(input);
-          }}
-          className="flex gap-2"
-        >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="e.g. I want to study CS in Poland, budget €10,000"
-            className="input"
-            aria-label="Message"
-          />
-          <button type="submit" disabled={loading || !input.trim()} className="btn-primary px-3.5" aria-label="Send message">
+      {/* Chat card */}
+      <div className="card flex h-[640px] flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center gap-3 border-b border-border bg-surface-2/60 px-5 py-3.5">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-weak text-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z" />
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
             </svg>
-          </button>
-        </form>
+          </span>
+          <div>
+            <h2 className="font-display text-sm font-semibold leading-none">Study Abroad Advisor</h2>
+            <p className="mt-1 text-xs text-muted">Remembers your plan · every figure is cited</p>
+          </div>
+        </div>
+
+        {/* Messages */}
+        <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
+          {turns.length === 0 && (
+            <div className="animate-fade-in">
+              <p className="mb-3 text-sm text-muted">
+                Tell me your budget and where you&apos;d like to study — I&apos;ll find universities that
+                fit and explain every cost. Try:
+              </p>
+              <div className="flex flex-col gap-2">
+                {SAMPLES.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => send(s)}
+                    className="group flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-2/50 px-3.5 py-2.5 text-left text-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
+                  >
+                    <span>{s}</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-muted transition-colors group-hover:text-primary" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {turns.map((t, i) => (
+            <div key={i} className={`flex animate-fade-up ${t.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={t.role === "user" ? "max-w-[85%]" : "w-full max-w-[92%]"}>
+                <div
+                  className={`rounded-2xl px-4 py-2.5 ${
+                    t.role === "user"
+                      ? "rounded-br-md bg-primary text-primary-fg shadow-sm"
+                      : "rounded-bl-md border border-border bg-surface-2/70 text-foreground"
+                  }`}
+                >
+                  {t.role === "user" ? (
+                    <span className="whitespace-pre-wrap text-sm leading-relaxed">{t.text}</span>
+                  ) : (
+                    <RichText text={t.text} />
+                  )}
+                </div>
+                {t.role === "assistant" && t.res && renderAssistant(t.res)}
+              </div>
+            </div>
+          ))}
+
+          {loading && (
+            <div className="flex justify-start">
+              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-border bg-surface-2/70 px-4 py-3">
+                {[0, 1, 2].map((d) => (
+                  <span
+                    key={d}
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted"
+                    style={{ animationDelay: `${d * 0.15}s` }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Composer */}
+        <div className="border-t border-border bg-surface-2/40 p-3">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              send(input);
+            }}
+            className="flex gap-2"
+          >
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="e.g. I want to study CS in Poland, budget €10,000"
+              className="input"
+              aria-label="Message"
+            />
+            <button type="submit" disabled={loading || !input.trim()} className="btn-primary px-3.5" aria-label="Send message">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z" />
+              </svg>
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

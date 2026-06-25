@@ -104,6 +104,10 @@ class PlanningRequest(BaseModel):
     # Optional explicit program filter (used by chat "tell me about X" detail mode);
     # when set, retrieval restricts to exactly these programs.
     program_ids: list[int] | None = Field(default=None, max_length=50)
+    # Which university the report should feature (the one the user selected/asked about).
+    # Ignored by planning; used by the PDF to pick the detailed breakdown. Falls back to
+    # the top-ranked option when unset or not among the candidates.
+    focus_program_id: int | None = None
 
 
 class PlanResult(BaseModel):

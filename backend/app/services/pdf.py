@@ -38,8 +38,7 @@ def _comparison_chart(plan: PlanResult) -> str:
     return _fig_to_b64(fig)
 
 
-def _breakdown_chart(plan: PlanResult) -> str:
-    top = plan.candidates[0]
+def _breakdown_chart(top) -> str:
     parts = {
         "Tuition": top.annual_tuition,
         "Living": top.annual_living,
@@ -68,8 +67,16 @@ def render_plan_pdf(plan: PlanResult) -> bytes:
     from weasyprint import HTML
 
     cur = plan.report_currency
+    # Feature the university the user selected / asked about; otherwise the top-ranked one.
+    top = None
+    if plan.candidates:
+        focus = plan.request.focus_program_id
+        top = next((c for c in plan.candidates if c.program_id == focus), plan.candidates[0])
+    is_focused = bool(plan.request.focus_program_id) and top is not None \
+        and top.program_id == plan.request.focus_program_id
+
     cmp_chart = _comparison_chart(plan) if plan.candidates else ""
-    brk_chart = _breakdown_chart(plan) if plan.candidates else ""
+    brk_chart = _breakdown_chart(top) if top else ""
 
     # Ranked table
     rows = ""
@@ -84,8 +91,7 @@ def render_plan_pdf(plan: PlanResult) -> bytes:
             f"<td class='num'>{c.budget_gap:,.0f}</td><td>{fit}</td></tr>"
         )
 
-    # Top candidate line items with citations
-    top = plan.candidates[0] if plan.candidates else None
+    # Top candidate line items with citations (the featured university computed above)
     line_rows = ""
     if top:
         for ln in top.lines:
@@ -139,6 +145,9 @@ def render_plan_pdf(plan: PlanResult) -> bytes:
         Budget: {req.budget_amount:,.0f} {escape(req.budget_currency)}/year ·
         Report currency: {cur}
       </div>
+      {f'<div class="sub" style="margin-top:3px"><span class="pill">Focused on</span> '
+       f'{escape(top.university_name)} — {escape(top.city_name)}, {escape(top.country_name)}</div>'
+       if is_focused else ''}
 
       <h2>Option comparison</h2>
       <div class="charts">

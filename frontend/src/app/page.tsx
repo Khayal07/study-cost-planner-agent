@@ -92,7 +92,7 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="mx-auto max-w-3xl">
+          <div className="mx-auto max-w-5xl">
             <ChatPanel reportCurrency={reportCurrency} />
           </div>
         )}
