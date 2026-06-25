@@ -537,28 +537,54 @@ def _compare(session: Session, profile: ChatProfile) -> ChatResponse:
 
 
 def _pdf_offer(session: Session, profile: ChatProfile) -> ChatResponse:
+    focus_name = _focus_university_name(session, profile)
     if not profile.budget_amount:
+        target = f" for **{focus_name}**" if focus_name else ""
         return ChatResponse(
             mode="clarify",
-            answer="I'd love to put together a full report for you! 📄 To build it I just "
-            "need your **yearly budget (and currency)** and a **country** (or say \"any "
-            "country\"). Then I'll generate a PDF with ranked options, full cost "
-            "breakdowns, lifestyle scenarios and a source for every figure.",
+            answer=f"I'd love to put together a full report{target} for you! 📄 To build it I "
+            "just need your **yearly budget (and currency)**"
+            + ("" if (focus_name or profile.country) else " and a **country** (or say "
+               "\"any country\")")
+            + ". Then I'll generate a PDF with full cost breakdowns, lifestyle scenarios "
+            "and a cited source for every figure.",
             profile=profile, suggestions=_country_chips(),
         )
     report = (profile.report_currency or "EUR").upper()
-    where = profile.country or "all countries I cover"
-    answer = (
-        f"Your report is ready to generate! 📄 It covers Computer Science master's options "
-        f"in {where} for a budget of {_money(profile.budget_amount, profile.budget_currency or report)}/year, "
-        f"with ranked universities, full cost breakdowns, frugal/moderate/comfortable "
-        f"scenarios, the verification report and a cited source for every figure.\n\n"
-        f"**Click \"Download report\" below to save the PDF.**"
-    )
+    budget_txt = _money(profile.budget_amount, profile.budget_currency or report)
+    if focus_name:
+        answer = (
+            f"Your report for **{focus_name}** is ready to generate! 📄 It includes the full "
+            f"cost breakdown, frugal/moderate/comfortable scenarios, the budget check against "
+            f"your {budget_txt}/year, and a cited source for every figure.\n\n"
+            f"**Click \"Download report\" below to save the PDF.**"
+        )
+    else:
+        where = profile.country or "all countries I cover"
+        answer = (
+            f"Your report is ready to generate! 📄 It covers Computer Science master's options "
+            f"in {where} for a budget of {budget_txt}/year, with ranked universities, full "
+            f"cost breakdowns, frugal/moderate/comfortable scenarios, the verification report "
+            f"and a cited source for every figure.\n\n"
+            f"**Click \"Download report\" below to save the PDF.**"
+        )
     return ChatResponse(
         mode="answer", answer=answer, profile=profile, can_export=True,
         suggestions=[_suggestion("Compare top 3", "Compare the top 3 options")],
     )
+
+
+def _focus_university_name(session: Session, profile: ChatProfile) -> str | None:
+    """Name of the university the user is focused on (for report wording), or None."""
+    if not profile.focus_program_id:
+        return None
+    row = session.execute(
+        select(University.name)
+        .join(Program, Program.university_id == University.id)
+        .where(Program.id == profile.focus_program_id)
+        .limit(1)
+    ).first()
+    return row[0] if row else None
 
 
 def _no_coverage(profile: ChatProfile, named: str | None = None) -> ChatResponse:
@@ -670,38 +696,44 @@ def handle_chat(session: Session, message: str, report_currency: str,
     if _has_any(text, ANYWHERE_TOKENS):
         profile.country = None  # explicit cross-country search
 
-    # 2) Explicit actions on existing context.
+    # 2) Resolve any explicit university reference (by name, or "the second one") and
+    # remember it as the focus, so a follow-up report/detail targets the right one —
+    # e.g. "generate a report for METU" features METU, not the top-ranked option.
+    program_id = _resolve_university_program(session, text)
+    if program_id is None:
+        program_id = _resolve_ordinal_program(text, profile)
+    if program_id is not None:
+        profile.focus_program_id = program_id
+
+    # 3) Explicit actions on existing context (the focus above is already applied).
     if _has_any(text, PDF_TOKENS):
         return _pdf_offer(session, profile)
     if _has_any(text, COMPARE_TOKENS):
         return _compare(session, profile)
 
-    # 3) A specific university (by name or by "the second one").
-    program_id = _resolve_university_program(session, text)
-    if program_id is None:
-        program_id = _resolve_ordinal_program(text, profile)
+    # 4) A specific university (by name or by "the second one") -> detail.
     if program_id is not None:
         wants_afford = _has_any(text, AFFORD_TOKENS)
         return _detail(session, profile, program_id, affordability=wants_afford)
 
-    # 3b) A named institution we don't cover (e.g. "Harvard") -> honest no-coverage,
+    # 5) A named institution we don't cover (e.g. "Harvard") -> honest no-coverage,
     # but only when the user isn't already steering us to a country we do cover.
     if not profile.country:
         unknown = _unknown_institution(session, message)
         if unknown:
             return _no_coverage(profile, named=unknown)
 
-    # 4) Affordability phrased generally ("can I afford Germany with X") -> discovery.
+    # 6) Affordability phrased generally ("can I afford Germany with X") -> discovery.
     if _has_any(text, AFFORD_TOKENS) and (profile.budget_amount and profile.country):
         return _discovery(session, profile)
 
-    # 5) Narrow cost lookup ("visa in Germany") when not actively planning a budget.
+    # 7) Narrow cost lookup ("visa in Germany") when not actively planning a budget.
     if _detect_cost_type(text) and not slots.get("budget_amount"):
         grounded = _grounded_answer(session, message, text, profile)
         if grounded is not None:
             return grounded
 
-    # 6) Discovery vs. follow-up questions (progressive slot filling).
+    # 8) Discovery vs. follow-up questions (progressive slot filling).
     if profile.budget_amount and profile.country:
         return _discovery(session, profile)
     if profile.budget_amount and profile.country is None:
@@ -711,5 +743,5 @@ def handle_chat(session: Session, message: str, report_currency: str,
     if profile.country and not profile.budget_amount:
         return _ask_for_budget(session, profile)
 
-    # 7) Nothing actionable yet — warm onboarding.
+    # 9) Nothing actionable yet — warm onboarding.
     return _greeting(profile)

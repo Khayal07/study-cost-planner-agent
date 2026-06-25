@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     # --- Currency ---
     frankfurter_base_url: str = "https://api.frankfurter.dev/v1"
     fx_cache_hours: int = 24
+    # Fallback FX provider (free, no key) for currencies the ECB/frankfurter feed
+    # doesn't cover — e.g. AZN. Used only when frankfurter can't resolve a pair.
+    fallback_fx_base_url: str = "https://open.er-api.com/v6"
 
     # --- App behaviour ---
     default_report_currency: str = "EUR"

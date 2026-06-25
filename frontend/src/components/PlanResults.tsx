@@ -46,7 +46,12 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
   async function doExport() {
     setExporting(true);
     try {
-      await exportPdf({ ...request, max_results: 8 });
+      // Feature the university the user has selected, not just the top-ranked one.
+      await exportPdf({
+        ...request,
+        max_results: 8,
+        focus_program_id: plan.candidates[selected]?.program_id ?? null,
+      });
     } finally {
       setExporting(false);
     }
@@ -62,8 +67,13 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
             {plan.candidates.length} programs · totals in{" "}
             <span className="figure font-medium text-foreground">{cur}</span>
           </p>
+          <p className="mt-0.5 text-xs text-muted">
+            PDF features{" "}
+            <span className="font-medium text-foreground">{top.university_name}</span>
+            <span className="hidden sm:inline"> · select a card below to change</span>
+          </p>
         </div>
-        <button onClick={doExport} disabled={exporting} className="btn-ghost">
+        <button onClick={doExport} disabled={exporting} className="btn-ghost" title={`Export a report for ${top.university_name}`}>
           {exporting ? (
             <Spinner />
           ) : (
