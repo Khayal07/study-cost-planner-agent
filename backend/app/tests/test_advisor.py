@@ -44,6 +44,14 @@ def test_ordinal_resolution_without_candidates_is_none():
     assert _resolve_ordinal_program("the second one", ChatProfile()) is None
 
 
+def test_ordinal_does_not_falsely_match_it_inside_words():
+    # Regression: "university" contains "it" — naming a university must NOT be read as
+    # a back-reference to the first option (which used to return the wrong school).
+    p = _profile_with_candidates()
+    assert _resolve_ordinal_program("tell me about istanbul technical university", p) is None
+    assert _resolve_ordinal_program("what about this last semester", p) is None
+
+
 def test_extract_slots_degree_and_k_budget():
     slots = extract_slots("I want a master in CS, budget 15k USD", "EUR")
     assert slots["degree_level"] == "master"
