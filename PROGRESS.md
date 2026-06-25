@@ -1,5 +1,32 @@
 # Progress Log
 
+## 2026-06-25 — Hardening audit, Phase D: container/runtime hardening
+
+**Status: ✅ Done & verified (all 3 containers healthy, non-root, parity + PDF).**
+
+Phase D of the audit (High H4), the final phase of the agreed Critical+High scope. Runtime
+wrapper only — identical app behaviour and ports.
+
+- **Non-root containers** (`backend/Dockerfile`, `frontend/Dockerfile`): backend runs as a new
+  `appuser` (uid 1000); frontend runs as the base image's `node` user (uid 1000), with the
+  build artifacts `chown`ed. `MPLCONFIGDIR=/tmp/matplotlib` lets WeasyPrint/Matplotlib write
+  their font cache without a root-owned home.
+- **Healthchecks** (Dockerfiles + `docker-compose.yml`): interpreter-based probes (python for
+  backend `/health`, node for frontend `/`) — no need to install `curl` into the slim images.
+- **Resilience** (`docker-compose.yml`): `restart: unless-stopped` on db/backend/frontend;
+  backend/frontend healthchecks with generous `start_period`; uvicorn now runs `--workers 2`.
+
+**Verified:** `docker compose up --build` → **db / backend / frontend all healthy**;
+`id -u` = 1000 in both app containers; reference query (Poland · €15,000 · CS) returns the
+**same** totals (AGH 14,958 / Warsaw 15,501 / WUT 19,241); `/chat` discovery works; and
+`/export/pdf` returns HTTP 200 with a valid 17 KB `%PDF` — confirming PDF generation works under
+the non-root user.
+
+This completes the audit's confirmed scope (Critical + High; Phases A–D). Deferred by agreement:
+frontend a11y/UX polish, CI, Alembic, rate limiting, image-digest pinning, frontend multistage.
+
+---
+
 ## 2026-06-25 — Hardening audit, Phase C: logging + currency resilience
 
 **Status: ✅ Done & verified (16 tests + currency smoke + parity).**
