@@ -51,6 +51,31 @@ every figure carries a citation. Backend image rebuilt; `/chat` healthy on :8000
 **Next:** redesign `ChatPanel` (frontend) to round-trip the profile and render the ranked
 cards, detail, comparison, suggestion chips and PDF download.
 
+### Frontend — advisor UX (✅ done & verified live)
+
+Extended the existing "Verified Ledger" design language into chat rather than inventing a
+new one (teal = sourced / amber = estimate stays the brand; mono ledger figures; `.card`
+/`.chip`/`.btn-primary`). `ChatPanel` now:
+- **Round-trips the `ChatProfile`** with every turn → the UI remembers the whole
+  conversation (verified: "study in Poland, budget €15,000" in one message ranked 3
+  options; later "Explore"/"compare"/"Can I afford METU" all reused the remembered budget).
+- Renders **ranked discovery cards** (rank, university, city/country, total, a budget-fit
+  **match meter**, an affordability badge on the confidence axis, tuition + living, and an
+  **Explore** action) — joined from `candidates` + the per-option `match_score` in the
+  profile. Prose stays warm and lean; the cards carry the data (no duplicated text lists).
+- **University detail / affordability**: the warm answer plus an **annual source ledger**
+  — every cost line with a clickable `CitationChip` (sourced/estimate).
+- **Compare** reuses the card grid; **narrow lookups** render cited figures.
+- **One-tap suggestion chips** drive follow-ups; a **Download report** button exports the
+  PDF straight from the conversation (`profileToPlanRequest` → existing `/export/pdf`).
+  Redundant chips (per-option "Explore", "report" when the Download button shows) are
+  filtered out.
+
+**Verified:** `tsc` + `next build` clean; Docker images rebuilt; Playwright drove the live
+app — discovery → Explore → detail (cited ledger) → compare → affordability, in **dark
+mode** and at **390px mobile** (cards stack, names truncate, no overflow). `/chat` and
+`/export/pdf` both returned 200; the PDF downloaded from chat.
+
 ---
 
 ## 2026-06-24 — Frontend redesign: premium "Verified Ledger" UI + dark mode
