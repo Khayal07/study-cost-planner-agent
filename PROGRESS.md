@@ -1,5 +1,34 @@
 # Progress Log
 
+## 2026-06-25 — Hardening audit, Phase A: CORS lockdown + input validation
+
+**Status: ✅ Done & verified (16 tests + live parity/validation/CORS checks).**
+
+Part of a senior-level audit (full report in the plan file). Scope confirmed with the user:
+local/demo deployment, implement Critical + High only, all changes parity-safe. This is
+**Phase A** (the two Critical items); business logic, routes, schema meaning and user flows
+are unchanged.
+
+- **C1 — CORS** (`backend/app/main.py`, `core/config.py`): replaced `allow_origins=["*"]` +
+  `allow_credentials=True` (an unsafe combo) with an env-driven allowlist
+  (`cors_allow_origins`, default `http://localhost:3000`), `allow_credentials=False` (the app
+  uses no cookies/auth), and methods limited to `GET, POST`. Verified: requests from
+  `localhost:3000` get the ACAO header; `evil.com` does not.
+- **C2 — Input validation** (`backend/app/core/schemas.py`): added Pydantic `Field` bounds —
+  `ChatRequest.message` (1–4000 chars), `PlanningRequest.budget_amount` (`>0`, `≤1e9`),
+  `max_results` (1–20), `country/field/currency` lengths, `program_ids` (≤50), and the
+  round-tripped `ChatProfile` (`last_candidates ≤20`, bounded fields). Bounds sit far above
+  any real value, so legit requests are unaffected; abuse now returns a clean 422.
+  - Deliberate detail: `budget_amount` `le` is `1e9` so the chat's internal "no budget yet"
+    discovery sentinel (1e9) still validates — verified the no-budget country path still works.
+
+**Verified:** `pytest` 16/16; reference query (Poland · €15,000 · CS) returns the **same**
+ranked options/totals as before (AGH 14,958 / Warsaw 15,501 / WUT 19,241); oversized
+`max_results`, negative budget, and a 5,000-char message all return 422; no-budget discovery
+and CORS origin rules behave correctly. Backend image rebuilt.
+
+---
+
 ## 2026-06-25 — Chat → intelligent Study Abroad Advisor (backend brain)
 
 **Status: ✅ Backend done & verified (16 unit tests + live multi-turn HTTP test).**

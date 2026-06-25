@@ -91,17 +91,19 @@ class VerificationReport(BaseModel):
 
 
 class PlanningRequest(BaseModel):
-    country: str | None = None
-    field: str | None = "Computer Science"
-    degree_level: str | None = None
-    budget_amount: float
-    budget_currency: str = "EUR"
-    report_currency: str = "EUR"
+    country: str | None = Field(default=None, max_length=120)
+    field: str | None = Field(default="Computer Science", max_length=120)
+    degree_level: str | None = Field(default=None, max_length=40)
+    # le is generous: it must also admit the chat's internal "no budget yet" sentinel
+    # (1e9) used by discovery before the student gives a budget.
+    budget_amount: float = Field(gt=0, le=1_000_000_000)
+    budget_currency: str = Field(default="EUR", max_length=3)
+    report_currency: str = Field(default="EUR", max_length=3)
     lifestyle: str = "moderate"      # frugal | moderate | comfortable
-    max_results: int = 5
+    max_results: int = Field(default=5, ge=1, le=20)
     # Optional explicit program filter (used by chat "tell me about X" detail mode);
     # when set, retrieval restricts to exactly these programs.
-    program_ids: list[int] | None = None
+    program_ids: list[int] | None = Field(default=None, max_length=50)
 
 
 class PlanResult(BaseModel):
@@ -139,18 +141,18 @@ class ChatProfile(BaseModel):
     so the system has no server-side session state but still 'remembers'.
     """
 
-    country: str | None = None
-    field: str | None = None
-    degree_level: str | None = None
-    budget_amount: float | None = None
-    budget_currency: str | None = None
-    lifestyle: str | None = None
-    report_currency: str = "EUR"
+    country: str | None = Field(default=None, max_length=120)
+    field: str | None = Field(default=None, max_length=120)
+    degree_level: str | None = Field(default=None, max_length=40)
+    budget_amount: float | None = Field(default=None, gt=0, le=1_000_000_000)
+    budget_currency: str | None = Field(default=None, max_length=3)
+    lifestyle: str | None = Field(default=None, max_length=20)
+    report_currency: str = Field(default="EUR", max_length=3)
 
-    # Conversation working set
-    last_candidates: list[ChatCandidateRef] = Field(default_factory=list)
+    # Conversation working set (bounded — this object is round-tripped from the client)
+    last_candidates: list[ChatCandidateRef] = Field(default_factory=list, max_length=20)
     focus_program_id: int | None = None   # university most recently discussed
-    turn: int = 0
+    turn: int = Field(default=0, ge=0, le=100_000)
 
 
 class ChatSuggestion(BaseModel):
@@ -161,8 +163,8 @@ class ChatSuggestion(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    message: str
-    report_currency: str = "EUR"
+    message: str = Field(min_length=1, max_length=4000)
+    report_currency: str = Field(default="EUR", max_length=3)
     profile: ChatProfile | None = None
 
 

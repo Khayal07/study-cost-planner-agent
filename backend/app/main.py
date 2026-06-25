@@ -17,11 +17,14 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# Restrict to the configured frontend origin(s). The app uses no cookies/auth, so
+# credentials are off; only the two verbs the API actually serves are allowed.
+_cors_origins = [o.strip() for o in settings.cors_allow_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # course/demo scope; tighten for production
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=_cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
