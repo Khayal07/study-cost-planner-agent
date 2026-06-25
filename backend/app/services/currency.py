@@ -6,6 +6,7 @@ fall back to the most recent cached rate and flag it as stale.
 """
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import date, timedelta
 
@@ -15,6 +16,8 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.data.models import FxRate
+
+logger = logging.getLogger(__name__)
 
 # Currencies with high short-term volatility — surfaced as FX risk notes.
 VOLATILE_CURRENCIES = {"TRY", "ARS", "EGP", "NGN", "RUB", "VES"}
@@ -58,26 +61,39 @@ class CurrencyService:
         if cached and cached.as_of_date >= date.today() - timedelta(days=1):
             return Conversion(float(cached.rate), cached.as_of_date, "cache")
 
-        # 2) Fetch live from frankfurter
-        try:
-            resp = httpx.get(
-                f"{settings.frankfurter_base_url}/latest",
-                params={"from": base, "to": quote},
-                timeout=10.0,
-                follow_redirects=True,
+        # 2) Fetch live from frankfurter, with one retry for transient failures.
+        last_exc: Exception | None = None
+        for attempt in (1, 2):
+            try:
+                resp = httpx.get(
+                    f"{settings.frankfurter_base_url}/latest",
+                    params={"from": base, "to": quote},
+                    timeout=10.0,
+                    follow_redirects=True,
+                )
+                resp.raise_for_status()
+                payload = resp.json()
+                rate = float(payload["rates"][quote])
+                as_of = date.fromisoformat(payload["date"])
+                self.session.add(FxRate(base=base, quote=quote, rate=rate, as_of_date=as_of))
+                self.session.commit()
+                return Conversion(rate, as_of, "live")
+            except Exception as exc:  # network, HTTP, or payload-parse error
+                # Clear any half-applied insert so the session stays usable.
+                self.session.rollback()
+                last_exc = exc
+                logger.warning(
+                    "FX fetch %s->%s failed (attempt %d/2): %s", base, quote, attempt, exc
+                )
+
+        # 3) Fall back to the most recent cached rate, flagged stale.
+        if cached:
+            logger.warning(
+                "FX %s->%s falling back to stale cache from %s: %s",
+                base, quote, cached.as_of_date, last_exc,
             )
-            resp.raise_for_status()
-            payload = resp.json()
-            rate = float(payload["rates"][quote])
-            as_of = date.fromisoformat(payload["date"])
-            self.session.add(FxRate(base=base, quote=quote, rate=rate, as_of_date=as_of))
-            self.session.commit()
-            return Conversion(rate, as_of, "live")
-        except Exception:
-            # 3) Fall back to the most recent cached rate, flagged stale
-            if cached:
-                return Conversion(float(cached.rate), cached.as_of_date, "stale")
-            raise
+            return Conversion(float(cached.rate), cached.as_of_date, "stale")
+        raise last_exc
 
     def convert(self, amount: float, base: str, quote: str) -> tuple[float, Conversion]:
         conv = self.get_rate(base, quote)

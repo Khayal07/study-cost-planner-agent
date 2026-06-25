@@ -10,9 +10,12 @@ Design notes for free models:
 from __future__ import annotations
 
 import json
+import logging
 import re
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 _JSON_RE = re.compile(r"\{.*\}", re.DOTALL)
 
@@ -59,8 +62,10 @@ class LLMClient:
                 content = resp.choices[0].message.content
                 if content:
                     return content.strip()
-            except Exception:
-                continue  # try fallback model
+            except Exception as exc:
+                # Free models can rate-limit or hang; log and try the fallback model.
+                logger.warning("LLM call failed for model %s: %s", model, exc)
+                continue
         return None
 
     def complete_text(self, system: str, user: str, max_tokens: int = 220) -> str | None:

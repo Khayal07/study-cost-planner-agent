@@ -1,5 +1,28 @@
 # Progress Log
 
+## 2026-06-25 — Hardening audit, Phase C: logging + currency resilience
+
+**Status: ✅ Done & verified (16 tests + currency smoke + parity).**
+
+Phase C of the audit (High H3 + Medium M2). Observability and resilience only — no behaviour
+change on the happy path.
+
+- **H3 — Logging** (`backend/app/core/llm_client.py`, `services/currency.py`): added module
+  loggers. The previously-silent `except Exception: continue` in the LLM client now logs a
+  warning per failed model before falling back; the currency fallback logs a warning when it
+  serves a stale rate. Same outcomes, now visible in logs.
+- **M2 — Currency resilience** (`services/currency.py`): the live frankfurter fetch now retries
+  once on transient failure and calls `session.rollback()` on error so a half-applied insert
+  can't poison the request session. The broad fallback `except` is **kept on purpose** — a
+  parse error should still fall back to the cached rate rather than crash a plan.
+
+**Verified:** `pytest` 16/16; a direct currency smoke shows PLN→EUR converts correctly and the
+per-instance memo holds a single `('PLN','EUR')` key after two conversions; reference query
+(Poland · €15,000 · CS) returns the **same** totals (AGH 14,958 / Warsaw 15,501 / WUT 19,241).
+Backend image rebuilt.
+
+---
+
 ## 2026-06-25 — Hardening audit, Phase B: DB indexes + FX memoization
 
 **Status: ✅ Done & verified (16 tests + indexes confirmed on live DB + parity).**
