@@ -1,5 +1,30 @@
 # Progress Log
 
+## 2026-06-25 — Hardening audit, Phase B: DB indexes + FX memoization
+
+**Status: ✅ Done & verified (16 tests + indexes confirmed on live DB + parity).**
+
+Phase B of the audit (High-tier performance). Read-path only — identical results, fewer
+queries / faster plans. No business logic or schema-meaning change.
+
+- **H1 — Indexes** (`backend/app/data/models.py`, `cli.py`): composite indexes
+  `ix_cost_items_scope (scope_level, scope_id, cost_type)` and
+  `ix_fx_rates_lookup (base, quote, as_of_date)` declared via `__table_args__`. Because
+  `create_all()` skips already-existing tables, `migrate()` now also runs idempotent
+  `CREATE INDEX IF NOT EXISTS` (matching names) so the **existing `pgdata` volume** gets them
+  on the next boot — confirmed both indexes now exist in the running DB.
+- **H2 — FX memoization** (`backend/app/services/currency.py`): `CurrencyService` gained a
+  per-instance `(base, quote) → Conversion` memo wrapping `get_rate`. The Currency Agent
+  converts every cost line per candidate (e.g. a Poland plan = ~15 PLN→EUR conversions all
+  hitting the same cached rate); the same pair is now resolved once per request instead of
+  re-querying `fx_rates` each line. Identical numbers, fewer SELECTs.
+
+**Verified:** `pytest` 16/16; `migrate` log shows "perf indexes ensured"; `pg_indexes` lists
+both indexes; reference query (Poland · €15,000 · CS) returns the **same** totals (AGH 14,958 /
+Warsaw 15,501 / WUT 19,241). Backend image rebuilt.
+
+---
+
 ## 2026-06-25 — Hardening audit, Phase A: CORS lockdown + input validation
 
 **Status: ✅ Done & verified (16 tests + live parity/validation/CORS checks).**
