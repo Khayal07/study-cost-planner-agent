@@ -24,9 +24,14 @@ class LLMClient:
         if self.enabled:
             from openai import OpenAI
 
+            # Fail fast: free models can hang or rate-limit. A short timeout with no
+            # SDK-internal retries means a slow model degrades to our deterministic
+            # path instead of blocking the chat request.
             self._client = OpenAI(
                 api_key=settings.openrouter_api_key,
                 base_url=settings.openrouter_base_url,
+                timeout=settings.llm_timeout_seconds,
+                max_retries=0,
             )
 
     @property

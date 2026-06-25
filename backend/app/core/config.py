@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     openrouter_fallback_model: str = "deepseek/deepseek-chat-v3-0324:free"
     openrouter_app_url: str = "http://localhost:3000"
     openrouter_app_title: str = "Study Cost Planning Agent"
+    # Hard cap per LLM call so a slow/free model can't block a chat turn; on timeout
+    # callers fall back to their deterministic path.
+    llm_timeout_seconds: float = 12.0
 
     # --- Database ---
     database_url: str = "postgresql+psycopg://studyplanner:studyplanner@localhost:5432/studyplanner"

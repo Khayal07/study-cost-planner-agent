@@ -99,6 +99,9 @@ class PlanningRequest(BaseModel):
     report_currency: str = "EUR"
     lifestyle: str = "moderate"      # frugal | moderate | comfortable
     max_results: int = 5
+    # Optional explicit program filter (used by chat "tell me about X" detail mode);
+    # when set, retrieval restricts to exactly these programs.
+    program_ids: list[int] | None = None
 
 
 class PlanResult(BaseModel):
@@ -111,9 +114,56 @@ class PlanResult(BaseModel):
     disclaimer: str
 
 
+class ChatCandidateRef(BaseModel):
+    """A compact pointer to one option from the last discovery list.
+
+    Round-tripped in the profile so the advisor can resolve references like
+    "the second one" / "compare the top 3" without re-running anything.
+    """
+
+    rank: int
+    program_id: int
+    program_name: str
+    university_name: str
+    city_name: str
+    country_name: str
+    total_annual: float
+    affordable: bool | None = None
+    match_score: int | None = None
+
+
+class ChatProfile(BaseModel):
+    """The advisor's memory of the conversation, round-tripped each turn.
+
+    The frontend stores this opaque object and sends it back with every message,
+    so the system has no server-side session state but still 'remembers'.
+    """
+
+    country: str | None = None
+    field: str | None = None
+    degree_level: str | None = None
+    budget_amount: float | None = None
+    budget_currency: str | None = None
+    lifestyle: str | None = None
+    report_currency: str = "EUR"
+
+    # Conversation working set
+    last_candidates: list[ChatCandidateRef] = Field(default_factory=list)
+    focus_program_id: int | None = None   # university most recently discussed
+    turn: int = 0
+
+
+class ChatSuggestion(BaseModel):
+    """A one-tap follow-up the user can send next (rendered as a chip)."""
+
+    label: str
+    message: str
+
+
 class ChatRequest(BaseModel):
     message: str
     report_currency: str = "EUR"
+    profile: ChatProfile | None = None
 
 
 class CitedFigure(BaseModel):
@@ -127,8 +177,14 @@ class CitedFigure(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    mode: str                        # plan | answer | clarify
+    # greeting | discovery | detail | compare | affordability | answer | clarify
+    mode: str
     answer: str
+    profile: ChatProfile = Field(default_factory=ChatProfile)
+    suggestions: list[ChatSuggestion] = Field(default_factory=list)
     extracted: dict = Field(default_factory=dict)
     figures: list[CitedFigure] = Field(default_factory=list)
-    plan: PlanResult | None = None
+    candidates: list[CandidatePlan] = Field(default_factory=list)  # discovery / compare
+    detail: CandidatePlan | None = None                            # single-university detail
+    plan: PlanResult | None = None                                 # full plan (when built)
+    can_export: bool = False        # frontend may offer a PDF download from the profile

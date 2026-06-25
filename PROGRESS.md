@@ -1,5 +1,58 @@
 # Progress Log
 
+## 2026-06-25 — Chat → intelligent Study Abroad Advisor (backend brain)
+
+**Status: ✅ Backend done & verified (16 unit tests + live multi-turn HTTP test).**
+
+Why: the old chat was stateless and lazy — it either dumped a full plan or returned a
+single canned clarify line, and forgot everything between turns. Rebuilt it into a
+friendly, *stateful* consultant that still obeys the project rule "LLM for language,
+Python for math" (every number stays grounded + cited; nothing invented).
+
+**Diagnosis (root causes in the old code):**
+- `ChatRequest`/`postChat` carried only the current message → zero memory.
+- `handle_chat` was a rigid 3-way branch (full plan / keyword lookup / one-line clarify)
+  with no progressive questioning and a dead-end clarify string.
+- No university-detail, compare, affordability, or PDF intents; no way to reference a
+  result ("the second one"); intent extraction was CS-only, no degree level.
+
+**What changed (backend only this step):**
+- **Session memory without server state:** new `ChatProfile` (budget, country, field,
+  degree, lifestyle, last results, focus university) is returned with every answer and
+  sent back by the client next turn — the system "remembers" while staying stateless.
+  `schemas.py`: `ChatProfile`, `ChatCandidateRef`, `ChatSuggestion`; `ChatResponse` now
+  carries `profile`, `suggestions`, `candidates`, `detail`, `can_export`.
+- **Advisor state machine** (`services/chat.py`, full rewrite): merges newly-mentioned
+  slots into memory → classifies intent → responds warmly and *always ends with a
+  next-step question* + one-tap suggestion chips. Modes: `greeting`, `clarify`
+  (progressive follow-ups), `discovery` (ranked list with a 0–100 budget-fit **match
+  score** + affordability), `detail` (single university, full grounded breakdown +
+  scenarios), `compare` (side-by-side top 3), `affordability` ("can I afford X with €Y"),
+  `answer` (narrow cost lookup like "visa in Germany"). Reuses the existing deterministic
+  `Orchestrator` pipeline + citations untouched.
+- **Reference resolution:** university names/aliases (TUM, RWTH, METU, UvA, AGH, ELTE…)
+  and unambiguous cities (Berlin→Humboldt, Krakow→AGH…) → a program; ordinals ("the
+  second one", "the cheapest") → the right option from the remembered list.
+- **Honest no-fabrication fallback:** a named school we don't cover (Harvard, Oxford,
+  University of Toronto) gets an explicit "I don't have grounded data for X" answer that
+  redirects to the 5 covered countries — never invented numbers. Detail responses state
+  plainly that scholarships/admission/English/ranking data aren't in the dataset.
+- **Intent extraction** (`agents/intent.py`): added degree-level detection and `15k`
+  budgets; new reusable `extract_slots`; `extract_intent` kept backward-compatible.
+- **Retrieval:** optional `program_ids` filter on `PlanningRequest` for single-university
+  detail/compare (backward compatible).
+- **Reliability:** the OpenRouter client now has a 12s timeout + no SDK retries, so a slow
+  free model degrades to the deterministic path instead of blocking a chat turn.
+
+**Verified:** `pytest` 16/16 pass; live multi-turn HTTP run (greeting → budget → country
+→ discovery → detail → compare → PDF) confirms memory round-trips across requests and
+every figure carries a citation. Backend image rebuilt; `/chat` healthy on :8000.
+
+**Next:** redesign `ChatPanel` (frontend) to round-trip the profile and render the ranked
+cards, detail, comparison, suggestion chips and PDF download.
+
+---
+
 ## 2026-06-24 — Frontend redesign: premium "Verified Ledger" UI + dark mode
 
 **Status: ✅ Done & verified (build + Playwright in light/dark/mobile).**
