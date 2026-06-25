@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Date, DateTime, ForeignKey, Index, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.data.db import Base
@@ -91,6 +91,11 @@ class Program(Base):
 
 class CostItem(Base):
     __tablename__ = "cost_items"
+    # Composite index for the polymorphic scope lookups done on every plan/chat query
+    # (repository, retrieval, grounded chat answers all filter on these three columns).
+    __table_args__ = (
+        Index("ix_cost_items_scope", "scope_level", "scope_id", "cost_type"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     cost_type: Mapped[str] = mapped_column(String(20))
@@ -121,6 +126,10 @@ class KnowledgeChunk(Base):
 
 class FxRate(Base):
     __tablename__ = "fx_rates"
+    # Index for the cache lookup in CurrencyService.get_rate (base, quote, newest first).
+    __table_args__ = (
+        Index("ix_fx_rates_lookup", "base", "quote", "as_of_date"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     base: Mapped[str] = mapped_column(String(3))

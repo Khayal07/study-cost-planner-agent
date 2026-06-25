@@ -20,7 +20,19 @@ def migrate() -> None:
     with engine.begin() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
     Base.metadata.create_all(bind=engine)
-    print("[cli] migrate: schema ready (pgvector enabled)")
+    # create_all() skips already-existing tables (and therefore their newly-declared
+    # indexes), so ensure the performance indexes exist on a pre-existing database too.
+    # Idempotent; names match the __table_args__ declarations in models.py.
+    with engine.begin() as conn:
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS ix_cost_items_scope "
+            "ON cost_items (scope_level, scope_id, cost_type)"
+        ))
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS ix_fx_rates_lookup "
+            "ON fx_rates (base, quote, as_of_date)"
+        ))
+    print("[cli] migrate: schema ready (pgvector enabled, perf indexes ensured)")
 
 
 def seed() -> None:

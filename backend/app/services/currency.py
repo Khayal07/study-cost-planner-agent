@@ -30,9 +30,21 @@ class Conversion:
 class CurrencyService:
     def __init__(self, session: Session):
         self.session = session
+        # Per-request memo: rates don't change within a single plan, so each
+        # (base, quote) pair is resolved once instead of re-querying the cache table
+        # for every cost line (the Currency Agent converts many lines per candidate).
+        self._memo: dict[tuple[str, str], Conversion] = {}
 
     def get_rate(self, base: str, quote: str) -> Conversion:
         base, quote = base.upper(), quote.upper()
+        cached = self._memo.get((base, quote))
+        if cached is not None:
+            return cached
+        conv = self._resolve_rate(base, quote)
+        self._memo[(base, quote)] = conv
+        return conv
+
+    def _resolve_rate(self, base: str, quote: str) -> Conversion:
         if base == quote:
             return Conversion(1.0, date.today(), "identity")
 
