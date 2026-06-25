@@ -208,24 +208,68 @@ def _store_candidates(session: Session, profile: ChatProfile,
 
 # --- reference resolution --------------------------------------------------------
 
+# Words dropped when matching a university by its full name — they're shared by many
+# institutions and carry no distinguishing signal.
+_NAME_STOPWORDS = {"university", "of", "the", "for", "and", "a", "an", "college", "institute"}
+_UNI_TOKEN_INDEX: list[tuple[int, frozenset[str]]] | None = None
+
+
+def _uni_token_index(session: Session) -> list[tuple[int, frozenset[str]]]:
+    """Cache of (program_id, significant name tokens) for every university."""
+    global _UNI_TOKEN_INDEX
+    if _UNI_TOKEN_INDEX is None:
+        rows = session.execute(
+            select(Program.id, University.name).join(
+                University, Program.university_id == University.id
+            )
+        ).all()
+        index: list[tuple[int, frozenset[str]]] = []
+        for pid, name in rows:
+            toks = frozenset(
+                t for t in re.split(r"[^a-z0-9]+", fold(name))
+                if t and t not in _NAME_STOPWORDS
+            )
+            if toks:
+                index.append((pid, toks))
+        _UNI_TOKEN_INDEX = index
+    return _UNI_TOKEN_INDEX
+
+
+def _resolve_named_university(session: Session, text: str) -> int | None:
+    """Match a full/partial official university name typed by the user.
+
+    A university matches when ALL its significant name tokens appear in the message,
+    so "istanbul technical university" -> {istanbul, technical} resolves to ITU, not
+    METU. The most specific match (most tokens) wins, which disambiguates e.g. the two
+    Warsaw universities.
+    """
+    words = {t for t in re.split(r"[^a-z0-9]+", text) if t}
+    best: tuple[int, int] | None = None  # (token_count, program_id)
+    for pid, toks in _uni_token_index(session):
+        if toks <= words and (best is None or len(toks) > best[0]):
+            best = (len(toks), pid)
+    return best[1] if best else None
+
+
 def _resolve_university_program(session: Session, text: str) -> int | None:
-    """Map a free-text university mention to a program_id (CS master) via aliases."""
-    matched_substr: str | None = None
+    """Map a free-text university mention to a program_id (CS master).
+
+    1) precise abbreviations / unambiguous city aliases (ITU, METU, TUM, Berlin…);
+    2) otherwise the full/partial official name via significant-token matching.
+    """
     for alias, substr in UNIVERSITY_ALIASES.items():
         # Word-boundary match for short aliases to avoid accidental hits.
         pattern = rf"\b{re.escape(alias)}\b" if len(alias) <= 4 else re.escape(alias)
         if re.search(pattern, text):
-            matched_substr = substr
-            break
-    if not matched_substr:
-        return None
-    row = session.execute(
-        select(Program.id)
-        .join(University, Program.university_id == University.id)
-        .where(University.name.ilike(f"%{matched_substr}%"))
-        .limit(1)
-    ).first()
-    return row[0] if row else None
+            row = session.execute(
+                select(Program.id)
+                .join(University, Program.university_id == University.id)
+                .where(University.name.ilike(f"%{substr}%"))
+                .limit(1)
+            ).first()
+            if row:
+                return row[0]
+    return _resolve_named_university(session, text)
 
 
 _KNOWN_PLACES: set[str] | None = None
@@ -269,11 +313,15 @@ def _unknown_institution(session: Session, message: str) -> str | None:
 def _resolve_ordinal_program(text: str, profile: ChatProfile) -> int | None:
     if not profile.last_candidates:
         return None
-    if _has_any(text, ["cheapest", "best", "top option", "first option", "that one", "it"]):
+    # Superlative / pronoun back-references to the previous list. Word-bounded so
+    # short words like "it" don't match inside others (e.g. "univers-it-y").
+    if re.search(r"\b(cheapest|best|top one|top option|first one|that one|this one)\b", text):
         return profile.last_candidates[0].program_id
-    if "last" in text:
+    if re.search(r"\b(last one|the last)\b", text):
         return profile.last_candidates[-1].program_id
     for rank, tokens in ORDINAL_TOKENS.items():
+        # These tokens ("second", "2nd", "#2", "option 2") are distinctive enough to
+        # match as substrings without the "it"-in-"university" class of false hit.
         if _has_any(text, tokens):
             for ref in profile.last_candidates:
                 if ref.rank == rank:

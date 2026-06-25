@@ -1,5 +1,28 @@
 # Progress Log
 
+## 2026-06-26 — Fix: chat resolved the wrong university when named in full
+
+Bug: with a prior Turkey discovery, "Tell me about **Istanbul** Technical University"
+returned **Middle East** Technical University. Two causes, both fixed in
+`app/services/chat.py`:
+
+1. **Full names weren't matched.** `_resolve_university_program` only knew abbreviations/
+   city aliases (ITU, METU, Berlin…), not the real university names — so the full name
+   fell through. Added `_resolve_named_university`: a university matches when **all** its
+   significant name tokens appear in the message ({istanbul, technical} → ITU), with the
+   most-specific match winning. This also correctly disambiguates the two Warsaw
+   universities ("University of Warsaw" vs "Warsaw University of Technology").
+2. **"it" matched inside "univers-it-y".** `_resolve_ordinal_program` used a substring
+   check, so "it" (and "best"/"last") triggered a false back-reference to the first option
+   (the cheapest — METU). Pronoun/superlative back-references are now word-bounded; the
+   distinctive ordinals ("second", "#2", "option 2") still match.
+
+Verified: `pytest` 17/17 (incl. a regression test that naming a university isn't read as
+"it"); a live two-turn run resolves Istanbul Technical → ITU, Middle East Technical → METU,
+"the second one" → rank 2, and both Warsaw universities correctly.
+
+---
+
 ## 2026-06-26 — Fixes: any-currency reports, selected-university export, chat history
 
 Three user-reported issues, all fixed and verified end-to-end (pytest 16/16, live API +
