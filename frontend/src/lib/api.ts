@@ -104,12 +104,53 @@ export type CitedFigure = {
   citation: Citation;
 };
 
+export type ChatCandidateRef = {
+  rank: number;
+  program_id: number;
+  program_name: string;
+  university_name: string;
+  city_name: string;
+  country_name: string;
+  total_annual: number;
+  affordable: boolean | null;
+  match_score: number | null;
+};
+
+export type ChatProfile = {
+  country: string | null;
+  field: string | null;
+  degree_level: string | null;
+  budget_amount: number | null;
+  budget_currency: string | null;
+  lifestyle: string | null;
+  report_currency: string;
+  last_candidates: ChatCandidateRef[];
+  focus_program_id: number | null;
+  turn: number;
+};
+
+export type ChatSuggestion = { label: string; message: string };
+
+export type ChatMode =
+  | "greeting"
+  | "discovery"
+  | "detail"
+  | "compare"
+  | "affordability"
+  | "answer"
+  | "clarify";
+
 export type ChatResponse = {
-  mode: "plan" | "answer" | "clarify";
+  mode: ChatMode;
   answer: string;
+  profile: ChatProfile;
+  suggestions: ChatSuggestion[];
   extracted: Record<string, unknown>;
   figures: CitedFigure[];
+  candidates: CandidatePlan[];
+  detail: CandidatePlan | null;
   plan: PlanResult | null;
+  can_export: boolean;
 };
 
 export async function getHealth(): Promise<HealthResponse> {
@@ -128,14 +169,31 @@ export async function postPlan(req: PlanningRequest): Promise<PlanResult> {
   return res.json();
 }
 
-export async function postChat(message: string, report_currency: string): Promise<ChatResponse> {
+export async function postChat(
+  message: string,
+  report_currency: string,
+  profile: ChatProfile | null,
+): Promise<ChatResponse> {
   const res = await fetch(`${API_BASE_URL}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, report_currency }),
+    body: JSON.stringify({ message, report_currency, profile }),
   });
   if (!res.ok) throw new Error(`Chat failed: ${res.status}`);
   return res.json();
+}
+
+// Build the PlanningRequest the advisor's profile implies, for the PDF export.
+export function profileToPlanRequest(profile: ChatProfile): PlanningRequest {
+  return {
+    country: profile.country,
+    field: profile.field ?? "Computer Science",
+    degree_level: profile.degree_level,
+    budget_amount: profile.budget_amount ?? 0,
+    budget_currency: profile.budget_currency ?? profile.report_currency,
+    report_currency: profile.report_currency,
+    lifestyle: profile.lifestyle ?? "moderate",
+  };
 }
 
 // Download the PDF: POST JSON, receive a blob, trigger a browser download.

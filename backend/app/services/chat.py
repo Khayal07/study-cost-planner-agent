@@ -283,19 +283,6 @@ def _resolve_ordinal_program(text: str, profile: ChatProfile) -> int | None:
 
 # --- response builders -----------------------------------------------------------
 
-def _candidate_summary_line(c: CandidatePlan, report: str,
-                            score: int | None = None) -> str:
-    fit = ""
-    if c.affordable is True:
-        fit = " — fits your budget ✅"
-    elif c.affordable is False:
-        gap = abs(c.budget_gap or 0)
-        fit = f" — over by ~{_money(gap, report)} ⚠️"
-    score_txt = f" · match {score}/100" if score is not None else ""
-    return (f"{c.rank}. {c.university_name} ({c.city_name}, {c.country_name}) — "
-            f"~{_money(c.total_annual, report)}/yr{fit}{score_txt}")
-
-
 def _greeting(profile: ChatProfile) -> ChatResponse:
     answer = (
         "Hi! 👋 I'm your study-abroad cost advisor. I can help you find universities "
@@ -387,17 +374,11 @@ def _discovery(session: Session, profile: ChatProfile) -> ChatResponse:
     if not plan.candidates:
         return _no_coverage(profile)
 
-    refs = _store_candidates(session, profile, plan.candidates)
+    _store_candidates(session, profile, plan.candidates)
     budget_r = _budget_in_report(session, profile)
     budget_txt = _money(budget_r or 0, report)
     affordable = [c for c in plan.candidates if c.affordable]
     scope = f" in {profile.country}" if profile.country else " across all countries I cover"
-
-    score_by_id = {r.program_id: r.match_score for r in refs}
-    lines = "\n".join(
-        _candidate_summary_line(c, report, score_by_id.get(c.program_id))
-        for c in plan.candidates
-    )
 
     if affordable:
         best = affordable[0]
@@ -418,10 +399,9 @@ def _discovery(session: Session, profile: ChatProfile) -> ChatResponse:
         )
 
     answer = (
-        f"{headline}\n\nHere's the full ranked list (every figure is source-cited):\n\n"
-        f"{lines}\n\n"
-        f"Which one would you like to explore in detail — or shall I compare the top 3 "
-        f"side by side?"
+        f"{headline}\n\nEach option below shows a match score and a source for every "
+        f"figure. Which would you like to explore in detail — or shall I compare the "
+        f"top 3 side by side?"
     )
 
     chips: list[ChatSuggestion] = []
@@ -528,20 +508,7 @@ def _compare(session: Session, profile: ChatProfile) -> ChatResponse:
     plan = _run_pipeline(session, profile, program_ids=ids, max_results=len(ids))
     report = plan.report_currency
     cands = sorted(plan.candidates, key=lambda c: c.total_annual)
-
-    blocks = []
-    for c in cands:
-        tuition = (_money(c.annual_tuition, report) + "/yr") if c.annual_tuition > 0 else "free"
-        afford = ""
-        if c.affordable is True:
-            afford = " · fits budget ✅"
-        elif c.affordable is False:
-            afford = f" · over by {_money(abs(c.budget_gap or 0), report)} ⚠️"
-        blocks.append(
-            f"**{c.university_name}** ({c.city_name}, {c.country_name})\n"
-            f"   Total: ~{_money(c.total_annual, report)}/yr{afford}\n"
-            f"   Tuition: {tuition} · Living: ~{_money(c.monthly_living, report)}/mo"
-        )
+    _store_candidates(session, profile, cands)
 
     cheapest = cands[0]
     lowest_living = min(cands, key=lambda c: c.monthly_living)
@@ -555,8 +522,8 @@ def _compare(session: Session, profile: ChatProfile) -> ChatResponse:
     insight += "."
 
     answer = (
-        "Here's a side-by-side comparison of your top options — every figure is "
-        "source-cited:\n\n" + "\n\n".join(blocks) + "\n\n" + insight +
+        "Here's how your top options compare — full breakdowns and a source for every "
+        "figure are in the cards below.\n\n" + insight +
         "\n\nWant me to open one in detail, or generate a PDF report with all of them?"
     )
 
