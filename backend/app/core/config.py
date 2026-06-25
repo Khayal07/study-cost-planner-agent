@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     default_report_currency: str = "EUR"
     source_stale_months: int = 18
 
+    # Comma-separated browser origins allowed to call the API (CORS). The app uses no
+    # cookies/auth, so credentials are disabled; override for other frontends/deploys.
+    cors_allow_origins: str = "http://localhost:3000"
+
     # Which seed dataset to load: "real" (web-sourced, the default) or "mock"
     # (the original curated demo dataset, kept as a dev/fallback). See app/data/seed.py.
     seed_dataset: str = "real"
