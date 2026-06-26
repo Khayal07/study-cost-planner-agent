@@ -1,5 +1,35 @@
 # Progress Log
 
+## 2026-06-27 — Phases F–H: scholarships surfaced end-to-end + accounts
+
+Completed the scholarship ecosystem on top of the Phase E foundation.
+
+**Phase F — chat & PDF.** Intent extracts nationality/GPA/language (regex + LLM
+gap-fill, with LLM field/degree constrained to canonical values; Data Science folded
+into the CS-only dataset). Chat gained `scholarships` and `value` (net-cost ranking)
+modes; detail now surfaces real awards. PDF report gained a scholarships + net-cost
+section for the featured university.
+
+**Phase G — frontend.** `api.ts` mirrors the scholarship types + eligibility inputs.
+BudgetForm has an optional nationality/GPA/language section. New `ScholarshipPanel`
+(eligibility chips, values, deadlines, cited sources, apply links, net summary).
+PlanResults adds a Cost / Value-after-aid toggle, net badges and the panel. ChatPanel
+renders the new modes.
+
+**Phase H — accounts + application tracker.** JWT + bcrypt auth (`core/security.py`);
+new `User`/`Application`/`ApplicationDocument` models; `/auth` (register/login/me/
+profile). `POST /applications/plan` (public) returns a deadline-then-value prioritized
+action plan with a "this week" list + document union. Authenticated CRUD tracks
+applications and toggles per-document checklist items. Frontend: auth context + modal,
+navbar account button, Applications tab with the tracker, "+ Track" on awards.
+
+Verified: `pytest` 35/35, `tsc` clean. Browser E2E (Playwright): Poland·€15k·CS with
+Azerbaijan/3.6/IELTS 7.0 → AGH/Warsaw/WUT with net badges + value toggle; scholarship
+panel shows EMJM & Banach eligible; verification 6/6 incl. scholarships check.
+Register → Track → Applications tab persists both apps with document checklists;
+toggling a document survives a full page reload (token + DB persistence). Committed and
+pushed per step.
+
 ## 2026-06-27 — Phase E: Scholarship ecosystem foundation (backend)
 
 Evolves the planner from a cost calculator into a value planner. New grounded scholarship
