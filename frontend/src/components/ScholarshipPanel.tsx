@@ -25,7 +25,17 @@ function money(amount: number, currency: string): string {
   }
 }
 
-function ScholarshipRow({ m, currency }: { m: ScholarshipMatch; currency: string }) {
+function ScholarshipRow({
+  m,
+  currency,
+  onTrack,
+  tracked,
+}: {
+  m: ScholarshipMatch;
+  currency: string;
+  onTrack?: (m: ScholarshipMatch) => void;
+  tracked?: boolean;
+}) {
   const e = ELIGIBILITY[m.eligibility] ?? ELIGIBILITY.unknown;
   const muted = m.eligibility === "ineligible";
   const deadlineSoon = m.days_until_deadline != null && m.days_until_deadline >= 0 && m.days_until_deadline <= 30;
@@ -71,22 +81,41 @@ function ScholarshipRow({ m, currency }: { m: ScholarshipMatch; currency: string
 
       <div className="mt-2 flex items-center justify-between gap-2">
         <CitationChip citation={m.citation} />
-        {m.application_url && (
-          <a
-            href={m.application_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost px-2.5 py-1 text-xs"
-          >
-            Apply ↗
-          </a>
-        )}
+        <div className="flex items-center gap-2">
+          {onTrack && m.eligibility !== "ineligible" && (
+            <button
+              onClick={() => onTrack(m)}
+              disabled={tracked}
+              className={tracked ? "chip bg-primary-weak text-primary" : "btn-ghost px-2.5 py-1 text-xs"}
+            >
+              {tracked ? "Tracked ✓" : "+ Track"}
+            </button>
+          )}
+          {m.application_url && (
+            <a
+              href={m.application_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost px-2.5 py-1 text-xs"
+            >
+              Apply ↗
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-export function ScholarshipPanel({ candidate }: { candidate: CandidatePlan }) {
+export function ScholarshipPanel({
+  candidate,
+  onTrack,
+  trackedIds,
+}: {
+  candidate: CandidatePlan;
+  onTrack?: (m: ScholarshipMatch, candidate: CandidatePlan) => void;
+  trackedIds?: Set<number>;
+}) {
   const currency = candidate.report_currency;
   const all = [...candidate.scholarships].sort(
     (a, b) => ORDER.indexOf(a.eligibility) - ORDER.indexOf(b.eligibility),
@@ -138,7 +167,13 @@ export function ScholarshipPanel({ candidate }: { candidate: CandidatePlan }) {
 
       <div className="mt-3 space-y-2">
         {all.map((m) => (
-          <ScholarshipRow key={m.scholarship_id} m={m} currency={currency} />
+          <ScholarshipRow
+            key={m.scholarship_id}
+            m={m}
+            currency={currency}
+            onTrack={onTrack ? (mm) => onTrack(mm, candidate) : undefined}
+            tracked={trackedIds?.has(m.scholarship_id)}
+          />
         ))}
       </div>
 

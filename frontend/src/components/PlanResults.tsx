@@ -11,8 +11,15 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import { exportPdf, type CandidatePlan, type PlanResult } from "@/lib/api";
+import {
+  createApplication,
+  exportPdf,
+  type CandidatePlan,
+  type PlanResult,
+  type ScholarshipMatch,
+} from "@/lib/api";
 import { useChartColors } from "@/lib/theme";
+import { useAuth } from "@/lib/auth";
 import { CitationChip } from "./CitationChip";
 import { ScholarshipPanel } from "./ScholarshipPanel";
 
@@ -30,7 +37,34 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
   const [selected, setSelected] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [rankBy, setRankBy] = useState<"cost" | "value">("cost");
+  const [tracked, setTracked] = useState<Set<number>>(new Set());
   const colors = useChartColors();
+  const { isAuthed, openAuth } = useAuth();
+
+  async function trackScholarship(m: ScholarshipMatch, candidate: CandidatePlan) {
+    if (!isAuthed) {
+      openAuth();
+      return;
+    }
+    try {
+      await createApplication({
+        scholarship_id: m.scholarship_id,
+        program_id: candidate.program_id,
+        scholarship_name: m.name,
+        provider: m.provider,
+        university_name: candidate.university_name,
+        coverage_type: m.coverage_type,
+        estimated_value: m.estimated_value,
+        currency: candidate.report_currency,
+        deadline: m.deadline,
+        application_url: m.application_url,
+        documents: m.documents_required,
+      });
+      setTracked((prev) => new Set(prev).add(m.scholarship_id));
+    } catch {
+      /* surfaced via disabled state staying off; user can retry */
+    }
+  }
 
   if (plan.candidates.length === 0) {
     return (
@@ -216,7 +250,7 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
       <Breakdown c={top} cur={cur} />
 
       {/* Scholarships for the selected university */}
-      <ScholarshipPanel candidate={top} />
+      <ScholarshipPanel candidate={top} onTrack={trackScholarship} trackedIds={tracked} />
 
       {/* Verification */}
       {plan.verification && <Verification report={plan.verification} />}

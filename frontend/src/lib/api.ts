@@ -196,6 +196,180 @@ export type ChatResponse = {
   can_export: boolean;
 };
 
+// --- Accounts + application tracker (Phase H) ---
+
+export type UserOut = {
+  id: number;
+  email: string;
+  nationality: string | null;
+  gpa: number | null;
+  language_test: string | null;
+};
+
+export type AuthResponse = { token: string; user: UserOut };
+
+export type ApplicationTask = {
+  scholarship_id: number;
+  name: string;
+  provider: string;
+  university_name: string;
+  program_id: number;
+  coverage_type: string;
+  estimated_value: number;
+  currency: string;
+  eligibility: string;
+  deadline: string | null;
+  days_until_deadline: number | null;
+  priority: number;
+  priority_reason: string;
+  application_url: string | null;
+  documents: string[];
+};
+
+export type ApplicationPlan = {
+  tasks: ApplicationTask[];
+  this_week: string[];
+  all_documents: string[];
+  generated_at: string;
+};
+
+export type DocumentOut = { id: number; name: string; done: boolean };
+
+export type ApplicationOut = {
+  id: number;
+  scholarship_id: number | null;
+  program_id: number | null;
+  scholarship_name: string;
+  provider: string | null;
+  university_name: string | null;
+  coverage_type: string | null;
+  estimated_value: number | null;
+  currency: string | null;
+  deadline: string | null;
+  days_until_deadline: number | null;
+  application_url: string | null;
+  status: string;
+  notes: string | null;
+  documents: DocumentOut[];
+};
+
+export type ApplicationCreate = {
+  scholarship_id?: number | null;
+  program_id?: number | null;
+  scholarship_name: string;
+  provider?: string | null;
+  university_name?: string | null;
+  coverage_type?: string | null;
+  estimated_value?: number | null;
+  currency?: string | null;
+  deadline?: string | null;
+  application_url?: string | null;
+  documents?: string[];
+};
+
+const TOKEN_KEY = "scp-token";
+
+export function getToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(TOKEN_KEY);
+}
+export function setToken(token: string | null) {
+  if (typeof window === "undefined") return;
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  else localStorage.removeItem(TOKEN_KEY);
+}
+
+async function authed(path: string, init: RequestInit = {}): Promise<Response> {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    ...(init.headers as Record<string, string> | undefined),
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return fetch(`${API_BASE_URL}${path}`, { ...init, headers });
+}
+
+export async function register(email: string, password: string): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) throw new Error((await res.json().catch(() => null))?.detail ?? "Registration failed");
+  return res.json();
+}
+
+export async function login(email: string, password: string): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) throw new Error((await res.json().catch(() => null))?.detail ?? "Login failed");
+  return res.json();
+}
+
+export async function getMe(): Promise<UserOut> {
+  const res = await authed("/auth/me");
+  if (!res.ok) throw new Error("Not authenticated");
+  return res.json();
+}
+
+export async function planApplications(req: PlanningRequest): Promise<ApplicationPlan> {
+  const res = await fetch(`${API_BASE_URL}/applications/plan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) throw new Error(`Planner failed: ${res.status}`);
+  return res.json();
+}
+
+export async function listApplications(): Promise<ApplicationOut[]> {
+  const res = await authed("/applications");
+  if (!res.ok) throw new Error("Failed to load applications");
+  return res.json();
+}
+
+export async function createApplication(body: ApplicationCreate): Promise<ApplicationOut> {
+  const res = await authed("/applications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error("Failed to save application");
+  return res.json();
+}
+
+export async function updateApplication(
+  id: number,
+  body: { status?: string; notes?: string },
+): Promise<ApplicationOut> {
+  const res = await authed(`/applications/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error("Failed to update application");
+  return res.json();
+}
+
+export async function toggleDocument(
+  appId: number,
+  docId: number,
+  done: boolean,
+): Promise<ApplicationOut> {
+  const res = await authed(`/applications/${appId}/documents/${docId}?done=${done}`, {
+    method: "PATCH",
+  });
+  if (!res.ok) throw new Error("Failed to update document");
+  return res.json();
+}
+
+export async function deleteApplication(id: number): Promise<void> {
+  const res = await authed(`/applications/${id}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) throw new Error("Failed to delete application");
+}
+
 export async function getHealth(): Promise<HealthResponse> {
   const res = await fetch(`${API_BASE_URL}/health`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Backend unhealthy: ${res.status}`);
