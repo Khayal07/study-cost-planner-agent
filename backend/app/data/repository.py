@@ -4,8 +4,10 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from sqlalchemy import or_, tuple_
+
 from app.core.schemas import Citation
-from app.data.models import CostItem, Source
+from app.data.models import CostItem, Scholarship, Source
 
 
 def to_citation(source: Source) -> Citation:
@@ -47,4 +49,18 @@ def country_items(session: Session, country_id: int, cost_type: str | None = Non
     )
     if cost_type:
         stmt = stmt.where(CostItem.cost_type == cost_type)
+    return list(session.scalars(stmt))
+
+
+def scholarships_for_candidate(
+    session: Session, *, program_id: int, university_id: int, country_id: int
+) -> list[Scholarship]:
+    """All awards applicable to one candidate: global, or scoped to its
+    country / university / program (mirrors the polymorphic CostItem lookup)."""
+    scoped = tuple_(Scholarship.scope_level, Scholarship.scope_id).in_(
+        [("country", country_id), ("university", university_id), ("program", program_id)]
+    )
+    stmt = select(Scholarship).where(
+        or_(Scholarship.scope_level == "global", scoped)
+    )
     return list(session.scalars(stmt))

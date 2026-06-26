@@ -291,5 +291,64 @@
          ]}
       ]
     }
+  ],
+  "scholarships": [
+    {
+      "name": "Erasmus Mundus Joint Masters (EMJM) Scholarship",
+      "provider": "European Commission",
+      "scope_level": "global",
+      "coverage_type": "living_grant",
+      "amount": 1400, "currency": "EUR", "period": "monthly",
+      "degree_levels": "master",
+      "renewable": true,
+      "deadline": "2027-01-15",
+      "application_url": "https://www.eacea.ec.europa.eu/scholarships/emjm-catalogue_en",
+      "documents_required": ["Bachelor degree/transcript", "CV", "Motivation letter", "Proof of English"],
+      "confidence": "sourced", "valid_as_of": "2025-01-01",
+      "source": {"url": "https://erasmus-plus.ec.europa.eu/opportunities/individuals/students/erasmus-mundus-joint-masters-scholarships", "title": "Erasmus Mundus Joint Masters scholarships", "publisher": "European Commission", "source_type": "government", "accessed_date": "2026-01-01"}
+    },
+    {
+      "name": "DAAD Study Scholarship — Master Studies",
+      "provider": "DAAD",
+      "scope_level": "country", "scope_name": "Germany",
+      "coverage_type": "stipend",
+      "amount": 934, "currency": "EUR", "period": "monthly",
+      "degree_levels": "master,phd",
+      "min_gpa": 3.0,
+      "deadline": "2026-10-31",
+      "application_url": "https://www2.daad.de/deutschland/stipendium/datenbank/en/",
+      "documents_required": ["Transcript", "CV", "Motivation letter"],
+      "confidence": "sourced", "valid_as_of": "2025-01-01",
+      "source": {"url": "https://www.daad.de/en/study-and-research-in-germany/scholarships/", "title": "Scholarships — Study and research in Germany", "publisher": "DAAD", "source_type": "government", "accessed_date": "2026-01-01"}
+    },
+    {
+      "name": "Stipendium Hungaricum",
+      "provider": "Tempus Public Foundation (Hungary)",
+      "scope_level": "country", "scope_name": "Hungary",
+      "coverage_type": "full_tuition",
+      "amount": null, "currency": "HUF", "period": "annual",
+      "degree_levels": "bachelor,master,phd",
+      "renewable": true,
+      "deadline": "2027-01-15",
+      "application_url": "https://stipendiumhungaricum.hu/apply/",
+      "documents_required": ["Transcript", "Motivation letter", "Passport"],
+      "confidence": "sourced", "valid_as_of": "2025-01-01",
+      "source": {"url": "https://stipendiumhungaricum.hu/", "title": "Stipendium Hungaricum Scholarship Programme", "publisher": "Tempus Public Foundation", "source_type": "government", "accessed_date": "2026-01-01"}
+    },
+    {
+      "name": "Turkiye Burslari (Turkiye Scholarships)",
+      "provider": "Presidency for Turks Abroad (YTB)",
+      "scope_level": "country", "scope_name": "Turkey",
+      "coverage_type": "full_tuition",
+      "amount": null, "currency": "TRY", "period": "annual",
+      "degree_levels": "bachelor,master,phd",
+      "nationality_rule": "!Turkey",
+      "renewable": true,
+      "deadline": "2027-02-20",
+      "application_url": "https://turkiyeburslari.gov.tr/en",
+      "documents_required": ["Transcript", "Diploma", "Passport"],
+      "confidence": "sourced", "valid_as_of": "2025-01-01",
+      "source": {"url": "https://turkiyeburslari.gov.tr/en", "title": "Turkiye Scholarships", "publisher": "YTB", "source_type": "government", "accessed_date": "2026-01-01"}
+    }
   ]
 }
