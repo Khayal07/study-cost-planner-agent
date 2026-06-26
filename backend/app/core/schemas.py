@@ -227,7 +227,8 @@ class CitedFigure(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    # greeting | discovery | detail | compare | affordability | answer | clarify
+    # greeting | discovery | detail | compare | affordability | scholarships | value
+    # | answer | clarify
     mode: str
     answer: str
     profile: ChatProfile = Field(default_factory=ChatProfile)
