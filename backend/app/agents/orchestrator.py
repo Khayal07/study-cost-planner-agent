@@ -13,8 +13,11 @@ from sqlalchemy.orm import Session
 from app.agents.budget_matching import BudgetMatchingAgent
 from app.agents.context import CandidateBuild, PlanningContext
 from app.agents.currency import CurrencyAgent
+from app.agents.eligibility import EligibilityAgent
 from app.agents.living_cost import LivingCostAgent
+from app.agents.net_value import NetValueAgent
 from app.agents.scenario import ScenarioAgent
+from app.agents.scholarship import ScholarshipAgent
 from app.agents.tuition import TuitionAgent
 from app.agents.verifier import VerifierAgent
 from app.core.config import settings
@@ -37,6 +40,10 @@ class Orchestrator:
             CurrencyAgent(),
             ScenarioAgent(),
             BudgetMatchingAgent(),
+            # Scholarship layer: gather awards -> score eligibility -> net cost / value rank.
+            ScholarshipAgent(),
+            EligibilityAgent(),
+            NetValueAgent(),
             VerifierAgent(),
         ]
 
