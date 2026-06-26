@@ -41,6 +41,31 @@ export type ScenarioBreakdown = {
   narrative: string | null;
 };
 
+export type ScholarshipEligibility =
+  | "eligible"
+  | "likely"
+  | "unknown"
+  | "ineligible";
+
+export type ScholarshipMatch = {
+  scholarship_id: number;
+  name: string;
+  provider: string;
+  coverage_type: string;
+  amount: number | null;
+  coverage_pct: number | null;
+  currency: string;
+  estimated_value: number;
+  eligibility: ScholarshipEligibility;
+  reasons: string[];
+  deadline: string | null;
+  days_until_deadline: number | null;
+  renewable: boolean;
+  application_url: string | null;
+  documents_required: string[];
+  citation: Citation;
+};
+
 export type CandidatePlan = {
   program_id: number;
   program_name: string;
@@ -66,6 +91,13 @@ export type CandidatePlan = {
   budget_gap: number | null;
   affordable: boolean | null;
   rank: number | null;
+  // Scholarship layer
+  scholarships: ScholarshipMatch[];
+  total_scholarship_value: number;
+  net_total_annual: number | null;
+  net_budget_gap: number | null;
+  net_affordable: boolean | null;
+  value_rank: number | null;
 };
 
 export type VerificationCheck = { name: string; status: string; detail: string };
@@ -86,6 +118,10 @@ export type PlanningRequest = {
   max_results?: number;
   // The university the report should feature (selected card / discussed in chat).
   focus_program_id?: number | null;
+  // Optional eligibility inputs for scholarship matching.
+  nationality?: string | null;
+  gpa?: number | null;
+  language_test?: string | null;
 };
 
 export type PlanResult = {
@@ -126,6 +162,9 @@ export type ChatProfile = {
   budget_currency: string | null;
   lifestyle: string | null;
   report_currency: string;
+  nationality: string | null;
+  gpa: number | null;
+  language_test: string | null;
   last_candidates: ChatCandidateRef[];
   focus_program_id: number | null;
   turn: number;
@@ -139,6 +178,8 @@ export type ChatMode =
   | "detail"
   | "compare"
   | "affordability"
+  | "scholarships"
+  | "value"
   | "answer"
   | "clarify";
 
@@ -197,6 +238,9 @@ export function profileToPlanRequest(profile: ChatProfile): PlanningRequest {
     lifestyle: profile.lifestyle ?? "moderate",
     // Feature the university the advisor is focused on (the one discussed/asked about).
     focus_program_id: profile.focus_program_id,
+    nationality: profile.nationality,
+    gpa: profile.gpa,
+    language_test: profile.language_test,
   };
 }
 

@@ -24,9 +24,13 @@ export function BudgetForm({
   const [budgetCurrency, setBudgetCurrency] = useState("EUR");
   const [reportCurrency, setReportCurrency] = useState("EUR");
   const [lifestyle, setLifestyle] = useState("moderate");
+  const [nationality, setNationality] = useState("");
+  const [gpa, setGpa] = useState("");
+  const [languageTest, setLanguageTest] = useState("");
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    const gpaNum = gpa.trim() ? Number(gpa) : null;
     onSubmit({
       country: country || null,
       field,
@@ -35,6 +39,9 @@ export function BudgetForm({
       report_currency: reportCurrency,
       lifestyle,
       max_results: 8,
+      nationality: nationality.trim() || null,
+      gpa: gpaNum != null && !Number.isNaN(gpaNum) ? gpaNum : null,
+      language_test: languageTest.trim() || null,
     });
   }
 
@@ -122,6 +129,54 @@ export function BudgetForm({
             ))}
           </div>
         </div>
+
+        {/* Optional scholarship-eligibility inputs */}
+        <details className="rounded-xl border border-border bg-surface-2/50">
+          <summary className="cursor-pointer select-none px-4 py-2.5 text-xs font-medium text-muted hover:text-foreground">
+            🎓 Scholarship eligibility <span className="text-muted">(optional)</span>
+          </summary>
+          <div className="space-y-4 border-t border-border p-4">
+            <div>
+              <label htmlFor="nationality" className="field-label">Nationality</label>
+              <input
+                id="nationality"
+                className="input"
+                placeholder="e.g. Azerbaijan"
+                value={nationality}
+                onChange={(e) => setNationality(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="gpa" className="field-label">GPA (0–4)</label>
+                <input
+                  id="gpa"
+                  type="number"
+                  className="input figure"
+                  placeholder="3.5"
+                  min={0}
+                  max={4}
+                  step={0.1}
+                  value={gpa}
+                  onChange={(e) => setGpa(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="languageTest" className="field-label">Language test</label>
+                <input
+                  id="languageTest"
+                  className="input"
+                  placeholder="IELTS 7.0"
+                  value={languageTest}
+                  onChange={(e) => setLanguageTest(e.target.value)}
+                />
+              </div>
+            </div>
+            <p className="text-[11px] text-muted">
+              Used only to estimate which scholarships you may qualify for. Leave blank to skip.
+            </p>
+          </div>
+        </details>
 
         <button type="submit" disabled={loading} className="btn-primary mt-1 w-full">
           {loading ? (

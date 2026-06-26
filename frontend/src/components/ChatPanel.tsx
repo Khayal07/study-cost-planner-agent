@@ -10,6 +10,7 @@ import {
   type CandidatePlan,
 } from "@/lib/api";
 import { CitationChip } from "./CitationChip";
+import { ScholarshipPanel } from "./ScholarshipPanel";
 
 type Turn = { role: "user" | "assistant"; text: string; res?: ChatResponse };
 type Conversation = {
@@ -92,16 +93,18 @@ function MatchMeter({ score, affordable }: { score: number | null; affordable: b
   );
 }
 
-function CandidateCard({ c, score, onExplore }: {
-  c: CandidatePlan; score: number | null; onExplore: () => void;
+function CandidateCard({ c, score, valueMode = false, onExplore }: {
+  c: CandidatePlan; score: number | null; valueMode?: boolean; onExplore: () => void;
 }) {
   const cur = c.report_currency;
+  const hasAid = c.total_scholarship_value > 0;
+  const rankNum = valueMode ? c.value_rank ?? c.rank : c.rank;
   return (
     <div className="group rounded-xl border border-border bg-surface p-3.5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2.5">
           <span className="figure mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-surface-2 text-[11px] font-semibold text-muted">
-            {c.rank}
+            {rankNum}
           </span>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-foreground">{c.university_name}</p>
@@ -109,10 +112,27 @@ function CandidateCard({ c, score, onExplore }: {
           </div>
         </div>
         <div className="shrink-0 text-right">
-          <p className="figure text-sm font-semibold text-foreground">{money(c.total_annual, cur)}</p>
-          <p className="text-[11px] text-muted">/year</p>
+          {valueMode && hasAid && c.net_total_annual != null ? (
+            <>
+              <p className="figure text-sm font-semibold text-primary">{money(c.net_total_annual, cur)}</p>
+              <p className="text-[11px] text-muted line-through">{money(c.total_annual, cur)}/yr</p>
+            </>
+          ) : (
+            <>
+              <p className="figure text-sm font-semibold text-foreground">{money(c.total_annual, cur)}</p>
+              <p className="text-[11px] text-muted">/year</p>
+            </>
+          )}
         </div>
       </div>
+
+      {hasAid && (
+        <div className="mt-2">
+          <span className="chip border-accent/30 bg-accent-weak text-accent">
+            🎓 aid ~{money(c.total_scholarship_value, cur)}/yr
+          </span>
+        </div>
+      )}
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
@@ -284,7 +304,13 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
   const listConvos = [...convos].sort((a, b) => b.updatedAt - a.updatedAt);
 
   function renderAssistant(res: ChatResponse) {
-    const showCards = res.mode === "discovery" || res.mode === "compare";
+    const valueMode = res.mode === "value";
+    // Card list for discovery/compare/value, and for a multi-option scholarships answer.
+    const showCards =
+      res.mode === "discovery" ||
+      res.mode === "compare" ||
+      res.mode === "value" ||
+      (res.mode === "scholarships" && !res.detail && res.candidates.length > 0);
     const scoreById = new Map(res.profile.last_candidates.map((r) => [r.program_id, r.match_score]));
     // Drop chips already covered by richer affordances: per-option "Explore" (cards)
     // and any "report" chip when the real Download button is shown.
@@ -303,7 +329,14 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
                 key={c.program_id}
                 c={c}
                 score={scoreById.get(c.program_id) ?? null}
-                onExplore={() => send(`Tell me about ${c.university_name}`)}
+                valueMode={valueMode}
+                onExplore={() =>
+                  send(
+                    valueMode || res.mode === "scholarships"
+                      ? `Scholarships at ${c.university_name}`
+                      : `Tell me about ${c.university_name}`,
+                  )
+                }
               />
             ))}
           </div>
@@ -312,6 +345,14 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
         {(res.mode === "detail" || res.mode === "affordability") && res.detail && (
           <SourceLedger c={res.detail} />
         )}
+
+        {/* Scholarships for a single focused university */}
+        {res.detail && res.detail.scholarships && res.detail.scholarships.length > 0 &&
+          (res.mode === "scholarships" || res.mode === "detail" || res.mode === "affordability") && (
+            <div className="mt-3">
+              <ScholarshipPanel candidate={res.detail} />
+            </div>
+          )}
 
         {res.mode === "answer" && res.figures.length > 0 && (
           <div className="mt-2 flex flex-col gap-1.5 rounded-xl border border-border bg-surface p-2.5">

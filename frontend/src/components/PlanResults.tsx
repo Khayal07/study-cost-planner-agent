@@ -14,6 +14,12 @@ import {
 import { exportPdf, type CandidatePlan, type PlanResult } from "@/lib/api";
 import { useChartColors } from "@/lib/theme";
 import { CitationChip } from "./CitationChip";
+import { ScholarshipPanel } from "./ScholarshipPanel";
+
+// The total to display/rank by: net (after best scholarship) in value mode, else gross.
+function displayedTotal(c: CandidatePlan, valueMode: boolean): number {
+  return valueMode && c.net_total_annual != null ? c.net_total_annual : c.total_annual;
+}
 
 function money(n: number, cur: string) {
   return `${n.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${cur}`;
@@ -23,6 +29,7 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
   const cur = plan.report_currency;
   const [selected, setSelected] = useState(0);
   const [exporting, setExporting] = useState(false);
+  const [rankBy, setRankBy] = useState<"cost" | "value">("cost");
   const colors = useChartColors();
 
   if (plan.candidates.length === 0) {
@@ -36,12 +43,22 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
     );
   }
 
-  const chartData = plan.candidates.map((c) => ({
+  const valueMode = rankBy === "value";
+  const hasScholarships = plan.candidates.some((c) => c.scholarships && c.scholarships.length > 0);
+  const ordered = valueMode
+    ? [...plan.candidates].sort((a, b) => (a.value_rank ?? 999) - (b.value_rank ?? 999))
+    : plan.candidates;
+
+  const chartData = ordered.map((c) => ({
     name: c.university_name.split(" ").slice(0, 2).join(" "),
-    total: c.total_annual,
-    affordable: c.affordable,
+    total: displayedTotal(c, valueMode),
+    affordable: valueMode ? c.net_affordable ?? c.affordable : c.affordable,
   }));
-  const top = plan.candidates[selected];
+  const top = ordered[selected] ?? ordered[0];
+
+  function pick(i: number) {
+    setSelected(i);
+  }
 
   async function doExport() {
     setExporting(true);
@@ -49,7 +66,7 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
       // Export a report for the selected university only (backend restricts to it).
       await exportPdf({
         ...request,
-        focus_program_id: plan.candidates[selected]?.program_id ?? null,
+        focus_program_id: top?.program_id ?? null,
       });
     } finally {
       setExporting(false);
@@ -71,6 +88,34 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
             <span className="font-medium text-foreground">{top.university_name}</span>
             <span className="hidden sm:inline"> · select a card below to change</span>
           </p>
+          {hasScholarships && (
+            <div
+              role="radiogroup"
+              aria-label="Rank by"
+              className="mt-2 inline-flex gap-1 rounded-xl border border-border bg-surface-2 p-1"
+            >
+              {([
+                { id: "cost", label: "Cost" },
+                { id: "value", label: "🎓 Value after aid" },
+              ] as const).map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={rankBy === o.id}
+                  onClick={() => {
+                    setRankBy(o.id);
+                    setSelected(0);
+                  }}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${
+                    rankBy === o.id ? "bg-surface text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <button onClick={doExport} disabled={exporting} className="btn-ghost" title={`Export a report for ${top.university_name}`}>
           {exporting ? (
@@ -106,7 +151,9 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
 
       {/* Comparison chart */}
       <div className="card p-4 sm:p-5">
-        <h3 className="mb-1 text-sm font-semibold">Annual total by option</h3>
+        <h3 className="mb-1 text-sm font-semibold">
+          {valueMode ? "Annual cost after scholarships" : "Annual total by option"}
+        </h3>
         <p className="mb-4 flex items-center gap-3 text-xs text-muted">
           <span className="inline-flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-sm bg-primary" /> within budget
@@ -153,13 +200,23 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
 
       {/* Ranked candidate selector */}
       <div className="grid gap-3 sm:grid-cols-2">
-        {plan.candidates.map((c, i) => (
-          <CandidateRow key={c.program_id} c={c} cur={cur} selected={i === selected} onClick={() => setSelected(i)} />
+        {ordered.map((c, i) => (
+          <CandidateRow
+            key={c.program_id}
+            c={c}
+            cur={cur}
+            valueMode={valueMode}
+            selected={i === selected}
+            onClick={() => pick(i)}
+          />
         ))}
       </div>
 
       {/* Detailed breakdown */}
       <Breakdown c={top} cur={cur} />
+
+      {/* Scholarships for the selected university */}
+      <ScholarshipPanel candidate={top} />
 
       {/* Verification */}
       {plan.verification && <Verification report={plan.verification} />}
@@ -187,13 +244,20 @@ function CandidateRow({
   c,
   cur,
   selected,
+  valueMode,
   onClick,
 }: {
   c: CandidatePlan;
   cur: string;
   selected: boolean;
+  valueMode: boolean;
   onClick: () => void;
 }) {
+  const rankNum = valueMode ? c.value_rank ?? c.rank : c.rank;
+  const affordable = valueMode ? c.net_affordable ?? c.affordable : c.affordable;
+  const gap = valueMode ? c.net_budget_gap ?? c.budget_gap : c.budget_gap;
+  const total = displayedTotal(c, valueMode);
+  const hasAid = c.total_scholarship_value > 0;
   return (
     <button
       onClick={onClick}
@@ -206,28 +270,38 @@ function CandidateRow({
     >
       <div className="flex items-center justify-between">
         <span className="figure grid h-6 min-w-6 place-items-center rounded-lg bg-surface-2 px-1.5 text-xs font-semibold text-muted">
-          #{c.rank}
+          #{rankNum}
         </span>
         <span
           className={`chip ${
-            c.affordable ? "bg-primary-weak text-primary" : "bg-danger/10 text-danger"
+            affordable ? "bg-primary-weak text-primary" : "bg-danger/10 text-danger"
           }`}
         >
-          <span className={`h-1.5 w-1.5 rounded-full ${c.affordable ? "bg-primary" : "bg-danger"}`} />
-          {c.affordable ? "within budget" : "over budget"}
+          <span className={`h-1.5 w-1.5 rounded-full ${affordable ? "bg-primary" : "bg-danger"}`} />
+          {affordable ? "within budget" : "over budget"}
         </span>
       </div>
       <div className="mt-2.5 text-sm font-semibold leading-tight">{c.university_name}</div>
       <div className="text-xs text-muted">{c.city_name}, {c.country_name}</div>
+      {hasAid && (
+        <div className="mt-2">
+          <span className="chip bg-accent-weak text-accent">
+            🎓 aid ~{money(c.total_scholarship_value, cur)}/yr
+          </span>
+        </div>
+      )}
       <div className="mt-3 flex items-end justify-between border-t border-border pt-3">
         <div>
-          <div className="text-[11px] text-muted">Total / year</div>
-          <div className="figure text-base font-semibold">{money(c.total_annual, cur)}</div>
+          <div className="text-[11px] text-muted">{valueMode ? "After aid / year" : "Total / year"}</div>
+          <div className="figure text-base font-semibold">{money(total, cur)}</div>
+          {!valueMode && hasAid && c.net_total_annual != null && (
+            <div className="figure text-[11px] text-primary">after aid ~{money(c.net_total_annual, cur)}</div>
+          )}
         </div>
         <div className="text-right">
           <div className="text-[11px] text-muted">Budget gap</div>
-          <div className={`figure text-sm font-semibold ${c.budget_gap != null && c.budget_gap >= 0 ? "text-primary" : "text-danger"}`}>
-            {c.budget_gap != null ? money(c.budget_gap, cur) : "—"}
+          <div className={`figure text-sm font-semibold ${gap != null && gap >= 0 ? "text-primary" : "text-danger"}`}>
+            {gap != null ? money(gap, cur) : "—"}
           </div>
         </div>
       </div>
