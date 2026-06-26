@@ -1,5 +1,36 @@
 # Progress Log
 
+## 2026-06-27 — Phase E: Scholarship ecosystem foundation (backend)
+
+Evolves the planner from a cost calculator into a value planner. New grounded scholarship
+layer, fully non-breaking (all new request/response fields optional with safe defaults).
+
+**Data:** new `Scholarship` model (`app/data/models.py`) — cited like every figure (one
+`Source` each), polymorphic scope reusing `scope_level`/`scope_id` (+`"global"`),
+`COVERAGE_TYPES` vocab, index `ix_scholarships_scope` (added in `cli.py`). 8 real cited
+scholarships seeded (`db/seed/data.real.json`; 4 in mock): Erasmus Mundus, DAAD,
+Deutschlandstipendium, Holland Scholarship, TU Delft van Effen, NAWA Banach, Stipendium
+Hungaricum, Türkiye Bursları. Loader extended in `seed.py`; repo helper
+`scholarships_for_candidate`.
+
+**Agents** (new DAG steps after BudgetMatching, before Verifier):
+`ScholarshipAgent` (gather) → `EligibilityAgent` (deterministic, explainable verdict
+eligible/likely/unknown/ineligible + reason list; degree/field matched on the program,
+nationality/GPA/language from the optional profile) → `NetValueAgent` (per-award annual
+saving in report currency, applies the single best realistic award, derives
+`net_total_annual` / `net_budget_gap` / `value_rank` = cheapest-after-aid; gross `rank`
+preserved). `VerifierAgent` gained a `scholarships` check (award citation integrity, net ≤
+gross, passed-deadline warning).
+
+**Schemas:** `ScholarshipMatch`; `CandidatePlan` net fields; optional
+`nationality`/`gpa`/`language_test` on `PlanningRequest` + `ChatProfile`.
+
+Verified: `pytest` 27/27 (10 new). Parity intact — Poland·€15k·CS still AGH ~14,960 /
+Warsaw ~15,504 / WUT ~19,244 gross, now with populated `scholarships` and net ≤ gross. Blank
+profile → likely/unknown (no crash); minimal `{"budget_amount":12000}` still valid. `tsc`
+clean (frontend untouched this phase). Deferred to later phases: chat/PDF surfacing,
+frontend panel + value toggle, and the application planner + document tracker (DB + accounts).
+
 ## 2026-06-26 — Fix: PDF now reports ONLY the selected university
 
 Bug: selecting a university (budget form card or chat) still exported the **full
