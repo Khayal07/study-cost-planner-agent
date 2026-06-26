@@ -39,6 +39,7 @@ class VerifierAgent:
         checks.append(self._totals_consistency(ctx))
         checks.append(self._budget_gap(ctx))
         checks.append(self._plausibility(ctx))
+        checks.append(self._scholarships(ctx))
 
         overall = _worst([c.status for c in checks])
         report = VerificationReport(overall=overall, checks=checks)
@@ -128,6 +129,42 @@ class VerifierAgent:
         return VerificationCheck(
             name="plausibility", status="pass",
             detail="Living and tuition figures fall within plausible ranges.",
+        )
+
+    def _scholarships(self, ctx: PlanningContext) -> VerificationCheck:
+        matches = [m for plan in ctx.candidates for m in plan.scholarships]
+        if not matches:
+            return VerificationCheck(
+                name="scholarships", status="pass",
+                detail="No scholarships in scope for these candidates.",
+            )
+        # Every surfaced award must be cited.
+        uncited = sorted({m.name for m in matches if not m.citation.url})
+        if uncited:
+            return VerificationCheck(
+                name="scholarships", status="fail",
+                detail=f"Scholarships lacking a source URL: {uncited}",
+            )
+        issues: list[str] = []
+        # Net total must never exceed gross, nor go negative.
+        for plan in ctx.candidates:
+            if plan.net_total_annual is not None and (
+                plan.net_total_annual < 0 or plan.net_total_annual > plan.total_annual + TOLERANCE
+            ):
+                issues.append(f"{plan.university_name}: net {plan.net_total_annual} vs gross {plan.total_annual}")
+        # Eligible/likely awards whose deadline has already passed.
+        passed = sorted({
+            m.name for m in matches
+            if m.eligibility in ("eligible", "likely")
+            and m.days_until_deadline is not None and m.days_until_deadline < 0
+        })
+        if passed:
+            issues.append(f"deadline passed for: {passed}")
+        if issues:
+            return VerificationCheck(name="scholarships", status="warn", detail="; ".join(issues))
+        return VerificationCheck(
+            name="scholarships", status="pass",
+            detail="Awards are cited; net totals consistent; no eligible deadline has passed.",
         )
 
     def _summary(self, report: VerificationReport) -> str:

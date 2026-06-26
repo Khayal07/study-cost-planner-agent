@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from sqlalchemy.orm import Session
 
 from app.core.schemas import CandidatePlan, PlanningRequest, VerificationReport
-from app.data.models import CostItem
+from app.data.models import CostItem, Scholarship
 from app.data.retrieval import CandidateRefs
 
 
@@ -23,6 +23,7 @@ class CandidateBuild:
     tuition_raw: list[CostItem] = field(default_factory=list)
     living_raw: list[CostItem] = field(default_factory=list)   # city-scoped
     country_raw: list[CostItem] = field(default_factory=list)  # visa / insurance / hidden
+    scholarships_raw: list[Scholarship] = field(default_factory=list)  # gathered by Scholarship agent
     plan: CandidatePlan | None = None                          # built by Currency agent
 
 
