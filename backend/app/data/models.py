@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Date, DateTime, ForeignKey, Index, Integer, Numeric, String, Text
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Index, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.data.db import Base
@@ -19,9 +19,17 @@ from app.data.db import Base
 # --- controlled vocabularies (kept as plain strings; validated in Python) ---
 COST_TYPES = {"tuition", "rent", "food", "transport", "insurance", "visa", "utilities", "hidden_misc"}
 PERIODS = {"annual", "monthly", "one_time"}
-SCOPE_LEVELS = {"program", "university", "city", "country"}
+# "global" applies to scholarships only (a country/university/program-agnostic award);
+# CostItem never uses it. scope_id is NULL for global scholarships.
+SCOPE_LEVELS = {"program", "university", "city", "country", "global"}
 CONFIDENCE = {"sourced", "estimate"}
 SOURCE_TYPES = {"official_university", "government", "statistical_portal", "currency_api", "estimate"}
+# How a scholarship reduces cost. tuition_waiver/full_tuition cancel tuition; partial_tuition
+# uses coverage_pct; stipend/living_grant/fixed_amount are fixed cash amounts.
+COVERAGE_TYPES = {
+    "full_tuition", "partial_tuition", "tuition_waiver",
+    "stipend", "living_grant", "fixed_amount",
+}
 
 EMBEDDING_DIM = 384  # BAAI/bge-small-en-v1.5 via fastembed
 
@@ -106,6 +114,47 @@ class CostItem(Base):
     scope_id: Mapped[int] = mapped_column(Integer)
     confidence: Mapped[str] = mapped_column(String(10))
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
+    valid_as_of: Mapped[date | None] = mapped_column(Date, nullable=True)
+
+    source: Mapped["Source"] = relationship()
+
+
+class Scholarship(Base):
+    """A grounded scholarship/award, cited like every cost figure (one `Source` each).
+
+    Reuses the polymorphic scope pattern: an award attaches to a program, university,
+    country, or is `global` (scope_id NULL). Eligibility criteria are stored as nullable
+    columns / comma-lists; NULL means "no restriction" and is scored as a pass.
+    """
+
+    __tablename__ = "scholarships"
+    # Mirrors ix_cost_items_scope: every plan gathers awards by (scope_level, scope_id).
+    __table_args__ = (
+        Index("ix_scholarships_scope", "scope_level", "scope_id"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(200))
+    provider: Mapped[str] = mapped_column(String(200))
+    scope_level: Mapped[str] = mapped_column(String(12))      # program|university|country|global
+    scope_id: Mapped[int | None] = mapped_column(Integer, nullable=True)  # NULL for global
+    coverage_type: Mapped[str] = mapped_column(String(20))    # see COVERAGE_TYPES
+    amount: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    coverage_pct: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)  # e.g. 50.00
+    currency: Mapped[str] = mapped_column(String(3))
+    period: Mapped[str] = mapped_column(String(12))           # annual | one_time
+    # Eligibility (NULL = no restriction)
+    degree_levels: Mapped[str | None] = mapped_column(String(120), nullable=True)  # "master,phd"
+    fields: Mapped[str | None] = mapped_column(Text, nullable=True)                # comma list
+    nationality_rule: Mapped[str | None] = mapped_column(Text, nullable=True)      # tokens; "!"=exclude
+    min_gpa: Mapped[float | None] = mapped_column(Numeric(3, 2), nullable=True)    # on a 4.0 scale
+    language_requirement: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    renewable: Mapped[bool] = mapped_column(Boolean, default=False)
+    deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    application_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    documents_required: Mapped[str | None] = mapped_column(Text, nullable=True)    # comma list
+    confidence: Mapped[str] = mapped_column(String(10))       # sourced | estimate
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
     valid_as_of: Mapped[date | None] = mapped_column(Date, nullable=True)
 
