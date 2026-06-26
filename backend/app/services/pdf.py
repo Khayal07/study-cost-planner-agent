@@ -105,6 +105,43 @@ def render_plan_pdf(plan: PlanResult) -> bytes:
                 f"<td>{ln.confidence}</td><td class='cite'>{_citation_html(ln.citation)}</td></tr>"
             )
 
+    # Scholarships + net cost for the featured university (Phase F).
+    scholarship_section = ""
+    if top and top.scholarships:
+        TAG = {"eligible": "Eligible", "likely": "Likely", "unknown": "Needs detail",
+               "ineligible": "Not eligible"}
+        sch_rows = ""
+        for m in top.scholarships:
+            val = f"{m.estimated_value:,.0f} {cur}" if m.estimated_value else "—"
+            dl = m.deadline.isoformat() if m.deadline else "—"
+            sch_rows += (
+                f"<tr><td>{escape(m.name)}</td>"
+                f"<td>{escape(m.coverage_type.replace('_', ' '))}</td>"
+                f"<td class='num'>{val}</td>"
+                f"<td>{TAG.get(m.eligibility, m.eligibility)}</td>"
+                f"<td>{dl}</td>"
+                f"<td class='cite'>{_citation_html(m.citation)}</td></tr>"
+            )
+        net_line = ""
+        if top.net_total_annual is not None and top.total_scholarship_value > 0:
+            net_line = (
+                f"<p class='sub' style='margin-top:6px'>Applying the best award you may "
+                f"qualify for (~{top.total_scholarship_value:,.0f} {cur}) lowers the estimated "
+                f"total from <b>{top.total_annual:,.0f} {cur}</b> to "
+                f"<b>{top.net_total_annual:,.0f} {cur}/year</b>"
+                + (f" — {top.net_budget_gap:,.0f} {cur} vs. your budget."
+                   if top.net_budget_gap is not None else ".")
+                + "</p>"
+            )
+        scholarship_section = (
+            f"<h2>Scholarships &amp; net cost <span class='pill'>cited</span></h2>"
+            f"{net_line}"
+            f"<table><tr><th>Scholarship</th><th>Coverage</th><th>Est. value/yr</th>"
+            f"<th>Eligibility</th><th>Deadline</th><th>Source</th></tr>{sch_rows}</table>"
+            f"<p class='sub' style='margin-top:4px'>Eligibility is an automated read from the "
+            f"profile provided; confirm each award's terms at its cited source before applying.</p>"
+        )
+
     scen_rows = ""
     if top:
         for s in top.scenarios:
@@ -173,6 +210,8 @@ def render_plan_pdf(plan: PlanResult) -> bytes:
         <tr><th>Item</th><th>Amount ({cur}/yr)</th><th>Confidence</th><th>Source</th></tr>
         {line_rows}
       </table>
+
+      {scholarship_section}
 
       <h2>Lifestyle scenarios</h2>
       <table>
