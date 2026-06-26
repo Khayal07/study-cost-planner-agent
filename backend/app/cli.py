@@ -32,6 +32,10 @@ def migrate() -> None:
             "CREATE INDEX IF NOT EXISTS ix_fx_rates_lookup "
             "ON fx_rates (base, quote, as_of_date)"
         ))
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS ix_scholarships_scope "
+            "ON scholarships (scope_level, scope_id)"
+        ))
     print("[cli] migrate: schema ready (pgvector enabled, perf indexes ensured)")
 
 
