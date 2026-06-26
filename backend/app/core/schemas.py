@@ -45,6 +45,31 @@ class ScenarioBreakdown(BaseModel):
     narrative: str | None = None
 
 
+class ScholarshipMatch(BaseModel):
+    """A scholarship evaluated against one candidate + the student profile.
+
+    Computed at request time (never stored). `estimated_value` is the annual saving in
+    the report currency; `eligibility` and `reasons` make the verdict explainable.
+    """
+
+    scholarship_id: int
+    name: str
+    provider: str
+    coverage_type: str
+    amount: float | None = None
+    coverage_pct: float | None = None
+    currency: str
+    estimated_value: float = 0.0          # annual saving in report currency
+    eligibility: str = "unknown"          # eligible | likely | ineligible | unknown
+    reasons: list[str] = Field(default_factory=list)
+    deadline: date | None = None
+    days_until_deadline: int | None = None
+    renewable: bool = False
+    application_url: str | None = None
+    documents_required: list[str] = Field(default_factory=list)
+    citation: Citation
+
+
 class CandidatePlan(BaseModel):
     program_id: int
     program_name: str
@@ -77,6 +102,15 @@ class CandidatePlan(BaseModel):
     affordable: bool | None = None
     rank: int | None = None
 
+    # Scholarship layer (filled by Scholarship / Eligibility / NetValue agents).
+    # All defaulted so an unchanged /plan call still returns a valid plan.
+    scholarships: list[ScholarshipMatch] = Field(default_factory=list)
+    total_scholarship_value: float = 0.0          # best realistic combination, annual
+    net_total_annual: float | None = None         # total_annual - total_scholarship_value
+    net_budget_gap: float | None = None           # budget - net_total_annual
+    net_affordable: bool | None = None
+    value_rank: int | None = None                 # rank by net cost (cheapest-after-aid)
+
 
 class VerificationCheck(BaseModel):
     name: str
@@ -108,6 +142,11 @@ class PlanningRequest(BaseModel):
     # Ignored by planning; used by the PDF to pick the detailed breakdown. Falls back to
     # the top-ranked option when unset or not among the candidates.
     focus_program_id: int | None = None
+    # Optional eligibility inputs for scholarship matching. All optional: when blank the
+    # eligibility agent returns 'likely'/'unknown' verdicts and existing flows are unchanged.
+    nationality: str | None = Field(default=None, max_length=80)
+    gpa: float | None = Field(default=None, ge=0, le=4.0)
+    language_test: str | None = Field(default=None, max_length=120)
 
 
 class PlanResult(BaseModel):
@@ -152,6 +191,11 @@ class ChatProfile(BaseModel):
     budget_currency: str | None = Field(default=None, max_length=3)
     lifestyle: str | None = Field(default=None, max_length=20)
     report_currency: str = Field(default="EUR", max_length=3)
+
+    # Optional eligibility inputs (round-tripped like the other slots)
+    nationality: str | None = Field(default=None, max_length=80)
+    gpa: float | None = Field(default=None, ge=0, le=4.0)
+    language_test: str | None = Field(default=None, max_length=120)
 
     # Conversation working set (bounded — this object is round-tripped from the client)
     last_candidates: list[ChatCandidateRef] = Field(default_factory=list, max_length=20)
