@@ -216,6 +216,107 @@ class ChatRequest(BaseModel):
     profile: ChatProfile | None = None
 
 
+# --- Accounts + application tracker (Phase H) ---
+
+class RegisterRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=6, max_length=200)
+
+
+class LoginRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=1, max_length=200)
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    nationality: str | None = None
+    gpa: float | None = None
+    language_test: str | None = None
+
+
+class AuthResponse(BaseModel):
+    token: str
+    user: UserOut
+
+
+class ProfileUpdate(BaseModel):
+    nationality: str | None = Field(default=None, max_length=80)
+    gpa: float | None = Field(default=None, ge=0, le=4.0)
+    language_test: str | None = Field(default=None, max_length=120)
+
+
+class ApplicationTask(BaseModel):
+    """One prioritized scholarship to apply to (output of the application planner)."""
+
+    scholarship_id: int
+    name: str
+    provider: str
+    university_name: str
+    program_id: int
+    coverage_type: str
+    estimated_value: float
+    currency: str
+    eligibility: str
+    deadline: date | None = None
+    days_until_deadline: int | None = None
+    priority: int
+    priority_reason: str
+    application_url: str | None = None
+    documents: list[str] = Field(default_factory=list)
+
+
+class ApplicationPlan(BaseModel):
+    tasks: list[ApplicationTask] = Field(default_factory=list)
+    this_week: list[str] = Field(default_factory=list)
+    all_documents: list[str] = Field(default_factory=list)
+    generated_at: datetime
+
+
+class ApplicationCreate(BaseModel):
+    scholarship_id: int | None = None
+    program_id: int | None = None
+    scholarship_name: str = Field(min_length=1, max_length=200)
+    provider: str | None = Field(default=None, max_length=200)
+    university_name: str | None = Field(default=None, max_length=200)
+    coverage_type: str | None = Field(default=None, max_length=20)
+    estimated_value: float | None = None
+    currency: str | None = Field(default=None, max_length=3)
+    deadline: date | None = None
+    application_url: str | None = None
+    documents: list[str] = Field(default_factory=list, max_length=40)
+
+
+class ApplicationUpdate(BaseModel):
+    status: str | None = Field(default=None, max_length=16)
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class DocumentOut(BaseModel):
+    id: int
+    name: str
+    done: bool
+
+
+class ApplicationOut(BaseModel):
+    id: int
+    scholarship_id: int | None = None
+    program_id: int | None = None
+    scholarship_name: str
+    provider: str | None = None
+    university_name: str | None = None
+    coverage_type: str | None = None
+    estimated_value: float | None = None
+    currency: str | None = None
+    deadline: date | None = None
+    days_until_deadline: int | None = None
+    application_url: str | None = None
+    status: str
+    notes: str | None = None
+    documents: list[DocumentOut] = Field(default_factory=list)
+
+
 class CitedFigure(BaseModel):
     """A single grounded figure used in a chat answer."""
 

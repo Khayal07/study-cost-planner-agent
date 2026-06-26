@@ -17,14 +17,14 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Restrict to the configured frontend origin(s). The app uses no cookies/auth, so
-# credentials are off; only the two verbs the API actually serves are allowed.
+# Restrict to the configured frontend origin(s). Auth uses bearer tokens (not cookies),
+# so credentials stay off; the tracker adds PUT/PATCH/DELETE to the served verbs.
 _cors_origins = [o.strip() for o in settings.cors_allow_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -44,7 +44,11 @@ def health() -> dict:
 from app.api.plan import router as plan_router
 from app.api.chat import router as chat_router
 from app.api.export import router as export_router
+from app.api.auth import router as auth_router
+from app.api.applications import router as applications_router
 
 app.include_router(plan_router)
 app.include_router(chat_router)
 app.include_router(export_router)
+app.include_router(auth_router)
+app.include_router(applications_router)

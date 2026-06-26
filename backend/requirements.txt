@@ -24,6 +24,10 @@ fastembed==0.5.1
 weasyprint==63.1
 matplotlib==3.10.0
 
+# Auth (accounts + application tracker)
+PyJWT==2.10.1
+bcrypt==4.2.1
+
 # Utils
 python-dateutil==2.9.0.post0
 

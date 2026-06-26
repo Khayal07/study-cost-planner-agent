@@ -173,6 +173,74 @@ class KnowledgeChunk(Base):
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM), nullable=True)
 
 
+APPLICATION_STATUSES = {"planned", "in_progress", "submitted", "accepted", "rejected"}
+
+
+class User(Base):
+    """A registered student. Holds the optional eligibility profile so it persists
+    across sessions (the stateless chat/form still work without an account)."""
+
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(Text)
+    # Saved eligibility profile (optional)
+    nationality: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    gpa: Mapped[float | None] = mapped_column(Numeric(3, 2), nullable=True)
+    language_test: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    applications: Mapped[list["Application"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+
+
+class Application(Base):
+    """A scholarship the student is tracking. Award fields are denormalized so the
+    tracker stays intact even if the scholarship dataset is reseeded."""
+
+    __tablename__ = "applications"
+    __table_args__ = (Index("ix_applications_user", "user_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    scholarship_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    program_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    scholarship_name: Mapped[str] = mapped_column(String(200))
+    provider: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    university_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    coverage_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    estimated_value: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    currency: Mapped[str | None] = mapped_column(String(3), nullable=True)
+    deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    application_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="planned")
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    user: Mapped["User"] = relationship(back_populates="applications")
+    documents: Mapped[list["ApplicationDocument"]] = relationship(
+        back_populates="application", cascade="all, delete-orphan"
+    )
+
+
+class ApplicationDocument(Base):
+    """A single checklist item for an application (transcript, motivation letter…)."""
+
+    __tablename__ = "application_documents"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    application_id: Mapped[int] = mapped_column(ForeignKey("applications.id"))
+    name: Mapped[str] = mapped_column(String(200))
+    done: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    application: Mapped["Application"] = relationship(back_populates="documents")
+
+
 class FxRate(Base):
     __tablename__ = "fx_rates"
     # Index for the cache lookup in CurrencyService.get_rate (base, quote, newest first).

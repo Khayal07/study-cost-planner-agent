@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     # (the original curated demo dataset, kept as a dev/fallback). See app/data/seed.py.
     seed_dataset: str = "real"
 
+    # --- Auth (accounts + application tracker) ---
+    # Override in production via JWT_SECRET. The default is for local dev only.
+    jwt_secret: str = "dev-insecure-change-me"
+    jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
+
     @property
     def llm_enabled(self) -> bool:
         """LLM features are only active when an API key is configured."""
