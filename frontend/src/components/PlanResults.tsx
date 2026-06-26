@@ -46,10 +46,9 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
   async function doExport() {
     setExporting(true);
     try {
-      // Feature the university the user has selected, not just the top-ranked one.
+      // Export a report for the selected university only (backend restricts to it).
       await exportPdf({
         ...request,
-        max_results: 8,
         focus_program_id: plan.candidates[selected]?.program_id ?? null,
       });
     } finally {

@@ -208,11 +208,15 @@ export async function exportPdf(req: PlanningRequest): Promise<void> {
     body: JSON.stringify(req),
   });
   if (!res.ok) throw new Error(`PDF export failed: ${res.status}`);
+  // Use the server's per-university filename when provided.
+  const disp = res.headers.get("Content-Disposition") ?? "";
+  const match = disp.match(/filename="?([^"]+)"?/);
+  const filename = match?.[1] ?? "study-cost-plan.pdf";
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "study-cost-plan.pdf";
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 }

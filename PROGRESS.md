@@ -1,5 +1,29 @@
 # Progress Log
 
+## 2026-06-26 — Fix: PDF now reports ONLY the selected university
+
+Bug: selecting a university (budget form card or chat) still exported the **full
+comparison** of all options, merely "featuring" the chosen one. User wanted a report for
+**that university only**.
+
+Fix — centralised in the backend export endpoint (`app/api/export.py`): when
+`focus_program_id` is set, the request is restricted to `program_ids=[focus]`,
+`max_results=1`, so the plan is built for a single university. Both callers (budget form
+`PlanResults` and chat `profileToPlanRequest`) already pass `focus_program_id`, so both are
+fixed in one place. The PDF (`app/services/pdf.py`) now renders a **single-university
+layout** when there's one candidate — title "Study Cost Report", university in the
+subheader, no option-comparison chart/table, just the breakdown chart. The download
+filename is per-university (`study-cost-<slug>.pdf`), read from `Content-Disposition` by the
+client (`lib/api.ts`).
+
+Verified: `pytest` 17/17; live `/export/pdf` with `focus_program_id` 9/7/8 returns three
+distinct valid PDFs named `agh-university-of-krakow` / `university-of-warsaw` /
+`warsaw-university-of-technology`; orchestrator with the forced request yields exactly one
+candidate (the selected school). `tsc` clean; backend + frontend images rebuilt, all
+containers healthy.
+
+---
+
 ## 2026-06-26 — Fix: chat resolved the wrong university when named in full
 
 Bug: with a prior Turkey discovery, "Tell me about **Istanbul** Technical University"

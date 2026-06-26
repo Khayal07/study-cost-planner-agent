@@ -1,6 +1,8 @@
 """PDF export endpoint: POST /export/pdf — re-runs the plan and returns a PDF."""
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
@@ -12,12 +14,28 @@ from app.services.pdf import render_plan_pdf
 router = APIRouter(prefix="/export", tags=["export"])
 
 
+def _slugify(name: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    return slug or "report"
+
+
 @router.post("/pdf")
 def export_pdf(request: PlanningRequest, session: Session = Depends(get_session)) -> Response:
+    # A selected university → a report for THAT university only, not the whole comparison.
+    if request.focus_program_id is not None:
+        request = request.model_copy(
+            update={"program_ids": [request.focus_program_id], "max_results": 1}
+        )
+
     plan = Orchestrator().run(session, request)
     pdf_bytes = render_plan_pdf(plan)
+
+    filename = "study-cost-plan.pdf"
+    if request.focus_program_id is not None and plan.candidates:
+        filename = f"study-cost-{_slugify(plan.candidates[0].university_name)}.pdf"
+
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": "attachment; filename=study-cost-plan.pdf"},
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

@@ -74,22 +74,25 @@ def render_plan_pdf(plan: PlanResult) -> bytes:
         top = next((c for c in plan.candidates if c.program_id == focus), plan.candidates[0])
     is_focused = bool(plan.request.focus_program_id) and top is not None \
         and top.program_id == plan.request.focus_program_id
+    # Single-university report: one candidate (a specific school was selected/asked about).
+    single = top is not None and len(plan.candidates) == 1
 
-    cmp_chart = _comparison_chart(plan) if plan.candidates else ""
+    cmp_chart = _comparison_chart(plan) if plan.candidates and not single else ""
     brk_chart = _breakdown_chart(top) if top else ""
 
-    # Ranked table
+    # Ranked table (only when comparing multiple options)
     rows = ""
-    for c in plan.candidates:
-        fit = "✓" if c.affordable else "✗"
-        rows += (
-            f"<tr><td>{c.rank}</td><td>{escape(c.university_name)}</td>"
-            f"<td>{escape(c.city_name)}, {escape(c.country_name)}</td>"
-            f"<td class='num'>{c.annual_tuition:,.0f}</td>"
-            f"<td class='num'>{c.monthly_living:,.0f}</td>"
-            f"<td class='num'>{c.total_annual:,.0f}</td>"
-            f"<td class='num'>{c.budget_gap:,.0f}</td><td>{fit}</td></tr>"
-        )
+    if not single:
+        for c in plan.candidates:
+            fit = "✓" if c.affordable else "✗"
+            rows += (
+                f"<tr><td>{c.rank}</td><td>{escape(c.university_name)}</td>"
+                f"<td>{escape(c.city_name)}, {escape(c.country_name)}</td>"
+                f"<td class='num'>{c.annual_tuition:,.0f}</td>"
+                f"<td class='num'>{c.monthly_living:,.0f}</td>"
+                f"<td class='num'>{c.total_annual:,.0f}</td>"
+                f"<td class='num'>{c.budget_gap:,.0f}</td><td>{fit}</td></tr>"
+            )
 
     # Top candidate line items with citations (the featured university computed above)
     line_rows = ""
@@ -138,8 +141,10 @@ def render_plan_pdf(plan: PlanResult) -> bytes:
       li {{ font-size: 10px; margin: 2px 0; }}
       .disc {{ color:#64748b; font-size:8.5px; margin-top:14px; border-top:1px solid #e2e8f0; padding-top:6px; }}
     </style></head><body>
-      <h1>Study Cost Plan</h1>
+      <h1>{'Study Cost Report' if single else 'Study Cost Plan'}</h1>
       <div class="sub">
+        {f'{escape(top.university_name)} — {escape(top.city_name)}, {escape(top.country_name)} · '
+         if single and top else ''}
         Field: {escape(req.field or 'Any')} ·
         Country: {escape(req.country or 'All')} ·
         Budget: {req.budget_amount:,.0f} {escape(req.budget_currency)}/year ·
@@ -147,9 +152,9 @@ def render_plan_pdf(plan: PlanResult) -> bytes:
       </div>
       {f'<div class="sub" style="margin-top:3px"><span class="pill">Focused on</span> '
        f'{escape(top.university_name)} — {escape(top.city_name)}, {escape(top.country_name)}</div>'
-       if is_focused else ''}
+       if is_focused and not single else ''}
 
-      <h2>Option comparison</h2>
+      {'' if single else f'''<h2>Option comparison</h2>
       <div class="charts">
         <img src="data:image/png;base64,{cmp_chart}"/>
         <img src="data:image/png;base64,{brk_chart}"/>
@@ -158,7 +163,10 @@ def render_plan_pdf(plan: PlanResult) -> bytes:
         <tr><th>#</th><th>University</th><th>Location</th><th>Tuition/yr</th>
             <th>Living/mo</th><th>Total/yr</th><th>Budget gap</th><th>Fit</th></tr>
         {rows}
-      </table>
+      </table>'''}
+
+      {f'''<div class="charts" style="margin-top:8px"><img src="data:image/png;base64,{brk_chart}" style="width:48%"/></div>'''
+       if single else ''}
 
       <h2>Cost breakdown — {escape(top.university_name) if top else ''} <span class="pill">cited</span></h2>
       <table>
