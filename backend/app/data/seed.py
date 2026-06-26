@@ -18,11 +18,13 @@ from app.data.db import SessionLocal
 from app.data.models import (
     CONFIDENCE,
     COST_TYPES,
+    COVERAGE_TYPES,
     PERIODS,
     City,
     CostItem,
     Country,
     Program,
+    Scholarship,
     Source,
     University,
 )
@@ -97,12 +99,18 @@ def load_seed(session: Session | None = None) -> dict:
 
         path = _seed_path()
         data = json.loads(path.read_text(encoding="utf-8"))
-        counts = {"countries": 0, "cities": 0, "universities": 0, "programs": 0, "cost_items": 0, "sources": 0, "dataset": path.name}
+        counts = {"countries": 0, "cities": 0, "universities": 0, "programs": 0, "cost_items": 0, "scholarships": 0, "sources": 0, "dataset": path.name}
+
+        # Name -> id maps so the (optional) scholarships block can resolve its scope.
+        country_ids: dict[str, int] = {}
+        university_ids: dict[str, int] = {}
+        program_ids: dict[str, int] = {}
 
         for c in data["countries"]:
             country = Country(name=c["name"], iso_code=c["iso_code"], default_currency=c["default_currency"])
             session.add(country)
             session.flush()
+            country_ids[c["name"]] = country.id
             counts["countries"] += 1
 
             # Country-scoped costs: visa, insurance, hidden
@@ -152,6 +160,7 @@ def load_seed(session: Session | None = None) -> dict:
                                  official_url=ud.get("official_url"), source_id=fee_src.id)
                 session.add(uni)
                 session.flush()
+                university_ids[ud["name"]] = uni.id
                 counts["universities"] += 1
                 for pd in ud.get("programs", []):
                     prog = Program(university_id=uni.id, name=pd["name"], field=pd["field"],
@@ -159,10 +168,58 @@ def load_seed(session: Session | None = None) -> dict:
                                    duration_years=pd["duration_years"])
                     session.add(prog)
                     session.flush()
+                    program_ids[pd["name"]] = prog.id
                     counts["programs"] += 1
                     _make_cost(session, raw=pd["tuition"], cost_type="tuition",
                                scope_level="program", scope_id=prog.id, source_id=fee_src.id)
                     counts["cost_items"] += 1
+
+        # Optional top-level scholarships block (cited like every other figure).
+        for sch in data.get("scholarships", []):
+            scope_level = sch["scope_level"]
+            assert scope_level in {"global", "country", "university", "program"}, \
+                f"bad scope_level {scope_level}"
+            assert sch["coverage_type"] in COVERAGE_TYPES, f"bad coverage_type {sch['coverage_type']}"
+            assert sch["period"] in PERIODS, f"bad period {sch['period']}"
+            assert sch["confidence"] in CONFIDENCE, f"bad confidence {sch['confidence']}"
+
+            scope_id = None
+            if scope_level == "country":
+                scope_id = country_ids[sch["scope_name"]]
+            elif scope_level == "university":
+                scope_id = university_ids[sch["scope_name"]]
+            elif scope_level == "program":
+                scope_id = program_ids[sch["scope_name"]]
+
+            src = _make_source(session, sch["source"])
+            counts["sources"] += 1
+            docs = sch.get("documents_required")
+            session.add(
+                Scholarship(
+                    name=sch["name"],
+                    provider=sch["provider"],
+                    scope_level=scope_level,
+                    scope_id=scope_id,
+                    coverage_type=sch["coverage_type"],
+                    amount=sch.get("amount"),
+                    coverage_pct=sch.get("coverage_pct"),
+                    currency=sch["currency"],
+                    period=sch["period"],
+                    degree_levels=sch.get("degree_levels"),
+                    fields=sch.get("fields"),
+                    nationality_rule=sch.get("nationality_rule"),
+                    min_gpa=sch.get("min_gpa"),
+                    language_requirement=sch.get("language_requirement"),
+                    renewable=sch.get("renewable", False),
+                    deadline=_parse_date(sch.get("deadline")),
+                    application_url=sch.get("application_url"),
+                    documents_required=",".join(docs) if isinstance(docs, list) else docs,
+                    confidence=sch["confidence"],
+                    source_id=src.id,
+                    valid_as_of=_parse_date(sch.get("valid_as_of")),
+                )
+            )
+            counts["scholarships"] += 1
 
         session.commit()
         return {"status": "seeded", **counts}
