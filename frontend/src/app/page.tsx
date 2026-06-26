@@ -9,12 +9,14 @@ import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
 import { ResultsSkeleton } from "@/components/Skeletons";
+import { ApplicationsTracker } from "@/components/ApplicationsTracker";
 
-type Tab = "form" | "chat";
+type Tab = "form" | "chat" | "applications";
 
 const TABS: { id: Tab; label: string; hint: string }[] = [
   { id: "form", label: "Budget form", hint: "Structured inputs" },
   { id: "chat", label: "Chat", hint: "Ask in plain language" },
+  { id: "applications", label: "Applications", hint: "Track scholarships" },
 ];
 
 export default function Home() {
@@ -50,7 +52,7 @@ export default function Home() {
         <div
           role="tablist"
           aria-label="Planning mode"
-          className="mb-8 inline-grid grid-cols-2 gap-1 rounded-2xl border border-border bg-surface-2 p-1 shadow-xs"
+          className="mb-8 inline-grid grid-cols-3 gap-1 rounded-2xl border border-border bg-surface-2 p-1 shadow-xs"
         >
           {TABS.map((t) => (
             <button
@@ -91,9 +93,13 @@ export default function Home() {
               )}
             </div>
           </div>
-        ) : (
+        ) : tab === "chat" ? (
           <div className="mx-auto max-w-5xl">
             <ChatPanel reportCurrency={reportCurrency} />
+          </div>
+        ) : (
+          <div className="mx-auto max-w-3xl">
+            <ApplicationsTracker />
           </div>
         )}
       </main>
