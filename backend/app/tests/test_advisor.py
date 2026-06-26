@@ -64,3 +64,24 @@ def test_extract_slots_absent_fields_are_none():
     slots = extract_slots("hello there", "EUR")
     assert slots["budget_amount"] is None
     assert slots["country"] is None
+
+
+def test_extract_eligibility_slots():
+    slots = extract_slots(
+        "I'm from Azerbaijan, my GPA is 3.6 and I have IELTS 7.0", "EUR"
+    )
+    assert slots["nationality"] == "Azerbaijan"
+    assert slots["gpa"] == 3.6
+    assert slots["language_test"] == "IELTS 7.0"
+
+
+def test_gpa_not_confused_with_budget():
+    slots = extract_slots("budget 12000 EUR in Poland", "EUR")
+    assert slots["gpa"] is None
+    assert slots["budget_amount"] == 12000.0
+
+
+def test_nationality_requires_explicit_cue():
+    # "study in Germany" is a destination, not a nationality.
+    slots = extract_slots("I want to study in Germany", "EUR")
+    assert slots["nationality"] is None

@@ -31,11 +31,14 @@ CURRENCY_TOKENS = {
     "GBP": ["gbp", "pound", "funt", "£"],
 }
 
+# The dataset stores every program under field "Computer Science" (incl. the Data
+# Science / AI specializations), so all CS-adjacent tokens map to that one canonical
+# field — otherwise a "Data Science" filter would match zero rows.
 FIELD_TOKENS = {
     "Computer Science": ["computer science", "cs", "kompüter", "komputer", "informatika",
-                          "informatics", "software", "proqramlaşdırma", "coding"],
-    "Data Science": ["data science", "data-science", "machine learning", "ml", "ai",
-                     "artificial intelligence"],
+                         "informatics", "software", "proqramlaşdırma", "coding",
+                         "data science", "data-science", "machine learning", "ml", "ai",
+                         "artificial intelligence"],
 }
 
 DEGREE_TOKENS = {
@@ -100,6 +103,45 @@ def _detect_lifestyle(text: str) -> str | None:
     return None
 
 
+def _detect_gpa(text: str) -> float | None:
+    # "gpa 3.5", "gpa of 3.5", "3.5/4". GPA is on a 0-4 scale, so it never collides
+    # with budget numbers (which are >= 100).
+    m = re.search(r"gpa[^\d]{0,6}([0-4](?:\.\d{1,2})?)", text)
+    if m:
+        value = float(m.group(1))
+        if 0 <= value <= 4:
+            return value
+    m = re.search(r"\b([0-4]\.\d{1,2})\s*/\s*4(?:\.0)?\b", text)
+    if m:
+        return float(m.group(1))
+    return None
+
+
+def _detect_language(text: str) -> str | None:
+    m = re.search(r"\b(ielts|toefl|duolingo|pte)\b\s*:?\s*(\d{1,3}(?:\.\d)?)?", text)
+    if m:
+        name = m.group(1).upper()
+        score = m.group(2)
+        return f"{name} {score}".strip()
+    return None
+
+
+def _detect_nationality(message: str) -> str | None:
+    # Read from the original (cased) message so we keep the proper noun. Only fires on
+    # explicit nationality cues so a destination ("study in Germany") isn't mistaken.
+    m = re.search(
+        r"(?:i am from|i'm from|im from|citizen of|national of|"
+        r"nationality\s*(?:is|:)?)\s+([A-Za-z][A-Za-z .'-]{2,40})",
+        message, re.IGNORECASE,
+    )
+    if m:
+        return m.group(1).strip().title()
+    m = re.search(r"\b([A-Z][a-zA-Z]+)\s+citizen\b", message)
+    if m:
+        return m.group(1).title()
+    return None
+
+
 def extract_slots(message: str, report_currency: str | None = None) -> dict:
     """Detect every planning slot present in a message; absent slots are None.
 
@@ -117,6 +159,10 @@ def extract_slots(message: str, report_currency: str | None = None) -> dict:
         "budget_amount": _detect_budget(text),
         "budget_currency": _detect_currency(text),
         "lifestyle": _detect_lifestyle(text),
+        # Eligibility slots for the scholarship layer (all optional).
+        "nationality": _detect_nationality(message),
+        "gpa": _detect_gpa(text),
+        "language_test": _detect_language(text),
     }
 
     if llm.enabled:
@@ -125,7 +171,9 @@ def extract_slots(message: str, report_currency: str | None = None) -> dict:
             "Keys: country (full English name or null), field (e.g. 'Computer Science' or null), "
             "degree_level ('bachelor'|'master'|'phd' or null), "
             "budget_amount (number or null), budget_currency (ISO code or null), "
-            "lifestyle ('frugal'|'moderate'|'comfortable' or null).",
+            "lifestyle ('frugal'|'moderate'|'comfortable' or null), "
+            "nationality (country of citizenship or null), gpa (number 0-4 or null), "
+            "language_test (e.g. 'IELTS 6.5' or null).",
             user=message,
         )
         if data:
@@ -138,6 +186,20 @@ def extract_slots(message: str, report_currency: str | None = None) -> dict:
                     slots["budget_amount"] = float(slots["budget_amount"])
                 except (ValueError, TypeError):
                     slots["budget_amount"] = _detect_budget(text)
+            if slots["gpa"] is not None:
+                try:
+                    slots["gpa"] = float(slots["gpa"])
+                    if not 0 <= slots["gpa"] <= 4:
+                        slots["gpa"] = _detect_gpa(text)
+                except (ValueError, TypeError):
+                    slots["gpa"] = _detect_gpa(text)
+            # The LLM can hallucinate a field/degree the dataset doesn't use, which then
+            # filters retrieval down to nothing. Constrain to canonical values: re-map an
+            # unsupported value (e.g. "Software Engineering" -> "Computer Science") or drop it.
+            if slots["field"] and slots["field"] not in FIELD_TOKENS:
+                slots["field"] = _detect_field(fold(str(slots["field"])))
+            if slots["degree_level"] and slots["degree_level"] not in DEGREE_TOKENS:
+                slots["degree_level"] = _detect_degree(fold(str(slots["degree_level"])))
 
     if slots["budget_currency"]:
         slots["budget_currency"] = str(slots["budget_currency"]).upper()

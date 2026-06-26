@@ -59,6 +59,12 @@ ANYWHERE_TOKENS = ["anywhere", "any country", "doesn't matter", "doesnt matter",
                    "no preference", "cheapest country", "wherever", "any where"]
 DETAIL_TOKENS = ["tell me about", "explore", "details", "detail", "more about",
                  "info on", "information about", "look at", "show me"]
+SCHOLARSHIP_TOKENS = ["scholarship", "scholarships", "grant", "grants", "funding", "funded",
+                      "financial aid", "stipend", "bursary", "təqaüd", "teqaud", "bursa", "burs",
+                      "daad", "erasmus", "stipendium", "fully funded", "free study"]
+VALUE_TOKENS = ["after scholarship", "after scholarships", "after aid", "net cost", "net price",
+                "cheapest after", "best value", "value for money", "with scholarship",
+                "with scholarships", "with aid"]
 
 COST_KEYWORDS = {
     "visa": ["visa", "viza"],
@@ -167,6 +173,9 @@ def _run_pipeline(session: Session, profile: ChatProfile, *,
         lifestyle=profile.lifestyle or "moderate",
         max_results=max_results,
         program_ids=program_ids,
+        nationality=profile.nationality,
+        gpa=profile.gpa,
+        language_test=profile.language_test,
     )
     return Orchestrator().run(session, request)
 
@@ -456,6 +465,7 @@ def _discovery(session: Session, profile: ChatProfile) -> ChatResponse:
     for c in plan.candidates[:3]:
         chips.append(_suggestion(f"Explore {c.university_name}", f"Tell me about {c.university_name}"))
     chips.append(_suggestion("Compare top 3", "Compare the top 3 options"))
+    chips.append(_suggestion("🎓 Best value after scholarships", "Show me the best value after scholarships"))
     if profile.budget_amount:
         chips.append(_suggestion("Generate report", "Generate a PDF report"))
 
@@ -522,24 +532,35 @@ def _detail(session: Session, profile: ChatProfile, program_id: int,
             f"{_money(scen['comfortable'].annual_total, report)} (comfortable)."
         )
 
-    honesty = (
-        "\n\nA quick note for transparency: my dataset covers verified **costs** only. I "
-        "don't yet hold scholarship, admission-requirement, English-test or ranking data, "
-        "so I won't guess at those — I'd rather be accurate than make something up."
-    )
-    nextstep = ("\n\nWould you like a full **PDF report** for this university, or shall I "
-                "**compare** it with your other options?")
+    # Scholarships (now grounded in the dataset).
+    awards = _eligible_awards(c)
+    if awards:
+        top = max(awards, key=lambda m: m.estimated_value)
+        sch_txt = (
+            f"\n\n🎓 **Scholarships:** you may qualify for {len(awards)} award(s) here — e.g. "
+            f"{top.name} (~{_money(top.estimated_value, report)}/yr). Applying the best one could "
+            f"bring your total down to about **{_money(_net_of(c), report)}/year**. Say "
+            f"\"scholarships\" for the full list with deadlines and cited sources."
+        )
+    else:
+        sch_txt = (
+            "\n\nA quick note for transparency: I don't yet have a scholarship in my dataset "
+            "matching this option, so I won't guess — accuracy first. Share your nationality, GPA "
+            "and English test and I'll re-check eligibility."
+        )
+    nextstep = ("\n\nWould you like the **scholarships**, a full **PDF report**, or shall I "
+                "**compare** this with your other options?")
 
-    answer = intro + verdict + scen_txt + honesty + nextstep
+    answer = intro + verdict + scen_txt + sch_txt + nextstep
     mode = "affordability" if affordability else "detail"
 
     return ChatResponse(
         mode=mode, answer=answer, profile=profile, detail=c, figures=figures,
         candidates=[c], can_export=bool(profile.budget_amount),
         suggestions=[
+            _suggestion(f"Scholarships at {c.university_name}", f"Scholarships at {c.university_name}"),
             _suggestion(f"Download {c.university_name} report", "Generate a PDF report"),
             _suggestion("Compare with others", "Compare the top 3 options"),
-            _suggestion("Show cheaper options", "Show me cheaper options"),
         ],
     )
 
@@ -582,6 +603,126 @@ def _compare(session: Session, profile: ChatProfile) -> ChatResponse:
         mode="compare", answer=answer, profile=profile, candidates=cands,
         can_export=bool(profile.budget_amount), suggestions=chips,
     )
+
+
+def _eligible_awards(c: CandidatePlan) -> list:
+    """Awards counted toward net cost (eligible/likely/unknown), best value first."""
+    return [m for m in c.scholarships if m.eligibility in ("eligible", "likely", "unknown")]
+
+
+def _award_txt(m, report: str) -> str:
+    tag = {"eligible": "✅", "likely": "🟡", "unknown": "❔"}.get(m.eligibility, "•")
+    val = f"~{_money(m.estimated_value, report)}/yr" if m.estimated_value else "amount varies"
+    dl = ""
+    if m.days_until_deadline is not None and m.days_until_deadline >= 0:
+        dl = f", apply by {m.deadline.isoformat()} ({m.days_until_deadline}d left)"
+    return f"{tag} **{m.name}** ({m.provider}) — {val}{dl}"
+
+
+def _net_of(c: CandidatePlan) -> float:
+    return c.net_total_annual if c.net_total_annual is not None else c.total_annual
+
+
+def _scholarships(session: Session, profile: ChatProfile,
+                  program_id: int | None = None) -> ChatResponse:
+    """List scholarships the student may qualify for — for one university or across options."""
+    if program_id:
+        plan = _run_pipeline(session, profile, program_ids=[program_id], max_results=1)
+    else:
+        plan = _run_pipeline(session, profile, max_results=6)
+    if not plan.candidates:
+        return _no_coverage(profile)
+    report = plan.report_currency
+    _store_candidates(session, profile, plan.candidates)
+
+    if program_id:
+        c = plan.candidates[0]
+        profile.focus_program_id = program_id
+        awards = _eligible_awards(c)
+        if not awards:
+            answer = (
+                f"For **{c.university_name}** I don't yet have a scholarship in my dataset that "
+                f"matches your profile. Its tuition is {_money(c.annual_tuition, report)}/yr and "
+                f"the all-in total ~{_money(c.total_annual, report)}/yr. Tell me your nationality, "
+                f"GPA and English test and I'll re-check eligibility."
+            )
+            return ChatResponse(mode="scholarships", answer=answer, profile=profile,
+                                detail=c, candidates=[c],
+                                suggestions=[_suggestion("Compare options", "Compare the top 3 options")])
+        lines = "\n".join(f"• {_award_txt(m, report)}" for m in awards)
+        answer = (
+            f"🎓 Scholarships you may qualify for at **{c.university_name}**:\n\n{lines}\n\n"
+            f"Applying the best of these brings your estimated cost from "
+            f"~{_money(c.total_annual, report)} down to **~{_money(_net_of(c), report)}/year**. "
+            f"Each award is shown with my eligibility read (✅ eligible · 🟡 likely · ❔ needs a "
+            f"detail) and links to its official source. Verify the latest terms before applying."
+        )
+        chips = [_suggestion("Plan my applications", f"Help me apply to {c.university_name}"),
+                 _suggestion(f"Download {c.university_name} report", "Generate a PDF report"),
+                 _suggestion("Compare value", "Show me the best value after scholarships")]
+        return ChatResponse(mode="scholarships", answer=answer, profile=profile, detail=c,
+                            candidates=[c], can_export=bool(profile.budget_amount), suggestions=chips)
+
+    # Across the current option set.
+    with_aid = [c for c in plan.candidates if _eligible_awards(c)]
+    if not with_aid:
+        answer = (
+            "I don't yet have scholarships in my dataset matching your profile for these options. "
+            "If you share your nationality, GPA and English test, I can re-check — or try Germany "
+            "(DAAD), Hungary (Stipendium Hungaricum) or Turkey (Türkiye Bursları), which have "
+            "broad programmes."
+        )
+        return ChatResponse(mode="scholarships", answer=answer, profile=profile,
+                            candidates=plan.candidates, suggestions=_country_chips())
+    best = min(with_aid, key=_net_of)
+    lines = []
+    for c in with_aid[:5]:
+        top = max(_eligible_awards(c), key=lambda m: m.estimated_value)
+        lines.append(f"• **{c.university_name}**: {top.name} → net ~{_money(_net_of(c), report)}/yr")
+    answer = (
+        f"Good news — several options come with scholarships you may qualify for. 🎓 "
+        f"The best value after aid is **{best.university_name}** "
+        f"(~{_money(_net_of(best), report)}/yr).\n\n" + "\n".join(lines) +
+        "\n\nWant the full award list (with deadlines and sources) for one of them, or shall I "
+        "rank everything by value after scholarships?"
+    )
+    chips = [_suggestion(f"Scholarships at {c.university_name}", f"Scholarships at {c.university_name}")
+             for c in with_aid[:2]]
+    chips.append(_suggestion("Rank by value", "Show me the best value after scholarships"))
+    return ChatResponse(mode="scholarships", answer=answer, profile=profile,
+                        candidates=plan.candidates, can_export=bool(profile.budget_amount),
+                        suggestions=chips)
+
+
+def _value(session: Session, profile: ChatProfile) -> ChatResponse:
+    """Rank the current options by net cost after scholarships (best value first)."""
+    plan = _run_pipeline(session, profile, max_results=6)
+    if not plan.candidates:
+        return _no_coverage(profile)
+    report = plan.report_currency
+    cands = sorted(plan.candidates, key=lambda c: c.value_rank or 9_999)
+    _store_candidates(session, profile, cands)
+    best = cands[0]
+    saved = round(best.total_annual - _net_of(best), 2)
+    headline = (
+        f"Ranked by **value after scholarships**, your best option is "
+        f"**{best.university_name}** (~{_money(_net_of(best), report)}/yr after aid"
+        + (f", saving ~{_money(saved, report)} vs. its sticker price" if saved > 0 else "")
+        + ")."
+    )
+    lines = []
+    for i, c in enumerate(cands):
+        suffix = f"  _(gross {_money(c.total_annual, report)})_" if c.total_scholarship_value > 0 else ""
+        lines.append(f"{i + 1}. {c.university_name}: ~{_money(_net_of(c), report)}/yr{suffix}")
+    answer = (
+        headline + "\n\n" + "\n".join(lines) +
+        "\n\nNet figures apply the single best award you may qualify for; say \"scholarships at "
+        "<university>\" for the breakdown, or generate a PDF report."
+    )
+    chips = [_suggestion(f"Scholarships at {best.university_name}", f"Scholarships at {best.university_name}"),
+             _suggestion("Generate report", "Generate a PDF report")]
+    return ChatResponse(mode="value", answer=answer, profile=profile, candidates=cands,
+                        can_export=bool(profile.budget_amount), suggestions=chips)
 
 
 def _pdf_offer(session: Session, profile: ChatProfile) -> ChatResponse:
@@ -734,9 +875,11 @@ def handle_chat(session: Session, message: str, report_currency: str,
 
     # 1) Merge any newly-mentioned slots into memory (so users never repeat themselves).
     slots = extract_slots(message, profile.report_currency)
-    for key in ("country", "field", "degree_level", "lifestyle"):
+    for key in ("country", "field", "degree_level", "lifestyle", "nationality", "language_test"):
         if slots.get(key):
             setattr(profile, key, slots[key])
+    if slots.get("gpa") is not None:
+        profile.gpa = float(slots["gpa"])
     if slots.get("budget_amount"):
         profile.budget_amount = float(slots["budget_amount"])
         profile.budget_currency = (slots.get("budget_currency")
@@ -756,6 +899,17 @@ def handle_chat(session: Session, message: str, report_currency: str,
     # 3) Explicit actions on existing context (the focus above is already applied).
     if _has_any(text, PDF_TOKENS):
         return _pdf_offer(session, profile)
+    # Value-after-aid ranking (check before plain scholarships: "value after scholarships").
+    if _has_any(text, VALUE_TOKENS):
+        if profile.country or profile.budget_amount:
+            return _value(session, profile)
+        return _ask_for_country(profile)
+    if _has_any(text, SCHOLARSHIP_TOKENS):
+        if program_id is not None:
+            return _scholarships(session, profile, program_id)
+        if profile.country or profile.budget_amount:
+            return _scholarships(session, profile)
+        return _ask_for_country(profile)
     if _has_any(text, COMPARE_TOKENS):
         return _compare(session, profile)
 
