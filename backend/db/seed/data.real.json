@@ -354,6 +354,12 @@
          "programs": [
            {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
             "tuition": {"amount": 4500, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Masaryk University Faculty of Informatics English-taught Master's tuition EUR 4,500/year."}}
+         ]},
+        {"name": "Charles University", "city": "Prague", "official_url": "https://cuni.cz/UKEN-1.html",
+         "fee_source": {"url": "https://www.mff.cuni.cz/en/admissions/costs-and-dates", "title": "Costs and Dates — Faculty of Mathematics and Physics", "publisher": "Charles University", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 7100, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2026-09-01", "note": "Faculty of Mathematics and Physics English-taught Master's, non-EU tuition EUR 7,100/yr (EU EUR 4,200/yr) from 2026/27. Tuition-fee-waiver scholarships available for strong applicants."}}
          ]}
       ]
     },
@@ -402,6 +408,54 @@
          "programs": [
            {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
             "tuition": {"amount": 3000, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-09-01", "note": "Income-based (ISEE/ISEEU): annual fee ranges from a fixed EUR 157.04 minimum to roughly EUR 3,000/yr for non-EU students with no reduction; ~EUR 3,000 used as the no-reduction estimate. Verify your bracket in the official fee table."}}
+         ]}
+      ]
+    },
+    {
+      "name": "Estonia",
+      "iso_code": "EE",
+      "default_currency": "EUR",
+      "visa": {
+        "amount": 100, "currency": "EUR", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-09-01",
+        "note": "Temporary residence permit for study (for stays over 1 year) state fee EUR 100; a long-stay (D) visa for shorter study is EUR 120.",
+        "source": {"url": "https://www.studyinestonia.ee/visa-and-residence-permit", "title": "Visa and residence permit", "publisher": "Study in Estonia (Education and Youth Board)", "source_type": "government", "accessed_date": "2026-06-28"}
+      },
+      "insurance": {
+        "amount": 150, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-09-01",
+        "note": "Non-EU students need internationally valid private health insurance (min. EUR 30,000 cover) for the visa/permit; typically EUR 100-250/yr. State health-fund buy-in is ~EUR 16/month.",
+        "source": {"url": "https://www.studyinestonia.ee/living/healthcare", "title": "Healthcare", "publisher": "Study in Estonia (Education and Youth Board)", "source_type": "government", "accessed_date": "2026-06-28"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Tartu",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Tartu", "title": "Cost of Living in Tartu", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-28"},
+         "living": [
+           {"cost_type": "rent", "amount": 320, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat; Numbeo lists ~EUR 401 for a 1-bedroom outside centre"},
+           {"cost_type": "food", "amount": 300, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 300-350)"},
+           {"cost_type": "transport", "amount": 28, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular EUR 27.75); students get reduced fares"},
+           {"cost_type": "utilities", "amount": 180, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 259 for an 85 m2 flat"}
+         ]},
+        {"name": "Tallinn",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Tallinn", "title": "Cost of Living in Tallinn", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-28"},
+         "living": [
+           {"cost_type": "rent", "amount": 430, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat; Numbeo lists ~EUR 523 for a 1-bedroom outside centre"},
+           {"cost_type": "food", "amount": 300, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 250-350)"},
+           {"cost_type": "transport", "amount": 30, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular EUR 30); residents registered in Tallinn ride free, students get reduced fares"},
+           {"cost_type": "utilities", "amount": 200, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 288 for an 85 m2 flat"}
+         ]}
+      ],
+      "universities": [
+        {"name": "University of Tartu", "city": "Tartu", "official_url": "https://ut.ee/en",
+         "fee_source": {"url": "https://ut.ee/en/content/cost-tuition", "title": "Cost of tuition", "publisher": "University of Tartu", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 7200, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "University of Tartu Computer Science MSc tuition EUR 7,200/yr for non-EU/EEA students. Merit tuition waivers cover up to 50% for the best applicants (phased out for new non-EU students from 2026/27)."}}
+         ]},
+        {"name": "Tallinn University of Technology", "city": "Tallinn", "official_url": "https://taltech.ee/en",
+         "fee_source": {"url": "https://oigusaktid.taltech.ee/en/tuition-fee-rates-for-i-and-ii-level-students-and-external-students-in-degree-study-in-the-next-academic-year/", "title": "Tuition fee rates 2025/2026", "publisher": "Tallinn University of Technology", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "programs": [
+           {"name": "M.Sc. Computer and Systems Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 6000, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "TalTech School of Information Technologies English-taught Master's EUR 3,000/semester = EUR 6,000/yr (non-EU). EU/EEA full-time IT students pay no tuition."}}
          ]}
       ]
     }
