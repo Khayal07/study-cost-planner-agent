@@ -1,5 +1,23 @@
 # Progress Log
 
+## 2026-06-28 — KIT + University of Twente (8 countries / 25 universities)
+
+Completed the batch begun below by adding the two universities that were pending on Numbeo
+(their living costs were instead sourced from official student-services pages — more
+authoritative than Numbeo, still cited):
+
+- 🇩🇪 **Karlsruhe Institute of Technology** (Karlsruhe) — Baden-Württemberg non-EU tuition
+  EUR 1,500/sem = EUR 3,000/yr (sourced); ~EUR 194.70/sem semester fee as city `hidden_misc`;
+  Karlsruhe living from Studierendenwerk Karlsruhe. Germany now has 5 universities.
+- 🇳🇱 **University of Twente** (Enschede) — institutional MSc Computer Science EUR 18,900/yr
+  (2025-26; EUR 21,700 in 2026-27), sourced; Enschede living from the UT cost-of-living page.
+  Netherlands now has 4 universities.
+
+Verified: JSON valid (8 countries, 21 cities, 25 universities/programs, 130 cost items,
+75 sources); reseeded; `scripts.verify_seed` → **All checks passed** (Verifier 8/8 `pass`).
+Live `/plan` (EUR 15k, CS): Germany → KIT ~16,244 (2nd cheapest); Netherlands → Twente
+~31,263 (cheapest). Both surface automatically in the frontend via /meta/options.
+
 ## 2026-06-28 — Estonia + Charles University (8 countries / 23 universities)
 
 Added a new country (Estonia) and grew coverage to 8 countries / 23 universities, every
