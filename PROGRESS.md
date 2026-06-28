@@ -1,5 +1,28 @@
 # Progress Log
 
+## 2026-06-28 — Estonia + Charles University (8 countries / 23 universities)
+
+Added a new country (Estonia) and grew coverage to 8 countries / 23 universities, every
+figure cited per the existing contract.
+
+- 🇪🇪 **Estonia** (new country, EUR) — residence permit EUR 100 / D-visa EUR 120 (gov),
+  private health insurance ~EUR 150/yr (estimate, min EUR 30k cover); cities Tartu + Tallinn
+  (Numbeo living).
+  - **University of Tartu** (Tartu) — MSc Computer Science EUR 7,200/yr (sourced).
+  - **Tallinn University of Technology** (Tallinn) — MSc Computer and Systems Engineering
+    EUR 6,000/yr (EUR 3,000/sem, School of IT; sourced).
+- 🇨🇿 **Charles University** (Prague) — Faculty of Mathematics and Physics MSc Computer
+  Science, non-EU EUR 7,100/yr from 2026/27 (sourced); Czechia now has 3 universities.
+
+Verified: JSON valid (8 countries, 19 cities, 23 universities/programs, 119 cost items,
+70 sources); reseeded; `scripts.verify_seed` → **All checks passed** (Verifier 8/8 `pass`).
+Live `/plan` (EUR 15k, CS): Estonia → Tartu ~17,386 / TalTech ~17,770; Czechia → +Charles
+~20,621. Data-only change.
+
+Pending (researched, fees ready — blocked on Numbeo rate-limiting for the new cities'
+living costs): KIT Karlsruhe (DE, EUR 3,000/yr) and University of Twente Enschede (NL,
+EUR 18,900/yr). To be added once Numbeo is reachable.
+
 ## 2026-06-28 — Dynamic country/field catalog (no more hardcoded frontend list)
 
 The country picker and Hero stats were hardcoded, so seeding a new country/university
