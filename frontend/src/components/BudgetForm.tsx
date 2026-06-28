@@ -3,8 +3,8 @@
 import { useState } from "react";
 import type { PlanningRequest } from "@/lib/api";
 
-const COUNTRIES = ["", "Germany", "Netherlands", "Poland", "Hungary", "Turkey"];
-const CURRENCIES = ["EUR", "USD", "TRY", "PLN", "AZN", "GBP"];
+const COUNTRIES = ["", "Germany", "Netherlands", "Poland", "Hungary", "Turkey", "Czechia", "Italy"];
+const CURRENCIES = ["EUR", "USD", "TRY", "PLN", "HUF", "CZK", "AZN", "GBP"];
 const LIFESTYLES: { id: string; label: string }[] = [
   { id: "frugal", label: "Frugal" },
   { id: "moderate", label: "Moderate" },

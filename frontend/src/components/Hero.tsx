@@ -75,9 +75,9 @@ export function Hero() {
         </div>
 
         <div className="mt-10 grid w-full max-w-xl grid-cols-3 gap-6 rounded-2xl border border-border bg-surface/60 p-5 shadow-sm animate-fade-up sm:gap-8">
-          <Stat to={5} label="countries" />
-          <Stat to={15} label="universities" />
-          <Stat to={76} label="sourced figures" />
+          <Stat to={7} label="countries" />
+          <Stat to={20} label="universities" />
+          <Stat to={106} label="sourced figures" />
         </div>
       </div>
     </section>
