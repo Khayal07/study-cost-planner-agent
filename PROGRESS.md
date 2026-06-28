@@ -1,5 +1,21 @@
 # Progress Log
 
+## 2026-06-28 — Dynamic country/field catalog (no more hardcoded frontend list)
+
+The country picker and Hero stats were hardcoded, so seeding a new country/university
+didn't surface in the UI until the frontend was hand-edited. Made the catalog data-driven.
+
+- **Backend:** new `GET /meta/options` (`app/api/meta.py`, wired in `main.py`) returns the
+  distinct countries that actually have a programme (Program→University→Country join) and the
+  distinct study fields, ordered, straight from the DB.
+- **Frontend:** `getOptions()` + `CatalogOptions` in `api.ts`; `BudgetForm` fetches the list on
+  mount (`useEffect`) and renders it, keeping a static `FALLBACK_COUNTRIES` only if the call
+  fails. Now adding a university to the seed + reseed makes its country appear automatically.
+
+Verified: `pytest` 35/35, `tsc` clean; `GET /meta/options` →
+`{"countries":[Czechia,Germany,Hungary,Italy,Netherlands,Poland,Turkey],"fields":["Computer Science"]}`;
+all 7 countries render in the served picker. Images rebuilt.
+
 ## 2026-06-28 — Dataset expansion: +2 countries, +5 universities (all web-sourced)
 
 Grew the real dataset from 5 countries / 15 universities to **7 / 20**, every figure cited

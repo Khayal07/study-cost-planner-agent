@@ -376,6 +376,17 @@ export async function getHealth(): Promise<HealthResponse> {
   return res.json();
 }
 
+export interface CatalogOptions {
+  countries: string[];
+  fields: string[];
+}
+
+export async function getOptions(): Promise<CatalogOptions> {
+  const res = await fetch(`${API_BASE_URL}/meta/options`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Options failed: ${res.status}`);
+  return res.json();
+}
+
 export async function postPlan(req: PlanningRequest): Promise<PlanResult> {
   const res = await fetch(`${API_BASE_URL}/plan`, {
     method: "POST",

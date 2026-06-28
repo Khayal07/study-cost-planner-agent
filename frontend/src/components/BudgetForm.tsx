@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import type { PlanningRequest } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { getOptions, type PlanningRequest } from "@/lib/api";
 
-const COUNTRIES = ["", "Germany", "Netherlands", "Poland", "Hungary", "Turkey", "Czechia", "Italy"];
+// Fallback only — the live list is fetched from /meta/options so new countries
+// appear automatically as soon as their data is seeded (no frontend change).
+const FALLBACK_COUNTRIES = ["Germany", "Netherlands", "Poland", "Hungary", "Turkey", "Czechia", "Italy"];
 const CURRENCIES = ["EUR", "USD", "TRY", "PLN", "HUF", "CZK", "AZN", "GBP"];
 const LIFESTYLES: { id: string; label: string }[] = [
   { id: "frugal", label: "Frugal" },
@@ -27,6 +29,17 @@ export function BudgetForm({
   const [nationality, setNationality] = useState("");
   const [gpa, setGpa] = useState("");
   const [languageTest, setLanguageTest] = useState("");
+  const [countries, setCountries] = useState<string[]>(FALLBACK_COUNTRIES);
+
+  useEffect(() => {
+    getOptions()
+      .then((opts) => {
+        if (opts.countries.length) setCountries(opts.countries);
+      })
+      .catch(() => {
+        /* keep fallback list if the catalog call fails */
+      });
+  }, []);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,8 +82,9 @@ export function BudgetForm({
           <div>
             <label htmlFor="country" className="field-label">Country</label>
             <select id="country" className="input" value={country} onChange={(e) => setCountry(e.target.value)}>
-              {COUNTRIES.map((c) => (
-                <option key={c} value={c}>{c || "All countries"}</option>
+              <option value="">All countries</option>
+              {countries.map((c) => (
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>
