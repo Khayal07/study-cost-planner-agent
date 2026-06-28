@@ -46,9 +46,11 @@ from app.api.chat import router as chat_router
 from app.api.export import router as export_router
 from app.api.auth import router as auth_router
 from app.api.applications import router as applications_router
+from app.api.meta import router as meta_router
 
 app.include_router(plan_router)
 app.include_router(chat_router)
 app.include_router(export_router)
 app.include_router(auth_router)
 app.include_router(applications_router)
+app.include_router(meta_router)
