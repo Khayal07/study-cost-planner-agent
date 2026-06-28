@@ -56,6 +56,16 @@
            {"cost_type": "utilities", "amount": 200, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 280 for an 85 m2 flat"},
            {"cost_type": "hidden_misc", "amount": 368, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "University of Stuttgart semester fee EUR 184/semester, 2 semesters/year",
             "source": {"url": "https://www.student.uni-stuttgart.de/en/organizing-studies/formalities/tuition-and-fees/", "title": "Fees and Charges — University of Stuttgart", "publisher": "University of Stuttgart", "source_type": "official_university", "accessed_date": "2026-06-28"}}
+         ]},
+        {"name": "Karlsruhe",
+         "living_source": {"url": "https://www.sw-ka.de/en/", "title": "Living in Karlsruhe — student costs", "publisher": "Studierendenwerk Karlsruhe", "source_type": "government", "accessed_date": "2026-06-28"},
+         "living": [
+           {"cost_type": "rent", "amount": 420, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student dorm room ~EUR 300-400 (Studierendenwerk Karlsruhe); private 30-40 m2 flat ~EUR 500"},
+           {"cost_type": "food", "amount": 280, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Groceries one person ~EUR 200-300; a Mensa meal is ~EUR 4-5"},
+           {"cost_type": "transport", "amount": 49, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Deutschlandticket ~EUR 58/month; KVV student passes are discounted"},
+           {"cost_type": "utilities", "amount": 180, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate (heating/electricity/water/internet)"},
+           {"cost_type": "hidden_misc", "amount": 389, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Semester fee ~EUR 194.70/semester (Studierendenwerk EUR 108.70 + admin EUR 70 + AStA EUR 16), 2 semesters/year",
+            "source": {"url": "https://www.intl.kit.edu/istudies/12606.php", "title": "Tuition Fees — KIT International Students", "publisher": "Karlsruhe Institute of Technology", "source_type": "official_university", "accessed_date": "2026-06-28"}}
          ]}
       ],
       "universities": [
@@ -82,6 +92,12 @@
          "programs": [
            {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
             "tuition": {"amount": 3000, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Baden-Wurttemberg non-EU/EEA tuition EUR 1,500/semester = EUR 3,000/yr (plus EUR 184/semester semester fee, see hidden cost). EU/EEA students pay no tuition."}}
+         ]},
+        {"name": "Karlsruhe Institute of Technology", "city": "Karlsruhe", "official_url": "https://www.kit.edu/english/",
+         "fee_source": {"url": "https://www.intl.kit.edu/istudies/12606.php", "title": "Tuition Fees — KIT International Students", "publisher": "Karlsruhe Institute of Technology", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 3000, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Baden-Wurttemberg non-EU/EEA tuition EUR 1,500/semester = EUR 3,000/yr (plus the semester fee, see hidden cost). EU/EEA students pay no tuition."}}
          ]}
       ]
     },
@@ -124,6 +140,14 @@
            {"cost_type": "food", "amount": 300, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 250-350)"},
            {"cost_type": "transport", "amount": 100, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly public transport pass"},
            {"cost_type": "utilities", "amount": 150, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 197 for an 85 m2 flat"}
+         ]},
+        {"name": "Enschede",
+         "living_source": {"url": "https://www.utwente.nl/en/education/student-services/upcoming-students/money-matters/cost-of-living/", "title": "Cost of living", "publisher": "University of Twente", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "living": [
+           {"cost_type": "rent", "amount": 450, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student room ~EUR 370 (excl. utilities) per UT; own studio/apartment EUR 500-700"},
+           {"cost_type": "food", "amount": 250, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Groceries one person ~EUR 200-250 (Nibud/UT student estimate)"},
+           {"cost_type": "transport", "amount": 60, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Local bus; many students cycle. Non-EU students do not get the Dutch OV student travel benefit"},
+           {"cost_type": "utilities", "amount": 130, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Gas/water/electricity/internet ~EUR 100-150 (UT estimate); incl. local water/waste charges ~EUR 300/yr"}
          ]}
       ],
       "universities": [
@@ -144,6 +168,12 @@
          "programs": [
            {"name": "M.Sc. Computer Science and Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
             "tuition": {"amount": 21700, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2026-09-01", "note": "Institutional fee for non-EEA master students (uniform across programmes), 2026-2027 official rate. EU/EEA students pay the statutory fee."}}
+         ]},
+        {"name": "University of Twente", "city": "Enschede", "official_url": "https://www.utwente.nl/en/",
+         "fee_source": {"url": "https://www.utwente.nl/en/education/master/programmes/computer-science/finance/", "title": "Tuition fees — MSc Computer Science", "publisher": "University of Twente", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 18900, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Institutional tuition for non-EU/EEA MSc Computer Science, EUR 18,900/yr (2025-2026); rises to EUR 21,700 in 2026-2027. EU/EEA students pay the statutory fee."}}
          ]}
       ]
     },
