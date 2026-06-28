@@ -26,7 +26,7 @@ from app.data.db import SessionLocal
 from app.data.models import Country, CostItem, Source
 
 # Plausibility bands (annualized where noted), mirroring the Verifier agent.
-TUITION_ANNUAL_BAND = (0.0, 60000.0)
+TUITION_ANNUAL_BAND = (0.0, 200000.0)  # wide: raw units, covers non-EUR tuitions (e.g. CZK ~132,000/yr)
 LIVING_MONTHLY_BAND = (0.0, 60000.0)  # wide: covers high-inflation currencies (TRY)
 
 

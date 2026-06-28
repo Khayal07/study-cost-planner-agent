@@ -1,5 +1,36 @@
 # Progress Log
 
+## 2026-06-28 — Dataset expansion: +2 countries, +5 universities (all web-sourced)
+
+Grew the real dataset from 5 countries / 15 universities to **7 / 20**, every figure cited
+per the existing contract (official/government = `sourced`; Numbeo living = `estimate`).
+
+**Added (`backend/db/seed/data.real.json`):**
+- 🇩🇪 **University of Stuttgart** (Stuttgart) — Baden-Württemberg non-EU tuition EUR 1,500/sem
+  = EUR 3,000/yr (sourced); EUR 184/sem semester fee as city `hidden_misc`; Stuttgart living
+  from Numbeo.
+- 🇨🇿 **Czechia** (new country, CZK) — visa CZK 2,500 (long-term study visa, gov), insurance
+  ~CZK 600/mo (PVZP comprehensive ~CZK 7,200/yr, estimate); cities Prague + Brno (Numbeo).
+  - **Czech Technical University in Prague** — FEE English Master CZK 132,000/yr (sourced).
+  - **Masaryk University** (Brno) — Faculty of Informatics EUR 4,500/yr (sourced).
+- 🇮🇹 **Italy** (new country, EUR) — visa EUR 50 (type-D, gov), insurance EUR 700/yr (SSN
+  voluntary registration, flat annual, sourced); cities Milan + Bologna (Numbeo).
+  - **Politecnico di Milano** — non-EU max ~EUR 3,886/yr (first EUR 883 + second up to
+    EUR 3,003, sourced).
+  - **University of Bologna** — ISEE income-based; ~EUR 3,000/yr no-reduction estimate (the
+    only new tuition flagged `estimate`, with the official fee page cited).
+
+Also widened `scripts/verify_seed.py` `TUITION_ANNUAL_BAND` to 200,000 (raw units) — the
+audit band was currency-agnostic and false-flagged CTU's 132,000 CZK (~EUR 5,440 after FX),
+which the currency-aware Verifier agent already passed.
+
+**Verified:** JSON valid (7 countries, 17 cities, 20 universities, 20 programs, 106 cost
+items, 63 sources). Rebuilt backend image, reseeded, `scripts.verify_seed` → **All checks
+passed** (per-country Verifier 7/7 `pass`, every sourced figure has a URL, currencies valid,
+ranges plausible). Live `/plan` (EUR 15k, CS): Czechia → Masaryk ~16,397 / CTU ~18,961;
+Italy → Bologna ~15,858 / Polimi ~18,784; Germany → +Stuttgart ~18,383 — FX conversion
+(CZK→EUR) working end-to-end. No agent/schema/route logic changed — data-only expansion.
+
 ## 2026-06-27 — Phases F–H: scholarships surfaced end-to-end + accounts
 
 Completed the scholarship ecosystem on top of the Phase E foundation.
