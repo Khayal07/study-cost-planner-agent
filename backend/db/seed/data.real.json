@@ -46,6 +46,16 @@
            {"cost_type": "utilities", "amount": 150, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 341 for an 85 m2 flat"},
            {"cost_type": "hidden_misc", "amount": 658, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "RWTH Aachen semester contribution EUR 329/semester (includes the Deutschlandticket semester ticket), 2 semesters/year",
             "source": {"url": "https://www.asta.rwth-aachen.de/en/semester-contribution/", "title": "Semester contribution (Semester Fee)", "publisher": "AStA der RWTH Aachen", "source_type": "official_university", "accessed_date": "2026-06-24"}}
+         ]},
+        {"name": "Stuttgart",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Stuttgart", "title": "Cost of Living in Stuttgart", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-28"},
+         "living": [
+           {"cost_type": "rent", "amount": 560, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat; Numbeo lists ~EUR 744 for a 1-bedroom outside centre"},
+           {"cost_type": "food", "amount": 300, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 250-350)"},
+           {"cost_type": "transport", "amount": 49, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Deutschlandticket ~EUR 58/month; students use a discounted semester ticket. Numbeo regular pass EUR 63"},
+           {"cost_type": "utilities", "amount": 200, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 280 for an 85 m2 flat"},
+           {"cost_type": "hidden_misc", "amount": 368, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "University of Stuttgart semester fee EUR 184/semester, 2 semesters/year",
+            "source": {"url": "https://www.student.uni-stuttgart.de/en/organizing-studies/formalities/tuition-and-fees/", "title": "Fees and Charges — University of Stuttgart", "publisher": "University of Stuttgart", "source_type": "official_university", "accessed_date": "2026-06-28"}}
          ]}
       ],
       "universities": [
@@ -66,6 +76,12 @@
          "programs": [
            {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
             "tuition": {"amount": 0, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "North Rhine-Westphalia does not charge tuition fees to international students; only the semester contribution applies (see hidden cost)."}}
+         ]},
+        {"name": "University of Stuttgart", "city": "Stuttgart", "official_url": "https://www.uni-stuttgart.de",
+         "fee_source": {"url": "https://www.student.uni-stuttgart.de/en/organizing-studies/formalities/tuition-and-fees/tuition-fee/", "title": "Tuition fees for international students", "publisher": "University of Stuttgart", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 3000, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Baden-Wurttemberg non-EU/EEA tuition EUR 1,500/semester = EUR 3,000/yr (plus EUR 184/semester semester fee, see hidden cost). EU/EEA students pay no tuition."}}
          ]}
       ]
     },
@@ -290,6 +306,102 @@
          "programs": [
            {"name": "M.Sc. Computer Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
             "tuition": {"amount": 1500, "currency": "USD", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-09-01", "note": "METU international graduate rate ~USD 750/semester (2024-2025 official) = ~USD 1,500/yr, paid in TRY at the minimum gazetted amount. Verify the 2025-2026 figure in the linked PDF."}}
+         ]}
+      ]
+    },
+    {
+      "name": "Czechia",
+      "iso_code": "CZ",
+      "default_currency": "CZK",
+      "visa": {
+        "amount": 2500, "currency": "CZK", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-09-01",
+        "note": "Long-term visa for the purpose of studies — consular fee CZK 2,500 paid at a Czech embassy/consulate (a separate residence permit applies for stays over 1 year).",
+        "source": {"url": "https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-visa/long-term-visa-for-the-purpose-of-studies/", "title": "Long-term Visa for the Purpose of Studies", "publisher": "Integration Centre / Ministry of the Interior, Czech Republic", "source_type": "government", "accessed_date": "2026-06-28"}
+      },
+      "insurance": {
+        "amount": 600, "currency": "CZK", "period": "monthly", "confidence": "estimate", "valid_as_of": "2025-09-01",
+        "note": "Non-EU students need comprehensive commercial health insurance for the visa; PVZP comprehensive cover is ~CZK 7,200/yr (~CZK 600/month). Cheaper urgent-care-only plans exist but are not visa-compliant.",
+        "source": {"url": "https://www.studyin.cz/live-work/medical-care-and-insurance/", "title": "Medical care and insurance", "publisher": "Study in Czechia (DZS)", "source_type": "government", "accessed_date": "2026-06-28"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Prague",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Prague", "title": "Cost of Living in Prague", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-28"},
+         "living": [
+           {"cost_type": "rent", "amount": 13000, "currency": "CZK", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat; Numbeo lists ~CZK 22,033 for a 1-bedroom outside centre"},
+           {"cost_type": "food", "amount": 8500, "currency": "CZK", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~CZK 8,000-10,000)"},
+           {"cost_type": "transport", "amount": 534, "currency": "CZK", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular CZK 534); students get heavily reduced annual fares"},
+           {"cost_type": "utilities", "amount": 4500, "currency": "CZK", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~CZK 6,804 for an 85 m2 flat"}
+         ]},
+        {"name": "Brno",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Brno", "title": "Cost of Living in Brno", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-28"},
+         "living": [
+           {"cost_type": "rent", "amount": 10500, "currency": "CZK", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat; Numbeo lists ~CZK 17,354 for a 1-bedroom outside centre"},
+           {"cost_type": "food", "amount": 8000, "currency": "CZK", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~CZK 8,000-9,000)"},
+           {"cost_type": "transport", "amount": 550, "currency": "CZK", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular CZK 550); students get reduced fares"},
+           {"cost_type": "utilities", "amount": 4200, "currency": "CZK", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~CZK 6,679 for an 85 m2 flat"}
+         ]}
+      ],
+      "universities": [
+        {"name": "Czech Technical University in Prague", "city": "Prague", "official_url": "https://www.cvut.cz/en",
+         "fee_source": {"url": "https://fel.cvut.cz/en/admissions/admission-procedures/tuition-fees", "title": "Tuition fees — CTU FEE", "publisher": "Czech Technical University in Prague", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 132000, "currency": "CZK", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "CTU Faculty of Electrical Engineering English-taught Master's: CZK 132,000/academic year (CZK 66,000/semester). Payable in CZK, EUR or USD."}}
+         ]},
+        {"name": "Masaryk University", "city": "Brno", "official_url": "https://www.muni.cz/en",
+         "fee_source": {"url": "https://www.muni.cz/en/admissions/bachelors-and-masters-studies/tuition-fees-and-financial-aid", "title": "Tuition fees and financial aid", "publisher": "Masaryk University", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 4500, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Masaryk University Faculty of Informatics English-taught Master's tuition EUR 4,500/year."}}
+         ]}
+      ]
+    },
+    {
+      "name": "Italy",
+      "iso_code": "IT",
+      "default_currency": "EUR",
+      "visa": {
+        "amount": 50, "currency": "EUR", "period": "one_time", "confidence": "sourced", "valid_as_of": "2025-09-01",
+        "note": "National (type D) long-stay student visa fee EUR 50 (standard Schengen long-stay study fee; small service charges may apply at VFS centres).",
+        "source": {"url": "https://vistoperitalia.esteri.it/home/en", "title": "Visa for Italy — fees", "publisher": "Ministry of Foreign Affairs and International Cooperation, Italy", "source_type": "government", "accessed_date": "2026-06-28"}
+      },
+      "insurance": {
+        "amount": 700, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01",
+        "note": "Voluntary registration with the Italian National Health Service (SSN) for students is a flat EUR 700/calendar year, giving the same cover as a resident.",
+        "source": {"url": "https://www.studyandwork.yesmilano.it/en/study/how-to/national-health-service-students-step-step", "title": "National Health Service for students", "publisher": "YesMilano (Municipality of Milan)", "source_type": "government", "accessed_date": "2026-06-28"}
+      },
+      "hidden": [],
+      "cities": [
+        {"name": "Milan",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Milan", "title": "Cost of Living in Milan", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-28"},
+         "living": [
+           {"cost_type": "rent", "amount": 700, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat; Numbeo lists ~EUR 1,041 for a 1-bedroom outside centre"},
+           {"cost_type": "food", "amount": 280, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 250-300)"},
+           {"cost_type": "transport", "amount": 39, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular EUR 39); under-26 students get a discounted annual ATM pass"},
+           {"cost_type": "utilities", "amount": 160, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 215 for an 85 m2 flat"}
+         ]},
+        {"name": "Bologna",
+         "living_source": {"url": "https://www.numbeo.com/cost-of-living/in/Bologna", "title": "Cost of Living in Bologna", "publisher": "Numbeo", "source_type": "statistical_portal", "accessed_date": "2026-06-28"},
+         "living": [
+           {"cost_type": "rent", "amount": 520, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student room / shared flat; Numbeo lists ~EUR 782 for a 1-bedroom outside centre"},
+           {"cost_type": "food", "amount": 290, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo grocery basket, one person (~EUR 250-300)"},
+           {"cost_type": "transport", "amount": 39, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Numbeo monthly pass (regular EUR 39); students get discounted season tickets"},
+           {"cost_type": "utilities", "amount": 160, "currency": "EUR", "period": "monthly", "confidence": "estimate", "note": "Student-sized apartment estimate; Numbeo lists ~EUR 218 for an 85 m2 flat"}
+         ]}
+      ],
+      "universities": [
+        {"name": "Politecnico di Milano", "city": "Milan", "official_url": "https://www.polimi.it/en",
+         "fee_source": {"url": "https://www.polimi.it/en/prospective-students/how-much-does-it-cost/laurea-laurea-magistrale-and-single-cycle-programmes", "title": "Tuition fees — Laurea Magistrale", "publisher": "Politecnico di Milano", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "programs": [
+           {"name": "M.Sc. Computer Science and Engineering", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 3886, "currency": "EUR", "period": "annual", "confidence": "sourced", "valid_as_of": "2025-09-01", "note": "Non-EU students with income/property abroad pay the maximum: first instalment ~EUR 883 + second instalment up to EUR 3,003 = ~EUR 3,886/yr. Lower with income-based 'Diritto allo Studio' benefits or merit/income scholarships."}}
+         ]},
+        {"name": "University of Bologna", "city": "Bologna", "official_url": "https://www.unibo.it/en",
+         "fee_source": {"url": "https://www.unibo.it/en/study/enrolment-fees-and-other-procedures/degree-programmes/tuition-fees-and-exemptions", "title": "Fees and exemptions: amounts and deadlines", "publisher": "University of Bologna", "source_type": "official_university", "accessed_date": "2026-06-28"},
+         "programs": [
+           {"name": "M.Sc. Computer Science", "field": "Computer Science", "degree_level": "master", "language": "English", "duration_years": 2.0,
+            "tuition": {"amount": 3000, "currency": "EUR", "period": "annual", "confidence": "estimate", "valid_as_of": "2025-09-01", "note": "Income-based (ISEE/ISEEU): annual fee ranges from a fixed EUR 157.04 minimum to roughly EUR 3,000/yr for non-EU students with no reduction; ~EUR 3,000 used as the no-reduction estimate. Verify your bracket in the official fee table."}}
          ]}
       ]
     }
