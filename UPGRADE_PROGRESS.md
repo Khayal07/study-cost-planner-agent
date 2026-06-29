@@ -48,10 +48,10 @@ Added **framer-motion@^11**. Keep teal/amber tokens + Inter/Bricolage/JetBrains-
 - [x] Dark-mode: all new surfaces use existing theme tokens → dark-compatible by construction
 - NOTE: `npm run build` clean after every step. Number-transition count-up already exists in Hero.tsx.
 
-## Phase 3 — 10 Brainstormed Features — NOT STARTED
-1. [ ] Side-by-side comparison (pin 2–3 candidates)
-2. [ ] Full-degree projection + inflation slider (`Program.duration_years`)
-3. [ ] Interactive what-if sliders (debounced /plan)
+## Phase 3 — 10 Brainstormed Features — IN PROGRESS (3/10)
+1. [x] Side-by-side comparison (pin 2–3 candidates) — `ComparisonView.tsx` + pin button in `PlanResults.tsx` (commit `4c90ee9`). Verified: teal=cheapest, amber=most aid, ties unmarked.
+2. [x] Full-degree projection + inflation slider — `ProjectionCard` in `PlanResults.tsx` (commit `985b9f7`). Uses gross `total_annual` (net→0 under full aid is degenerate); compounding bars per year.
+3. [x] Interactive what-if sliders (debounced /plan) — `WhatIfPanel` in `PlanResults.tsx` + `refreshing`/`onWhatIf` in `app/page.tsx` (commit `985b9f7`). Re-plans in place, no skeleton swap.
 4. [ ] Saved plans + shareable links (new `SavedPlan` model + `/plans` CRUD)
 5. [ ] Map-based country explorer (**react-simple-maps**, from /meta/options)
 6. [ ] Scholarship match score + "improve eligibility" tips (EligibilityAgent reasons)
