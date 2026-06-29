@@ -113,6 +113,18 @@ def load_seed(session: Session | None = None) -> dict:
             country_ids[c["name"]] = country.id
             counts["countries"] += 1
 
+            # Student part-time work rights (optional, sourced) — Phase 3 #7.
+            if c.get("work"):
+                w = c["work"]
+                work_src = _make_source(session, w["source"])
+                counts["sources"] += 1
+                country.work_hours_cap = w["hours_cap"]
+                country.work_hourly_wage = w["hourly_wage"]
+                country.work_wage_currency = w["wage_currency"]
+                country.work_note = w.get("note")
+                country.work_source_id = work_src.id
+                session.flush()
+
             # Country-scoped costs: visa, insurance, hidden
             for cost_type, key in (("visa", "visa"), ("insurance", "insurance")):
                 if c.get(key):

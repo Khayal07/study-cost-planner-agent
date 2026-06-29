@@ -113,6 +113,12 @@ class CandidatePlan(BaseModel):
     net_affordable: bool | None = None
     value_rank: int | None = None                 # rank by net cost (cheapest-after-aid)
 
+    # Part-time work offset (Phase 3 #7) — sourced potential earnings, not guaranteed.
+    work_hours_cap: int | None = None             # term-time hours/week the visa allows
+    work_annual_earnings: float | None = None     # estimated annual gross, report currency
+    work_note: str | None = None                  # the assumption / legal note
+    work_citation: Citation | None = None
+
 
 class VerificationCheck(BaseModel):
     name: str
