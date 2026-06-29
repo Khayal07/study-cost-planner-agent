@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   Bar,
@@ -16,6 +16,7 @@ import {
   createApplication,
   exportPdf,
   type CandidatePlan,
+  type PlanningRequest,
   type PlanResult,
   type ScholarshipMatch,
 } from "@/lib/api";
@@ -36,7 +37,17 @@ function money(n: number, cur: string) {
   return `${n.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${cur}`;
 }
 
-export function PlanResults({ plan, request }: { plan: PlanResult; request: PlanResult["request"] }) {
+export function PlanResults({
+  plan,
+  request,
+  refreshing = false,
+  onWhatIf,
+}: {
+  plan: PlanResult;
+  request: PlanResult["request"];
+  refreshing?: boolean;
+  onWhatIf?: (req: PlanningRequest) => void;
+}) {
   const cur = plan.report_currency;
   const [selected, setSelected] = useState(0);
   const [exporting, setExporting] = useState(false);
@@ -178,6 +189,9 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
           {exporting ? "Generating…" : "Export PDF"}
         </button>
       </div>
+
+      {/* What-if controls */}
+      {onWhatIf && <WhatIfPanel request={request} refreshing={refreshing} onChange={onWhatIf} />}
 
       {/* Recommendations */}
       {plan.recommendations.length > 0 && (
@@ -330,6 +344,100 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
       {plan.verification && <Verification report={plan.verification} />}
 
       <p className="px-1 text-[11px] leading-relaxed text-muted">{plan.disclaimer}</p>
+    </div>
+  );
+}
+
+const WHATIF_LIFESTYLES = ["frugal", "moderate", "comfortable"] as const;
+
+/** Live "what-if" budget + lifestyle tuning; re-plans (debounced) without losing the view. */
+function WhatIfPanel({
+  request,
+  refreshing,
+  onChange,
+}: {
+  request: PlanningRequest;
+  refreshing: boolean;
+  onChange: (req: PlanningRequest) => void;
+}) {
+  const [budget, setBudget] = useState(request.budget_amount);
+  const [lifestyle, setLifestyle] = useState(request.lifestyle ?? "moderate");
+  const firstRun = useRef(true);
+
+  // Keep the panel in sync if a fresh plan arrives from outside (e.g. new wizard run).
+  useEffect(() => {
+    setBudget(request.budget_amount);
+    setLifestyle(request.lifestyle ?? "moderate");
+  }, [request.budget_amount, request.lifestyle]);
+
+  // Debounced re-plan when the user tweaks budget/lifestyle here.
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
+    }
+    if (budget === request.budget_amount && lifestyle === (request.lifestyle ?? "moderate")) return;
+    const t = setTimeout(() => onChange({ ...request, budget_amount: budget, lifestyle }), 450);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [budget, lifestyle]);
+
+  const cur = request.budget_currency;
+  const min = 1000;
+  const max = Math.max(20000, Math.round((request.budget_amount * 2.5) / 1000) * 1000);
+
+  return (
+    <div className="card border-primary/20 bg-primary-weak/20 p-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h3 className="flex items-center gap-2 text-sm font-semibold">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary" aria-hidden="true">
+            <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
+          </svg>
+          What-if
+        </h3>
+        {refreshing && (
+          <span className="flex items-center gap-1.5 text-[11px] text-muted">
+            <Spinner /> updating…
+          </span>
+        )}
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div>
+          <div className="mb-1.5 flex items-center justify-between text-[11px]">
+            <label htmlFor="whatif-budget" className="font-medium text-muted">Yearly budget</label>
+            <span className="figure font-semibold text-foreground">{money(budget, cur)}</span>
+          </div>
+          <input
+            id="whatif-budget"
+            type="range"
+            min={min}
+            max={max}
+            step={500}
+            value={Math.min(budget, max)}
+            onChange={(e) => setBudget(Number(e.target.value))}
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-primary"
+            aria-valuetext={money(budget, cur)}
+          />
+        </div>
+
+        <div role="radiogroup" aria-label="Lifestyle" className="grid grid-cols-3 gap-1 rounded-xl border border-border bg-surface-2 p-1">
+          {WHATIF_LIFESTYLES.map((l) => (
+            <button
+              key={l}
+              type="button"
+              role="radio"
+              aria-checked={lifestyle === l}
+              onClick={() => setLifestyle(l)}
+              className={`rounded-lg px-2.5 py-1 text-xs font-medium capitalize transition-all ${
+                lifestyle === l ? "bg-surface text-foreground shadow-sm" : "text-muted hover:text-foreground"
+              }`}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -510,6 +618,81 @@ function Breakdown({ c, cur }: { c: CandidatePlan; cur: string }) {
           ))}
         </div>
       </div>
+
+      {/* Full-degree projection */}
+      <ProjectionCard c={c} cur={cur} />
+    </div>
+  );
+}
+
+/** Total cost across the whole degree, with a compounding inflation slider. */
+function ProjectionCard({ c, cur }: { c: CandidatePlan; cur: string }) {
+  const [infl, setInfl] = useState(3);
+  const years = Math.max(1, Math.round(c.duration_years || 1));
+  // Sticker cost of attendance — aid is shown separately; inflation acts on the gross.
+  const base = c.total_annual;
+  const r = infl / 100;
+  const perYear = Array.from({ length: years }, (_, y) => base * Math.pow(1 + r, y));
+  const total = perYear.reduce((a, b) => a + b, 0);
+  const flatTotal = base * years;
+  const extra = total - flatTotal;
+  const max = perYear[perYear.length - 1] || 1;
+
+  return (
+    <div className="mt-5 rounded-xl border border-border bg-surface-2/40 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted">
+          Full-degree projection
+          <span className="ml-2 normal-case text-muted/80">{years}-year {c.degree_level}</span>
+        </h4>
+        <div className="text-right">
+          <div className="figure text-lg font-semibold text-foreground">{money(total, cur)}</div>
+          <div className="text-[11px] text-muted">total program cost</div>
+        </div>
+      </div>
+
+      {years > 1 && (
+        <>
+          <div className="mt-3 flex items-center gap-3">
+            <label htmlFor={`infl-${c.program_id}`} className="shrink-0 text-[11px] font-medium text-muted">
+              Inflation
+            </label>
+            <input
+              id={`infl-${c.program_id}`}
+              type="range"
+              min={0}
+              max={8}
+              step={0.5}
+              value={infl}
+              onChange={(e) => setInfl(Number(e.target.value))}
+              className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-primary"
+              aria-valuetext={`${infl}% per year`}
+            />
+            <span className="figure w-12 shrink-0 text-right text-xs font-semibold text-primary">{infl}%/yr</span>
+          </div>
+
+          <div className="mt-3 flex items-end gap-1.5">
+            {perYear.map((v, y) => (
+              <div key={y} className="flex flex-1 flex-col items-center gap-1" title={`Year ${y + 1}: ${money(v, cur)}`}>
+                <span className="figure text-[10px] text-muted">{Math.round(v / 1000)}k</span>
+                <div
+                  className="w-full rounded-t bg-primary/70"
+                  style={{ height: `${20 + (v / max) * 44}px` }}
+                />
+                <span className="text-[10px] text-muted">Y{y + 1}</span>
+              </div>
+            ))}
+          </div>
+
+          {extra > 0 && (
+            <p className="mt-3 text-[11px] text-muted">
+              Inflation at {infl}%/yr adds{" "}
+              <span className="figure font-medium text-accent">{money(extra, cur)}</span> over the degree
+              vs. flat pricing ({money(flatTotal, cur)}).
+            </p>
+          )}
+        </>
+      )}
     </div>
   );
 }
