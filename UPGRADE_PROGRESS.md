@@ -48,15 +48,15 @@ Added **framer-motion@^11**. Keep teal/amber tokens + Inter/Bricolage/JetBrains-
 - [x] Dark-mode: all new surfaces use existing theme tokens → dark-compatible by construction
 - NOTE: `npm run build` clean after every step. Number-transition count-up already exists in Hero.tsx.
 
-## Phase 3 — 10 Brainstormed Features — IN PROGRESS (4/10 done, #2 deferred)
+## Phase 3 — 10 Brainstormed Features — IN PROGRESS (6/10 done, #2 + #8 deferred)
 1. [x] Side-by-side comparison (pin 2–3 candidates) — `ComparisonView.tsx` + pin button in `PlanResults.tsx` (commit `4c90ee9`). Verified: teal=cheapest, amber=most aid, ties unmarked.
 2. [DEFERRED] Full-degree projection + inflation slider — built then REMOVED at user request: a manual inflation slider is meaningless guesswork. Redo later with a SOURCED per-country inflation figure (new data field), not an LLM/manual estimate, to honour the "every figure cited" principle.
 3. [x] Interactive what-if sliders (debounced /plan) — `WhatIfPanel` in `PlanResults.tsx` + `refreshing`/`onWhatIf` in `app/page.tsx` (commit `985b9f7`). Re-plans in place, no skeleton swap.
 4. [x] Saved plans + shareable links — `SavedPlan` model + `/plans` CRUD + public `/plans/shared/{public_id}` (re-runs planner so links stay current); frontend "Save & share" on results, Saved tab (`SavedPlans.tsx`), public view `app/p/[id]/page.tsx` (commit `976f6e9`). Verified end-to-end incl. auth gating + friendly 404.
 5. [x] Map-based country explorer (**react-simple-maps**) — `CountryMap.tsx` in the form-tab empty state; covered countries from /meta/options (aliases: Czechia→czech republic, Turkey→türkiye), click pre-fills wizard via `initialCountry` prop (commit `976f6e9`). Topojson bundled at `frontend/public/countries-110m.json`; `.npmrc` legacy-peer-deps for React 19; Dockerfile copies `.npmrc`.
-6. [ ] Scholarship match score + "improve eligibility" tips (EligibilityAgent reasons)
-7. [ ] Part-time work earnings offset (new `Country.work_hours_cap` field)
-8. [ ] FX stress scenario ("currency drops X%") for volatile currencies
+6. [x] Scholarship match score + "improve eligibility" tips — EligibilityAgent now emits `match_score` (0–100, deterministic deductions) + actionable `tips` (only for fixable missing inputs; cleared for hard fails). Frontend: score meter per row + per-row "Improve your odds" + panel-level deduped "Improve your eligibility" summary; 🎓 header → SVG (`ScholarshipPanel.tsx`). 44 tests pass. Verified: 100 eligible / 90 missing-language.
+7. [x] Part-time work earnings offset — new sourced `Country.work_hours_cap`/`work_hourly_wage`/`work_wage_currency`/`work_note`/`work_source_id` columns (ALTER-in-`cli.migrate` + seed `work` block for all 8 countries, real caps + statutory min wages w/ citations). CurrencyAgent computes annual gross = cap × wage × `WORK_WEEKS_PER_YEAR`(40), converted; exposed on CandidatePlan (`work_annual_earnings` etc.). Frontend `WorkOffsetCard` w/ "Apply to total" toggle (PlanResults). Verified Germany €10,256/yr, Turkey ~€1,624; 44 tests pass. NOTE: required a `reseed` (drops users/saved_plans) to load the new country data.
+8. [DEFERRED] FX stress scenario — same flaw as #2: a manual "drops X%" slider is unsourced guesswork. Dataset only has a boolean `VOLATILE_CURRENCIES` flag (TRY/ARS/EGP/NGN/RUB/VES), no magnitude. Redo later with a SOURCED per-currency historical-volatility figure, then show one grounded stress line (no slider).
 9. [ ] Deadline calendar + ICS export (hand-built .ics, no dep)
 10. [ ] i18n EN/AZ (chat already understands AZ)
 

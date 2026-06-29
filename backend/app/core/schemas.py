@@ -61,7 +61,9 @@ class ScholarshipMatch(BaseModel):
     currency: str
     estimated_value: float = 0.0          # annual saving in report currency
     eligibility: str = "unknown"          # eligible | likely | ineligible | unknown
+    match_score: int = 100                # 0–100 fit score (deterministic, explainable)
     reasons: list[str] = Field(default_factory=list)
+    tips: list[str] = Field(default_factory=list)  # actionable "improve eligibility" hints
     deadline: date | None = None
     days_until_deadline: int | None = None
     renewable: bool = False
@@ -110,6 +112,12 @@ class CandidatePlan(BaseModel):
     net_budget_gap: float | None = None           # budget - net_total_annual
     net_affordable: bool | None = None
     value_rank: int | None = None                 # rank by net cost (cheapest-after-aid)
+
+    # Part-time work offset (Phase 3 #7) — sourced potential earnings, not guaranteed.
+    work_hours_cap: int | None = None             # term-time hours/week the visa allows
+    work_annual_earnings: float | None = None     # estimated annual gross, report currency
+    work_note: str | None = None                  # the assumption / legal note
+    work_citation: Citation | None = None
 
 
 class VerificationCheck(BaseModel):

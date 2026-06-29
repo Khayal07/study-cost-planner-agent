@@ -13,6 +13,20 @@ const ELIGIBILITY: Record<
 
 const ORDER: ScholarshipEligibility[] = ["eligible", "likely", "unknown", "ineligible"];
 
+/** Compact 0–100 fit meter — teal when strong, amber mid, muted/low when weak. */
+function MatchScore({ score, eligible }: { score: number; eligible: boolean }) {
+  const tone = !eligible ? "bg-border" : score >= 75 ? "bg-primary" : score >= 50 ? "bg-accent" : "bg-muted";
+  const text = !eligible ? "text-muted" : score >= 75 ? "text-primary" : score >= 50 ? "text-accent" : "text-muted";
+  return (
+    <div className="flex items-center gap-1.5" title={`Match score: ${score}/100`}>
+      <div className="h-1.5 w-14 overflow-hidden rounded-full bg-surface-2">
+        <div className={`h-full rounded-full ${tone}`} style={{ width: `${score}%` }} />
+      </div>
+      <span className={`figure text-[11px] font-semibold ${text}`}>{score}</span>
+    </div>
+  );
+}
+
 function money(amount: number, currency: string): string {
   try {
     return new Intl.NumberFormat(undefined, {
@@ -46,10 +60,13 @@ function ScholarshipRow({
           <p className="truncate text-sm font-semibold">{m.name}</p>
           <p className="truncate text-xs text-muted">{m.provider}</p>
         </div>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${e.cls}`}>
-          <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle ${e.dot}`} />
-          {e.label}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${e.cls}`}>
+            <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle ${e.dot}`} />
+            {e.label}
+          </span>
+          <MatchScore score={m.match_score} eligible={m.eligibility !== "ineligible"} />
+        </div>
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
@@ -77,6 +94,22 @@ function ScholarshipRow({
             <li key={i}>• {r}</li>
           ))}
         </ul>
+      )}
+
+      {m.tips.length > 0 && (
+        <div className="mt-2 rounded-lg border border-accent/30 bg-accent-weak/50 p-2">
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold text-accent">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z" />
+            </svg>
+            Improve your odds
+          </p>
+          <ul className="mt-1 space-y-0.5 text-[11px] text-foreground/80">
+            {m.tips.map((t, i) => (
+              <li key={i}>• {t}</li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <div className="mt-2 flex items-center justify-between gap-2">
@@ -123,6 +156,8 @@ export function ScholarshipPanel({
   const applicable = all.filter((m) => m.eligibility !== "ineligible");
   const hasNet =
     candidate.net_total_annual != null && candidate.total_scholarship_value > 0;
+  // Unique, actionable steps to unlock more awards (deduped across applicable matches).
+  const improveTips = Array.from(new Set(applicable.flatMap((m) => m.tips)));
 
   if (all.length === 0) {
     return (
@@ -139,8 +174,11 @@ export function ScholarshipPanel({
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="font-display text-base font-semibold">
-          🎓 Scholarships{" "}
+        <h3 className="flex items-center gap-2 font-display text-base font-semibold">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary" aria-hidden="true">
+            <path d="M22 10 12 5 2 10l10 5 10-5Z" /><path d="M6 12v5c0 1 2.5 2.5 6 2.5s6-1.5 6-2.5v-5" />
+          </svg>
+          Scholarships{" "}
           <span className="text-sm font-normal text-muted">
             ({applicable.length} you may qualify for)
           </span>
@@ -162,6 +200,26 @@ export function ScholarshipPanel({
             {money(candidate.net_total_annual as number, currency)}/yr
           </span>
           .
+        </div>
+      )}
+
+      {improveTips.length > 0 && (
+        <div className="mt-3 rounded-xl border border-accent/30 bg-accent-weak/40 p-3">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-accent">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z" />
+            </svg>
+            Improve your eligibility
+          </p>
+          <ul className="mt-1.5 space-y-1 text-xs text-foreground/85">
+            {improveTips.map((t, i) => (
+              <li key={i} className="flex gap-1.5">
+                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-accent" />
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[11px] text-muted">Add these in the form&apos;s eligibility section, then rebuild your plan.</p>
         </div>
       )}
 

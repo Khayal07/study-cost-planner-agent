@@ -26,6 +26,10 @@ LABELS = {
 
 LIVING_TYPES = {"rent", "food", "transport", "utilities", "insurance"}
 
+# Conservative working-weeks assumption for the part-time earnings estimate (Phase 3 #7):
+# the term-time weekly cap applied across a typical academic working year.
+WORK_WEEKS_PER_YEAR = 40
+
 
 def _annualize(amount: float, period: str) -> float:
     if period == "monthly":
@@ -65,6 +69,8 @@ class CurrencyAgent:
         total_annual = round(sum(totals.values()), 2)
         annual_living = round(totals["living"], 2)
 
+        work = self._work_offset(refs.country, fx, report)
+
         return CandidatePlan(
             program_id=refs.program.id,
             program_name=refs.program.name,
@@ -86,7 +92,30 @@ class CurrencyAgent:
             total_annual=total_annual,
             monthly_living=round(annual_living / 12, 2),
             fx_notes=sorted(fx_notes),
+            work_hours_cap=work["hours_cap"],
+            work_annual_earnings=work["annual_earnings"],
+            work_note=work["note"],
+            work_citation=work["citation"],
         )
+
+    def _work_offset(self, country, fx: CurrencyService, report: str) -> dict:
+        """Estimated annual gross from term-time part-time work, in the report currency.
+
+        Sourced cap + wage; the working-weeks figure is a deliberate estimate, so the
+        result is shown as a *potential* offset (never auto-subtracted from the cost)."""
+        if country.work_hours_cap is None or country.work_hourly_wage is None:
+            return {"hours_cap": None, "annual_earnings": None, "note": None, "citation": None}
+        cap = int(country.work_hours_cap)
+        wage = float(country.work_hourly_wage)
+        wage_ccy = country.work_wage_currency or report
+        local = cap * wage * WORK_WEEKS_PER_YEAR
+        earnings_report, _ = fx.convert(local, wage_ccy, report)
+        return {
+            "hours_cap": cap,
+            "annual_earnings": round(earnings_report, 2),
+            "note": country.work_note,
+            "citation": to_citation(country.work_source) if country.work_source else None,
+        }
 
     def _line(
         self, item: CostItem, fx: CurrencyService, report: str, fx_notes: set[str]
