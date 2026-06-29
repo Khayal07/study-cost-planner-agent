@@ -50,7 +50,7 @@ Added **framer-motion@^11**. Keep teal/amber tokens + Inter/Bricolage/JetBrains-
 
 ## Phase 3 — 10 Brainstormed Features — IN PROGRESS (3/10)
 1. [x] Side-by-side comparison (pin 2–3 candidates) — `ComparisonView.tsx` + pin button in `PlanResults.tsx` (commit `4c90ee9`). Verified: teal=cheapest, amber=most aid, ties unmarked.
-2. [x] Full-degree projection + inflation slider — `ProjectionCard` in `PlanResults.tsx` (commit `985b9f7`). Uses gross `total_annual` (net→0 under full aid is degenerate); compounding bars per year.
+2. [DEFERRED] Full-degree projection + inflation slider — built then REMOVED at user request: a manual inflation slider is meaningless guesswork. Redo later with a SOURCED per-country inflation figure (new data field), not an LLM/manual estimate, to honour the "every figure cited" principle.
 3. [x] Interactive what-if sliders (debounced /plan) — `WhatIfPanel` in `PlanResults.tsx` + `refreshing`/`onWhatIf` in `app/page.tsx` (commit `985b9f7`). Re-plans in place, no skeleton swap.
 4. [ ] Saved plans + shareable links (new `SavedPlan` model + `/plans` CRUD)
 5. [ ] Map-based country explorer (**react-simple-maps**, from /meta/options)
