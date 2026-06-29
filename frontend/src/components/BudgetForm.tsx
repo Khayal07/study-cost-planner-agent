@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { getOptions, type PlanningRequest } from "@/lib/api";
 
-// Fallback only — the live list is fetched from /meta/options so new countries
-// appear automatically as soon as their data is seeded (no frontend change).
+// Fallback only — the live lists are fetched from /meta/options so new countries
+// and currencies appear automatically as soon as their data is seeded.
 const FALLBACK_COUNTRIES = ["Germany", "Netherlands", "Poland", "Hungary", "Turkey", "Czechia", "Italy"];
-const CURRENCIES = ["EUR", "USD", "TRY", "PLN", "HUF", "CZK", "AZN", "GBP"];
+const FALLBACK_CURRENCIES = ["EUR", "USD", "TRY", "PLN", "HUF", "CZK", "AZN", "GBP"];
 const LIFESTYLES: { id: string; label: string }[] = [
   { id: "frugal", label: "Frugal" },
   { id: "moderate", label: "Moderate" },
@@ -30,19 +30,34 @@ export function BudgetForm({
   const [gpa, setGpa] = useState("");
   const [languageTest, setLanguageTest] = useState("");
   const [countries, setCountries] = useState<string[]>(FALLBACK_COUNTRIES);
+  const [currencies, setCurrencies] = useState<string[]>(FALLBACK_CURRENCIES);
+  const [errors, setErrors] = useState<{ budget?: string; gpa?: string }>({});
 
   useEffect(() => {
     getOptions()
       .then((opts) => {
         if (opts.countries.length) setCountries(opts.countries);
+        if (opts.report_currencies?.length) setCurrencies(opts.report_currencies);
       })
       .catch(() => {
-        /* keep fallback list if the catalog call fails */
+        /* keep fallback lists if the catalog call fails */
       });
   }, []);
 
+  function validate(): boolean {
+    const next: { budget?: string; gpa?: string } = {};
+    if (!Number.isFinite(budget) || budget <= 0) next.budget = "Enter a budget greater than 0.";
+    if (gpa.trim()) {
+      const g = Number(gpa);
+      if (Number.isNaN(g) || g < 0 || g > 4) next.gpa = "GPA must be between 0 and 4.";
+    }
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  }
+
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!validate()) return;
     const gpaNum = gpa.trim() ? Number(gpa) : null;
     onSubmit({
       country: country || null,
@@ -95,10 +110,12 @@ export function BudgetForm({
               type="number"
               className="input figure"
               value={budget}
-              min={0}
+              min={1}
               step={500}
+              aria-invalid={!!errors.budget}
               onChange={(e) => setBudget(Number(e.target.value))}
             />
+            {errors.budget && <p className="mt-1 text-[11px] text-danger">{errors.budget}</p>}
           </div>
         </div>
 
@@ -106,7 +123,7 @@ export function BudgetForm({
           <div>
             <label htmlFor="budgetCurrency" className="field-label">Budget currency</label>
             <select id="budgetCurrency" className="input" value={budgetCurrency} onChange={(e) => setBudgetCurrency(e.target.value)}>
-              {CURRENCIES.map((c) => (
+              {currencies.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
@@ -114,7 +131,7 @@ export function BudgetForm({
           <div>
             <label htmlFor="reportCurrency" className="field-label">Show results in</label>
             <select id="reportCurrency" className="input" value={reportCurrency} onChange={(e) => setReportCurrency(e.target.value)}>
-              {CURRENCIES.map((c) => (
+              {currencies.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
@@ -146,8 +163,11 @@ export function BudgetForm({
 
         {/* Optional scholarship-eligibility inputs */}
         <details className="rounded-xl border border-border bg-surface-2/50">
-          <summary className="cursor-pointer select-none px-4 py-2.5 text-xs font-medium text-muted hover:text-foreground">
-            🎓 Scholarship eligibility <span className="text-muted">(optional)</span>
+          <summary className="flex cursor-pointer select-none items-center gap-2 px-4 py-2.5 text-xs font-medium text-muted hover:text-foreground">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M22 10 12 5 2 10l10 5 10-5Z" /><path d="M6 12v5c0 1 2.5 2.5 6 2.5s6-1.5 6-2.5v-5" />
+            </svg>
+            Scholarship eligibility <span className="text-muted">(optional)</span>
           </summary>
           <div className="space-y-4 border-t border-border p-4">
             <div>
@@ -172,8 +192,10 @@ export function BudgetForm({
                   max={4}
                   step={0.1}
                   value={gpa}
+                  aria-invalid={!!errors.gpa}
                   onChange={(e) => setGpa(e.target.value)}
                 />
+                {errors.gpa && <p className="mt-1 text-[11px] text-danger">{errors.gpa}</p>}
               </div>
               <div>
                 <label htmlFor="languageTest" className="field-label">Language test</label>

@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.core.rate_limit import RateLimitMiddleware
 
 app = FastAPI(
     title="Study Cost Planning Agent",
@@ -27,6 +28,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["*"],
 )
+
+# Throttle the expensive public endpoints (per client IP, in-memory).
+app.add_middleware(RateLimitMiddleware)
 
 
 @app.get("/health", tags=["meta"])

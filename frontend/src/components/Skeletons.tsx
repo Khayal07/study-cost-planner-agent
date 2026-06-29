@@ -34,3 +34,24 @@ export function ResultsSkeleton() {
     </div>
   );
 }
+
+/** Shimmer placeholders shown while the tracked applications load. */
+export function ApplicationsSkeleton() {
+  return (
+    <div className="space-y-3" aria-busy="true" aria-label="Loading applications">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="card space-y-3 p-4">
+          <div className="flex items-center justify-between">
+            <div className="skeleton h-5 w-48" />
+            <div className="skeleton h-7 w-28 rounded-lg" />
+          </div>
+          <div className="skeleton h-3 w-2/3" />
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="skeleton h-4 w-full" />
+            <div className="skeleton h-4 w-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

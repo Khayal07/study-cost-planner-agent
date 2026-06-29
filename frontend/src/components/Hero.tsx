@@ -2,24 +2,26 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/** Counts up to `to` once, when first scrolled into view; respects reduced motion. */
+import { getStats } from "@/lib/api";
+
+/** Counts up to `to` once visible (re-animates if `to` arrives later); respects reduced motion. */
 function useCountUp(to: number, durationMs = 1100) {
   const [value, setValue] = useState(0);
   const ref = useRef<HTMLSpanElement | null>(null);
-  const done = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || to <= 0) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
       setValue(to);
       return;
     }
+    let started = false;
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !done.current) {
-          done.current = true;
+        if (entries[0].isIntersecting && !started) {
+          started = true;
           const start = performance.now();
           const tick = (now: number) => {
             const p = Math.min(1, (now - start) / durationMs);
@@ -44,7 +46,7 @@ function Stat({ to, suffix, label }: { to: number; suffix?: string; label: strin
   return (
     <div className="flex flex-col">
       <span ref={ref} className="figure text-2xl font-semibold text-foreground sm:text-3xl">
-        {value}
+        {to <= 0 ? "—" : value}
         {suffix}
       </span>
       <span className="mt-0.5 text-xs text-muted">{label}</span>
@@ -53,6 +55,22 @@ function Stat({ to, suffix, label }: { to: number; suffix?: string; label: strin
 }
 
 export function Hero() {
+  // Live dataset counters — never hardcoded; stays in sync as the seed grows.
+  const [stats, setStats] = useState({ countries: 0, universities: 0, cited_figures: 0 });
+  useEffect(() => {
+    getStats()
+      .then((s) =>
+        setStats({
+          countries: s.countries,
+          universities: s.universities,
+          cited_figures: s.cited_figures,
+        }),
+      )
+      .catch(() => {
+        /* leave dashes if the catalog is unreachable */
+      });
+  }, []);
+
   return (
     <section className="relative overflow-hidden border-b border-border">
       <div className="pointer-events-none absolute inset-0 hero-grid" aria-hidden="true" />
@@ -75,9 +93,9 @@ export function Hero() {
         </div>
 
         <div className="mt-10 grid w-full max-w-xl grid-cols-3 gap-6 rounded-2xl border border-border bg-surface/60 p-5 shadow-sm animate-fade-up sm:gap-8">
-          <Stat to={8} label="countries" />
-          <Stat to={25} label="universities" />
-          <Stat to={130} label="sourced figures" />
+          <Stat to={stats.countries} label="countries" />
+          <Stat to={stats.universities} label="universities" />
+          <Stat to={stats.cited_figures} label="cited figures" />
         </div>
       </div>
     </section>

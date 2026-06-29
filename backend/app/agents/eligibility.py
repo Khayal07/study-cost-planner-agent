@@ -122,7 +122,8 @@ class EligibilityAgent:
             if days >= 0:
                 reasons.append(f"Deadline in {days} days ({sch.deadline.isoformat()})")
             else:
-                reasons.append(f"Deadline passed ({sch.deadline.isoformat()})")
+                hard_fail = True  # a passed deadline can't be applied to — rule it out
+                reasons.append(f"Deadline passed ({sch.deadline.isoformat()}) ✗")
 
         if hard_fail:
             eligibility = "ineligible"
