@@ -403,6 +403,9 @@ export function PlanResults({
       {/* Detailed breakdown */}
       <Breakdown c={top} cur={cur} />
 
+      {/* Part-time work earnings offset */}
+      <WorkOffsetCard c={top} cur={cur} />
+
       {/* Scholarships for the selected university */}
       <ScholarshipPanel candidate={top} onTrack={trackScholarship} trackedIds={tracked} />
 
@@ -685,6 +688,56 @@ function Breakdown({ c, cur }: { c: CandidatePlan; cur: string }) {
         </div>
       </div>
 
+    </div>
+  );
+}
+
+/** Potential part-time work earnings as an optional offset (never auto-applied). */
+function WorkOffsetCard({ c, cur }: { c: CandidatePlan; cur: string }) {
+  const [applied, setApplied] = useState(false);
+  if (c.work_annual_earnings == null || c.work_hours_cap == null) return null;
+
+  const earnings = c.work_annual_earnings;
+  const base = c.net_total_annual ?? c.total_annual;
+  const usedAid = c.net_total_annual != null && c.total_scholarship_value > 0;
+  const effective = Math.max(0, base - earnings);
+
+  return (
+    <div className="card p-4 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="flex items-center gap-2 font-display text-base font-semibold">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary" aria-hidden="true">
+            <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+          </svg>
+          Part-time work
+        </h3>
+        <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-muted">
+          <input type="checkbox" checked={applied} onChange={(e) => setApplied(e.target.checked)} className="h-3.5 w-3.5 accent-primary" />
+          Apply to total
+        </label>
+      </div>
+
+      <p className="mt-2 text-sm">
+        Working up to{" "}
+        <span className="font-semibold text-foreground">{c.work_hours_cap} h/week</span> could earn about{" "}
+        <span className="figure font-semibold text-primary">~{money(earnings, cur)}/yr</span>{" "}
+        <span className="text-muted">(gross estimate).</span>
+      </p>
+
+      {applied && (
+        <div className="mt-3 rounded-xl border border-primary/30 bg-primary-weak/40 p-3 text-sm">
+          {usedAid ? "After aid and work" : "After work"}, your effective cost ≈{" "}
+          <span className="figure font-semibold text-primary">{money(effective, cur)}/yr</span>
+          <span className="text-muted"> (from {money(c.total_annual, cur)}).</span>
+        </div>
+      )}
+
+      {c.work_note && <p className="mt-2 text-[11px] leading-relaxed text-muted">{c.work_note}</p>}
+
+      <div className="mt-2 flex items-center justify-between gap-2">
+        {c.work_citation && <CitationChip citation={c.work_citation} confidence="estimate" />}
+        <span className="text-[11px] text-muted">Earnings aren&apos;t guaranteed — treat as a buffer, not budget.</span>
+      </div>
     </div>
   );
 }

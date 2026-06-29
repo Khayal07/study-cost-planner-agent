@@ -57,7 +57,9 @@ export type ScholarshipMatch = {
   currency: string;
   estimated_value: number;
   eligibility: ScholarshipEligibility;
+  match_score: number;
   reasons: string[];
+  tips: string[];
   deadline: string | null;
   days_until_deadline: number | null;
   renewable: boolean;
@@ -98,6 +100,11 @@ export type CandidatePlan = {
   net_budget_gap: number | null;
   net_affordable: boolean | null;
   value_rank: number | null;
+  // Part-time work offset (Phase 3 #7)
+  work_hours_cap: number | null;
+  work_annual_earnings: number | null;
+  work_note: string | null;
+  work_citation: Citation | null;
 };
 
 export type VerificationCheck = { name: string; status: string; detail: string };
