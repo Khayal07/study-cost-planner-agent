@@ -379,11 +379,28 @@ export async function getHealth(): Promise<HealthResponse> {
 export interface CatalogOptions {
   countries: string[];
   fields: string[];
+  report_currencies: string[];
+  default_report_currency: string;
 }
 
 export async function getOptions(): Promise<CatalogOptions> {
   const res = await fetch(`${API_BASE_URL}/meta/options`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Options failed: ${res.status}`);
+  return res.json();
+}
+
+export interface DatasetStats {
+  countries: number;
+  universities: number;
+  programs: number;
+  cited_figures: number;
+  sourced_figures: number;
+  scholarships: number;
+}
+
+export async function getStats(): Promise<DatasetStats> {
+  const res = await fetch(`${API_BASE_URL}/meta/stats`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Stats failed: ${res.status}`);
   return res.json();
 }
 

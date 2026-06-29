@@ -40,6 +40,24 @@ const newId = () => Math.random().toString(36).slice(2) + Date.now().toString(36
 const emptyConversation = (): Conversation => ({
   id: newId(), title: "New chat", turns: [], profile: null, updatedAt: Date.now(),
 });
+/** Guard against corrupted/legacy localStorage: keep only well-formed conversations. */
+function isValidConversation(c: unknown): c is Conversation {
+  if (!c || typeof c !== "object") return false;
+  const v = c as Record<string, unknown>;
+  return (
+    typeof v.id === "string" &&
+    typeof v.title === "string" &&
+    Array.isArray(v.turns) &&
+    v.turns.every(
+      (t) =>
+        t &&
+        typeof t === "object" &&
+        (t as Turn).role !== undefined &&
+        typeof (t as Turn).text === "string",
+    )
+  );
+}
+
 const titleFrom = (turns: Turn[]): string => {
   const first = turns.find((t) => t.role === "user");
   if (!first) return "New chat";
@@ -129,7 +147,10 @@ function CandidateCard({ c, score, valueMode = false, onExplore }: {
       {hasAid && (
         <div className="mt-2">
           <span className="chip border-accent/30 bg-accent-weak text-accent">
-            🎓 aid ~{money(c.total_scholarship_value, cur)}/yr
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M22 10 12 5 2 10l10 5 10-5Z" /><path d="M6 12v5c0 1 2.5 2.5 6 2.5s6-1.5 6-2.5v-5" />
+            </svg>
+            aid ~{money(c.total_scholarship_value, cur)}/yr
           </span>
         </div>
       )}
@@ -193,11 +214,13 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
     let initial: Conversation[] = [];
     try {
       const raw = localStorage.getItem(STORE_KEY);
-      if (raw) initial = JSON.parse(raw);
+      const parsed = raw ? JSON.parse(raw) : [];
+      // Drop anything that doesn't match the current shape (corruption / old versions).
+      initial = Array.isArray(parsed) ? parsed.filter(isValidConversation) : [];
     } catch {
       initial = [];
     }
-    if (!Array.isArray(initial) || initial.length === 0) initial = [emptyConversation()];
+    if (initial.length === 0) initial = [emptyConversation()];
     setConvos(initial);
     setActiveId(initial[0].id);
     loadedRef.current = true;
@@ -445,7 +468,7 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
       </aside>
 
       {/* Chat card */}
-      <div className="card flex h-[640px] flex-col overflow-hidden">
+      <div className="card flex h-[calc(100dvh-11rem)] max-h-[820px] min-h-[460px] flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-border bg-surface-2/60 px-5 py-3.5">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-weak text-primary">
