@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   Bar,
@@ -15,7 +15,9 @@ import {
 import {
   createApplication,
   exportPdf,
+  saveCurrentPlan,
   type CandidatePlan,
+  type PlanningRequest,
   type PlanResult,
   type ScholarshipMatch,
 } from "@/lib/api";
@@ -23,6 +25,9 @@ import { useChartColors } from "@/lib/theme";
 import { useAuth } from "@/lib/auth";
 import { CitationChip } from "./CitationChip";
 import { ScholarshipPanel } from "./ScholarshipPanel";
+import { ComparisonView } from "./ComparisonView";
+
+const MAX_PINNED = 3;
 
 // The total to display/rank by: net (after best scholarship) in value mode, else gross.
 function displayedTotal(c: CandidatePlan, valueMode: boolean): number {
@@ -33,12 +38,36 @@ function money(n: number, cur: string) {
   return `${n.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${cur}`;
 }
 
-export function PlanResults({ plan, request }: { plan: PlanResult; request: PlanResult["request"] }) {
+export function PlanResults({
+  plan,
+  request,
+  refreshing = false,
+  onWhatIf,
+}: {
+  plan: PlanResult;
+  request: PlanResult["request"];
+  refreshing?: boolean;
+  onWhatIf?: (req: PlanningRequest) => void;
+}) {
   const cur = plan.report_currency;
   const [selected, setSelected] = useState(0);
   const [exporting, setExporting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [rankBy, setRankBy] = useState<"cost" | "value">("cost");
+  const [pinned, setPinned] = useState<number[]>([]);
   const [tracked, setTracked] = useState<Set<number>>(new Set());
+
+  function togglePin(programId: number) {
+    setPinned((prev) =>
+      prev.includes(programId)
+        ? prev.filter((id) => id !== programId)
+        : prev.length >= MAX_PINNED
+          ? prev
+          : [...prev, programId],
+    );
+  }
   const colors = useChartColors();
   const reduce = useReducedMotion();
   const { isAuthed, openAuth } = useAuth();
@@ -94,6 +123,32 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
 
   function pick(i: number) {
     setSelected(i);
+  }
+
+  async function saveAndShare() {
+    if (!isAuthed) {
+      openAuth();
+      return;
+    }
+    setSaving(true);
+    setCopied(false);
+    try {
+      const where = request.country ? ` · ${request.country}` : "";
+      const title = `${request.field ?? "Study"}${where}`;
+      const saved = await saveCurrentPlan(title, request);
+      const url = `${window.location.origin}/p/${saved.public_id}`;
+      setShareUrl(url);
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+      } catch {
+        /* clipboard blocked — the link is still shown to copy manually */
+      }
+    } catch {
+      /* leave the button enabled so the user can retry */
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function doExport() {
@@ -153,17 +208,56 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
             </div>
           )}
         </div>
-        <button onClick={doExport} disabled={exporting} className="btn-ghost" title={`Export a report for ${top.university_name}`}>
-          {exporting ? (
-            <Spinner />
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
-            </svg>
-          )}
-          {exporting ? "Generating…" : "Export PDF"}
-        </button>
+        <div className="flex shrink-0 gap-2">
+          <button onClick={saveAndShare} disabled={saving} className="btn-ghost" title="Save this plan and get a shareable link">
+            {saving ? (
+              <Spinner />
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+              </svg>
+            )}
+            {saving ? "Saving…" : "Save & share"}
+          </button>
+          <button onClick={doExport} disabled={exporting} className="btn-ghost" title={`Export a report for ${top.university_name}`}>
+            {exporting ? (
+              <Spinner />
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+              </svg>
+            )}
+            {exporting ? "Generating…" : "Export PDF"}
+          </button>
+        </div>
       </div>
+
+      {/* Shareable link banner */}
+      {shareUrl && (
+        <div className="card flex flex-wrap items-center gap-3 border-primary/30 bg-primary-weak/30 p-3">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
+          </svg>
+          <input readOnly value={shareUrl} className="input min-w-0 flex-1 text-xs" aria-label="Shareable link" onFocus={(e) => e.currentTarget.select()} />
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(shareUrl);
+                setCopied(true);
+              } catch {
+                /* ignore */
+              }
+            }}
+            className="btn-primary shrink-0 px-3 py-1.5 text-xs"
+          >
+            {copied ? "Copied!" : "Copy link"}
+          </button>
+        </div>
+      )}
+
+      {/* What-if controls */}
+      {onWhatIf && <WhatIfPanel request={request} refreshing={refreshing} onChange={onWhatIf} />}
 
       {/* Recommendations */}
       {plan.recommendations.length > 0 && (
@@ -283,10 +377,28 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
               valueMode={valueMode}
               selected={i === selected}
               onClick={() => pick(i)}
+              pinned={pinned.includes(c.program_id)}
+              pinDisabled={pinned.length >= MAX_PINNED && !pinned.includes(c.program_id)}
+              onTogglePin={() => togglePin(c.program_id)}
             />
           </motion.div>
         ))}
       </motion.div>
+
+      {/* Side-by-side comparison of pinned candidates */}
+      {pinned.length >= 2 && (
+        <ComparisonView
+          candidates={pinned
+            .map((id) => plan.candidates.find((c) => c.program_id === id))
+            .filter((c): c is CandidatePlan => Boolean(c))}
+          cur={cur}
+          onClose={() => setPinned([])}
+          onUnpin={(id) => togglePin(id)}
+        />
+      )}
+      {pinned.length === 1 && (
+        <p className="px-1 text-xs text-muted">Pin one more option to compare side by side.</p>
+      )}
 
       {/* Detailed breakdown */}
       <Breakdown c={top} cur={cur} />
@@ -298,6 +410,100 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
       {plan.verification && <Verification report={plan.verification} />}
 
       <p className="px-1 text-[11px] leading-relaxed text-muted">{plan.disclaimer}</p>
+    </div>
+  );
+}
+
+const WHATIF_LIFESTYLES = ["frugal", "moderate", "comfortable"] as const;
+
+/** Live "what-if" budget + lifestyle tuning; re-plans (debounced) without losing the view. */
+function WhatIfPanel({
+  request,
+  refreshing,
+  onChange,
+}: {
+  request: PlanningRequest;
+  refreshing: boolean;
+  onChange: (req: PlanningRequest) => void;
+}) {
+  const [budget, setBudget] = useState(request.budget_amount);
+  const [lifestyle, setLifestyle] = useState(request.lifestyle ?? "moderate");
+  const firstRun = useRef(true);
+
+  // Keep the panel in sync if a fresh plan arrives from outside (e.g. new wizard run).
+  useEffect(() => {
+    setBudget(request.budget_amount);
+    setLifestyle(request.lifestyle ?? "moderate");
+  }, [request.budget_amount, request.lifestyle]);
+
+  // Debounced re-plan when the user tweaks budget/lifestyle here.
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
+    }
+    if (budget === request.budget_amount && lifestyle === (request.lifestyle ?? "moderate")) return;
+    const t = setTimeout(() => onChange({ ...request, budget_amount: budget, lifestyle }), 450);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [budget, lifestyle]);
+
+  const cur = request.budget_currency;
+  const min = 1000;
+  const max = Math.max(20000, Math.round((request.budget_amount * 2.5) / 1000) * 1000);
+
+  return (
+    <div className="card border-primary/20 bg-primary-weak/20 p-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h3 className="flex items-center gap-2 text-sm font-semibold">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary" aria-hidden="true">
+            <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
+          </svg>
+          What-if
+        </h3>
+        {refreshing && (
+          <span className="flex items-center gap-1.5 text-[11px] text-muted">
+            <Spinner /> updating…
+          </span>
+        )}
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div>
+          <div className="mb-1.5 flex items-center justify-between text-[11px]">
+            <label htmlFor="whatif-budget" className="font-medium text-muted">Yearly budget</label>
+            <span className="figure font-semibold text-foreground">{money(budget, cur)}</span>
+          </div>
+          <input
+            id="whatif-budget"
+            type="range"
+            min={min}
+            max={max}
+            step={500}
+            value={Math.min(budget, max)}
+            onChange={(e) => setBudget(Number(e.target.value))}
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-primary"
+            aria-valuetext={money(budget, cur)}
+          />
+        </div>
+
+        <div role="radiogroup" aria-label="Lifestyle" className="grid grid-cols-3 gap-1 rounded-xl border border-border bg-surface-2 p-1">
+          {WHATIF_LIFESTYLES.map((l) => (
+            <button
+              key={l}
+              type="button"
+              role="radio"
+              aria-checked={lifestyle === l}
+              onClick={() => setLifestyle(l)}
+              className={`rounded-lg px-2.5 py-1 text-xs font-medium capitalize transition-all ${
+                lifestyle === l ? "bg-surface text-foreground shadow-sm" : "text-muted hover:text-foreground"
+              }`}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -330,12 +536,18 @@ function CandidateRow({
   selected,
   valueMode,
   onClick,
+  pinned,
+  pinDisabled,
+  onTogglePin,
 }: {
   c: CandidatePlan;
   cur: string;
   selected: boolean;
   valueMode: boolean;
   onClick: () => void;
+  pinned: boolean;
+  pinDisabled: boolean;
+  onTogglePin: () => void;
 }) {
   const rankNum = valueMode ? c.value_rank ?? c.rank : c.rank;
   const affordable = valueMode ? c.net_affordable ?? c.affordable : c.affordable;
@@ -343,16 +555,32 @@ function CandidateRow({
   const total = displayedTotal(c, valueMode);
   const hasAid = c.total_scholarship_value > 0;
   return (
+    <div className="relative h-full">
+      <button
+        onClick={onTogglePin}
+        disabled={pinDisabled}
+        aria-pressed={pinned}
+        title={pinned ? "Unpin from comparison" : pinDisabled ? "Pin up to 3 options" : "Pin to compare"}
+        className={`absolute right-3 top-3 z-10 grid h-7 w-7 place-items-center rounded-lg border transition-all ${
+          pinned
+            ? "border-primary bg-primary text-primary-fg shadow-sm"
+            : "border-border bg-surface text-muted hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+        }`}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill={pinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M9 4v6l-2 4h10l-2-4V4M12 18v3M8 4h8" />
+        </svg>
+      </button>
     <button
       onClick={onClick}
       aria-pressed={selected}
-      className={`group rounded-2xl border p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+      className={`group h-full w-full rounded-2xl border p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
         selected
           ? "border-primary bg-primary-weak/40 shadow-glow"
           : "border-border bg-surface hover:border-primary/40"
       }`}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pr-9">
         <span className="figure grid h-6 min-w-6 place-items-center rounded-lg bg-surface-2 px-1.5 text-xs font-semibold text-muted">
           #{rankNum}
         </span>
@@ -393,6 +621,7 @@ function CandidateRow({
         </div>
       </div>
     </button>
+    </div>
   );
 }
 
@@ -455,6 +684,7 @@ function Breakdown({ c, cur }: { c: CandidatePlan; cur: string }) {
           ))}
         </div>
       </div>
+
     </div>
   );
 }
