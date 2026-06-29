@@ -40,6 +40,24 @@ const newId = () => Math.random().toString(36).slice(2) + Date.now().toString(36
 const emptyConversation = (): Conversation => ({
   id: newId(), title: "New chat", turns: [], profile: null, updatedAt: Date.now(),
 });
+/** Guard against corrupted/legacy localStorage: keep only well-formed conversations. */
+function isValidConversation(c: unknown): c is Conversation {
+  if (!c || typeof c !== "object") return false;
+  const v = c as Record<string, unknown>;
+  return (
+    typeof v.id === "string" &&
+    typeof v.title === "string" &&
+    Array.isArray(v.turns) &&
+    v.turns.every(
+      (t) =>
+        t &&
+        typeof t === "object" &&
+        (t as Turn).role !== undefined &&
+        typeof (t as Turn).text === "string",
+    )
+  );
+}
+
 const titleFrom = (turns: Turn[]): string => {
   const first = turns.find((t) => t.role === "user");
   if (!first) return "New chat";
@@ -193,11 +211,13 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
     let initial: Conversation[] = [];
     try {
       const raw = localStorage.getItem(STORE_KEY);
-      if (raw) initial = JSON.parse(raw);
+      const parsed = raw ? JSON.parse(raw) : [];
+      // Drop anything that doesn't match the current shape (corruption / old versions).
+      initial = Array.isArray(parsed) ? parsed.filter(isValidConversation) : [];
     } catch {
       initial = [];
     }
-    if (!Array.isArray(initial) || initial.length === 0) initial = [emptyConversation()];
+    if (initial.length === 0) initial = [emptyConversation()];
     setConvos(initial);
     setActiveId(initial[0].id);
     loadedRef.current = true;

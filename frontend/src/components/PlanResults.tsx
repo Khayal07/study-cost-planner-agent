@@ -260,7 +260,15 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
   );
 }
 
-function ChartTooltip({ active, payload, label, cur }: any) {
+type ChartDatum = { total: number; affordable: boolean };
+type ChartTooltipProps = {
+  active?: boolean;
+  payload?: { payload: ChartDatum }[];
+  label?: string;
+  cur: string;
+};
+
+function ChartTooltip({ active, payload, label, cur }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (

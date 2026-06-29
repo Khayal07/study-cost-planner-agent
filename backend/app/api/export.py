@@ -1,15 +1,18 @@
 """PDF export endpoint: POST /export/pdf — re-runs the plan and returns a PDF."""
 from __future__ import annotations
 
+import logging
 import re
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app.agents.orchestrator import Orchestrator
 from app.core.schemas import PlanningRequest
 from app.data.db import get_session
 from app.services.pdf import render_plan_pdf
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/export", tags=["export"])
 
@@ -28,7 +31,11 @@ def export_pdf(request: PlanningRequest, session: Session = Depends(get_session)
         )
 
     plan = Orchestrator().run(session, request)
-    pdf_bytes = render_plan_pdf(plan)
+    try:
+        pdf_bytes = render_plan_pdf(plan)
+    except Exception:  # WeasyPrint render/layout failure — don't crash the worker
+        logger.exception("PDF rendering failed for export request")
+        raise HTTPException(status_code=500, detail="Could not generate the PDF report. Please try again.")
 
     filename = "study-cost-plan.pdf"
     if request.focus_program_id is not None and plan.candidates:

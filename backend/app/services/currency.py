@@ -103,7 +103,9 @@ class CurrencyService:
                 base, quote, cached.as_of_date, last_exc,
             )
             return Conversion(float(cached.rate), cached.as_of_date, "stale")
-        raise last_exc
+        raise last_exc or RuntimeError(
+            f"FX conversion {base}->{quote} failed: all providers unavailable and no cached rate"
+        )
 
     def _fetch_fallback(self, base: str, quote: str) -> Conversion | None:
         """Resolve a pair via the secondary provider (covers non-ECB currencies).
