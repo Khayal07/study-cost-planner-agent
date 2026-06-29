@@ -3,7 +3,7 @@ FROM node:20-slim
 WORKDIR /app
 
 # Install dependencies first for better layer caching
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json* .npmrc* ./
 RUN npm install
 
 COPY . .

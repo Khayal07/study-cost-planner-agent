@@ -194,6 +194,9 @@ class User(Base):
     applications: Mapped[list["Application"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    saved_plans: Mapped[list["SavedPlan"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class Application(Base):
@@ -226,6 +229,25 @@ class Application(Base):
     documents: Mapped[list["ApplicationDocument"]] = relationship(
         back_populates="application", cascade="all, delete-orphan"
     )
+
+
+class SavedPlan(Base):
+    """A plan a signed-in user saved. We persist the *request* (small, stable) and
+    re-run the planner on read so a shared link always reflects current sourced data.
+
+    ``public_id`` is an unguessable token used for read-only share links (no auth)."""
+
+    __tablename__ = "saved_plans"
+    __table_args__ = (Index("ix_saved_plans_user", "user_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    public_id: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    title: Mapped[str] = mapped_column(String(200))
+    request_json: Mapped[str] = mapped_column(Text)  # serialized PlanningRequest
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    user: Mapped["User"] = relationship(back_populates="saved_plans")
 
 
 class ApplicationDocument(Base):

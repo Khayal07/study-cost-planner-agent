@@ -317,6 +317,33 @@ class ApplicationOut(BaseModel):
     documents: list[DocumentOut] = Field(default_factory=list)
 
 
+# --- Saved plans + shareable links (Phase 3 #4) ---
+
+class SavedPlanCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    request: PlanningRequest
+
+
+class SavedPlanOut(BaseModel):
+    """Summary row for the saved-plans list."""
+
+    id: int
+    public_id: str
+    title: str
+    created_at: datetime
+    request: PlanningRequest
+
+
+class SavedPlanDetail(BaseModel):
+    """A saved plan resolved to a freshly-computed result (used by the share view)."""
+
+    public_id: str
+    title: str
+    created_at: datetime
+    request: PlanningRequest
+    plan: PlanResult
+
+
 class CitedFigure(BaseModel):
     """A single grounded figure used in a chat answer."""
 
