@@ -15,6 +15,7 @@ import {
 import {
   createApplication,
   exportPdf,
+  saveCurrentPlan,
   type CandidatePlan,
   type PlanningRequest,
   type PlanResult,
@@ -51,6 +52,9 @@ export function PlanResults({
   const cur = plan.report_currency;
   const [selected, setSelected] = useState(0);
   const [exporting, setExporting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [rankBy, setRankBy] = useState<"cost" | "value">("cost");
   const [pinned, setPinned] = useState<number[]>([]);
   const [tracked, setTracked] = useState<Set<number>>(new Set());
@@ -121,6 +125,32 @@ export function PlanResults({
     setSelected(i);
   }
 
+  async function saveAndShare() {
+    if (!isAuthed) {
+      openAuth();
+      return;
+    }
+    setSaving(true);
+    setCopied(false);
+    try {
+      const where = request.country ? ` · ${request.country}` : "";
+      const title = `${request.field ?? "Study"}${where}`;
+      const saved = await saveCurrentPlan(title, request);
+      const url = `${window.location.origin}/p/${saved.public_id}`;
+      setShareUrl(url);
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+      } catch {
+        /* clipboard blocked — the link is still shown to copy manually */
+      }
+    } catch {
+      /* leave the button enabled so the user can retry */
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function doExport() {
     setExporting(true);
     try {
@@ -178,17 +208,53 @@ export function PlanResults({
             </div>
           )}
         </div>
-        <button onClick={doExport} disabled={exporting} className="btn-ghost" title={`Export a report for ${top.university_name}`}>
-          {exporting ? (
-            <Spinner />
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
-            </svg>
-          )}
-          {exporting ? "Generating…" : "Export PDF"}
-        </button>
+        <div className="flex shrink-0 gap-2">
+          <button onClick={saveAndShare} disabled={saving} className="btn-ghost" title="Save this plan and get a shareable link">
+            {saving ? (
+              <Spinner />
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+              </svg>
+            )}
+            {saving ? "Saving…" : "Save & share"}
+          </button>
+          <button onClick={doExport} disabled={exporting} className="btn-ghost" title={`Export a report for ${top.university_name}`}>
+            {exporting ? (
+              <Spinner />
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+              </svg>
+            )}
+            {exporting ? "Generating…" : "Export PDF"}
+          </button>
+        </div>
       </div>
+
+      {/* Shareable link banner */}
+      {shareUrl && (
+        <div className="card flex flex-wrap items-center gap-3 border-primary/30 bg-primary-weak/30 p-3">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
+          </svg>
+          <input readOnly value={shareUrl} className="input min-w-0 flex-1 text-xs" aria-label="Shareable link" onFocus={(e) => e.currentTarget.select()} />
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(shareUrl);
+                setCopied(true);
+              } catch {
+                /* ignore */
+              }
+            }}
+            className="btn-primary shrink-0 px-3 py-1.5 text-xs"
+          >
+            {copied ? "Copied!" : "Copy link"}
+          </button>
+        </div>
+      )}
 
       {/* What-if controls */}
       {onWhatIf && <WhatIfPanel request={request} refreshing={refreshing} onChange={onWhatIf} />}

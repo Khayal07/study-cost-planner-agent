@@ -11,13 +11,16 @@ import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
 import { ResultsSkeleton } from "@/components/Skeletons";
 import { ApplicationsTracker } from "@/components/ApplicationsTracker";
+import { SavedPlans } from "@/components/SavedPlans";
+import { CountryMap } from "@/components/CountryMap";
 
-type Tab = "form" | "chat" | "applications";
+type Tab = "form" | "chat" | "applications" | "saved";
 
 const TABS: { id: Tab; label: string; hint: string }[] = [
   { id: "form", label: "Budget form", hint: "Structured inputs" },
   { id: "chat", label: "Chat", hint: "Ask in plain language" },
   { id: "applications", label: "Applications", hint: "Track scholarships" },
+  { id: "saved", label: "Saved", hint: "Your plans & links" },
 ];
 
 export default function Home() {
@@ -28,6 +31,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapCountry, setMapCountry] = useState<string | null>(null);
 
   async function handlePlan(req: PlanningRequest) {
     setLoading(true);
@@ -68,7 +72,7 @@ export default function Home() {
         <div
           role="tablist"
           aria-label="Planning mode"
-          className="mb-8 inline-grid grid-cols-3 gap-1 rounded-2xl border border-border bg-surface-2 p-1 shadow-xs"
+          className="mb-8 inline-grid grid-cols-2 gap-1 rounded-2xl border border-border bg-surface-2 p-1 shadow-xs sm:grid-cols-4"
         >
           {TABS.map((t) => (
             <button
@@ -101,7 +105,7 @@ export default function Home() {
         {tab === "form" ? (
           <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
             <div className="lg:sticky lg:top-24 lg:self-start">
-              <OnboardingWizard onSubmit={handlePlan} loading={loading} />
+              <OnboardingWizard onSubmit={handlePlan} loading={loading} initialCountry={mapCountry} />
             </div>
             <div className="min-w-0">
               {loading ? (
@@ -118,7 +122,7 @@ export default function Home() {
                   />
                 </div>
               ) : (
-                <EmptyState />
+                <CountryMap onSelect={setMapCountry} />
               )}
             </div>
           </div>
@@ -126,9 +130,13 @@ export default function Home() {
           <div className="mx-auto max-w-5xl">
             <ChatPanel reportCurrency={reportCurrency} />
           </div>
-        ) : (
+        ) : tab === "applications" ? (
           <div className="mx-auto max-w-3xl">
             <ApplicationsTracker />
+          </div>
+        ) : (
+          <div className="mx-auto max-w-3xl">
+            <SavedPlans />
           </div>
         )}
           </motion.div>
@@ -137,26 +145,6 @@ export default function Home() {
 
       <Footer />
     </>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex h-full min-h-[420px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface/40 p-10 text-center">
-      <div className="grid h-14 w-14 place-items-center rounded-2xl border border-border bg-surface text-primary shadow-sm">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M3 3v18h18" />
-          <rect x="7" y="12" width="3" height="6" rx="1" />
-          <rect x="12" y="8" width="3" height="10" rx="1" />
-          <rect x="17" y="5" width="3" height="13" rx="1" />
-        </svg>
-      </div>
-      <h3 className="mt-4 font-display text-lg font-semibold">Your cost comparison appears here</h3>
-      <p className="mt-1.5 max-w-sm text-sm text-muted">
-        Set a budget and lifestyle on the left, then build a plan to see ranked options,
-        scenarios, charts and a source for every figure.
-      </p>
-    </div>
   );
 }
 
