@@ -147,7 +147,10 @@ function CandidateCard({ c, score, valueMode = false, onExplore }: {
       {hasAid && (
         <div className="mt-2">
           <span className="chip border-accent/30 bg-accent-weak text-accent">
-            🎓 aid ~{money(c.total_scholarship_value, cur)}/yr
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M22 10 12 5 2 10l10 5 10-5Z" /><path d="M6 12v5c0 1 2.5 2.5 6 2.5s6-1.5 6-2.5v-5" />
+            </svg>
+            aid ~{money(c.total_scholarship_value, cur)}/yr
           </span>
         </div>
       )}
@@ -465,7 +468,7 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
       </aside>
 
       {/* Chat card */}
-      <div className="card flex h-[640px] flex-col overflow-hidden">
+      <div className="card flex h-[calc(100dvh-11rem)] max-h-[820px] min-h-[460px] flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-border bg-surface-2/60 px-5 py-3.5">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-weak text-primary">

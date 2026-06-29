@@ -36,16 +36,17 @@ Frontend
 
 ---
 
-## Phase 2 — 10x Frontend Overhaul (bold redesign) — NOT STARTED
+## Phase 2 — 10x Frontend Overhaul (bold redesign) — IN PROGRESS
 
-Add **framer-motion**. Keep teal/amber tokens + Inter/Bricolage/JetBrains-Mono.
-- [ ] Onboarding wizard (multi-step) replacing dense BudgetForm; submits same PlanningRequest
-- [ ] Dashboard shell layout in `app/page.tsx`; sticky animated navbar
-- [ ] Framer Motion micro-interactions (page/section transitions, staggered cards, number transitions)
-- [ ] Results redesign + accessible chart (`role="img"` + data-table fallback, keyboard tooltip)
-- [ ] Chat redesign (fluid `dvh` height not fixed 640px, typing indicator, sticky composer)
-- [ ] a11y pass (SVG not emoji, focus trap in AuthModal, text+color states)
-- [ ] Dark-mode polish on all new surfaces
+Added **framer-motion@^11**. Keep teal/amber tokens + Inter/Bricolage/JetBrains-Mono.
+- [x] Onboarding wizard (multi-step, 4 steps) replacing dense BudgetForm; submits same PlanningRequest — `components/OnboardingWizard.tsx` (BudgetForm.tsx now unused, kept)
+- [x] Sticky animated navbar (entrance + scroll-elevation shadow) — `components/Navbar.tsx`
+- [x] Framer Motion micro-interactions: tab transitions (AnimatePresence in `app/page.tsx`), staggered result cards (`components/PlanResults.tsx`)
+- [x] Accessible chart (`role="img"` + aria-label summary + `sr-only` data-table fallback) — `components/PlanResults.tsx`
+- [x] Chat: fluid `dvh` height (was fixed 640px) — `components/ChatPanel.tsx` (typing indicator + sticky composer already present)
+- [x] a11y: SVG not emoji (🎓 removed in PlanResults + ChatPanel), focus trap + Escape + focus restore in AuthModal — `components/AuthModal.tsx`
+- [x] Dark-mode: all new surfaces use existing theme tokens → dark-compatible by construction
+- NOTE: `npm run build` clean after every step. Number-transition count-up already exists in Hero.tsx.
 
 ## Phase 3 — 10 Brainstormed Features — NOT STARTED
 1. [ ] Side-by-side comparison (pin 2–3 candidates)
