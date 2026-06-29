@@ -26,6 +26,7 @@ export default function Home() {
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [request, setRequest] = useState<PlanningRequest | null>(null);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handlePlan(req: PlanningRequest) {
@@ -39,6 +40,19 @@ export default function Home() {
       setPlan(null);
     } finally {
       setLoading(false);
+    }
+  }
+
+  // What-if re-plan: refresh results in place without swapping in the skeleton.
+  async function handleWhatIf(req: PlanningRequest) {
+    setRefreshing(true);
+    setRequest(req);
+    try {
+      setPlan(await postPlan(req));
+    } catch {
+      /* keep the last good plan on a transient failure */
+    } finally {
+      setRefreshing(false);
     }
   }
 
@@ -96,7 +110,12 @@ export default function Home() {
                 <ErrorState message={error} />
               ) : plan ? (
                 <div className="animate-fade-in">
-                  <PlanResults plan={plan} request={request!} />
+                  <PlanResults
+                    plan={plan}
+                    request={request!}
+                    refreshing={refreshing}
+                    onWhatIf={handleWhatIf}
+                  />
                 </div>
               ) : (
                 <EmptyState />
