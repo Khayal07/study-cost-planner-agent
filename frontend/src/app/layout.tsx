@@ -3,6 +3,7 @@ import { Inter, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider, themeInitScript } from "@/lib/theme";
 import { AuthProvider } from "@/lib/auth";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,7 +40,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${display.variable} ${mono.variable} font-sans`}>
         <ThemeProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

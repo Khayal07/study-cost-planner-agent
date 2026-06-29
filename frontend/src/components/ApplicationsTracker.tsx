@@ -9,6 +9,7 @@ import {
   type ApplicationOut,
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { ApplicationsSkeleton } from "./Skeletons";
 
 const STATUSES = ["planned", "in_progress", "submitted", "accepted", "rejected"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -108,7 +109,7 @@ export function ApplicationsTracker() {
     );
   }
 
-  if (loading) return <div className="card p-8 text-center text-sm text-muted">Loading your applications…</div>;
+  if (loading) return <ApplicationsSkeleton />;
   if (error) return <div className="card p-8 text-center text-sm text-danger">{error}</div>;
 
   if (apps.length === 0) {
