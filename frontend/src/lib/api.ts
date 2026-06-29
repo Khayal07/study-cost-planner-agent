@@ -267,6 +267,24 @@ export type ApplicationCreate = {
   documents?: string[];
 };
 
+// --- Saved plans + shareable links (Phase 3 #4) ---
+
+export type SavedPlanOut = {
+  id: number;
+  public_id: string;
+  title: string;
+  created_at: string;
+  request: PlanningRequest;
+};
+
+export type SavedPlanDetail = {
+  public_id: string;
+  title: string;
+  created_at: string;
+  request: PlanningRequest;
+  plan: PlanResult;
+};
+
 const TOKEN_KEY = "scp-token";
 
 export function getToken(): string | null {
@@ -368,6 +386,33 @@ export async function toggleDocument(
 export async function deleteApplication(id: number): Promise<void> {
   const res = await authed(`/applications/${id}`, { method: "DELETE" });
   if (!res.ok && res.status !== 204) throw new Error("Failed to delete application");
+}
+
+export async function saveCurrentPlan(title: string, request: PlanningRequest): Promise<SavedPlanOut> {
+  const res = await authed("/plans", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, request }),
+  });
+  if (!res.ok) throw new Error("Failed to save plan");
+  return res.json();
+}
+
+export async function listSavedPlans(): Promise<SavedPlanOut[]> {
+  const res = await authed("/plans");
+  if (!res.ok) throw new Error("Failed to load saved plans");
+  return res.json();
+}
+
+export async function getSharedPlan(publicId: string): Promise<SavedPlanDetail> {
+  const res = await fetch(`${API_BASE_URL}/plans/shared/${publicId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Plan not found");
+  return res.json();
+}
+
+export async function deleteSavedPlan(id: number): Promise<void> {
+  const res = await authed(`/plans/${id}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) throw new Error("Failed to delete plan");
 }
 
 export async function getHealth(): Promise<HealthResponse> {

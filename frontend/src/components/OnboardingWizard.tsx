@@ -20,9 +20,11 @@ const STEPS = ["Study", "Budget", "Lifestyle", "Eligibility"] as const;
 export function OnboardingWizard({
   onSubmit,
   loading,
+  initialCountry,
 }: {
   onSubmit: (req: PlanningRequest) => void;
   loading: boolean;
+  initialCountry?: string | null;
 }) {
   const reduce = useReducedMotion();
   const [step, setStep] = useState(0);
@@ -30,6 +32,11 @@ export function OnboardingWizard({
 
   const [field, setField] = useState("Computer Science");
   const [country, setCountry] = useState("");
+
+  // Pre-fill the destination when the user picks a country on the map.
+  useEffect(() => {
+    if (initialCountry) setCountry(initialCountry);
+  }, [initialCountry]);
   const [budget, setBudget] = useState(10000);
   const [budgetCurrency, setBudgetCurrency] = useState("EUR");
   const [reportCurrency, setReportCurrency] = useState("EUR");
