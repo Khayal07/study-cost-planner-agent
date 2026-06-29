@@ -10,6 +10,8 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { ApplicationsSkeleton } from "./Skeletons";
+import { DeadlineCalendar } from "./DeadlineCalendar";
+import { downloadIcs } from "@/lib/ics";
 
 const STATUSES = ["planned", "in_progress", "submitted", "accepted", "rejected"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -51,6 +53,7 @@ export function ApplicationsTracker() {
   const [apps, setApps] = useState<ApplicationOut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<"list" | "calendar">("list");
 
   useEffect(() => {
     if (!ready || !isAuthed) return;
@@ -129,12 +132,42 @@ export function ApplicationsTracker() {
   const thisWeek = active.filter(
     (a) => a.days_until_deadline != null && a.days_until_deadline >= 0 && a.days_until_deadline <= 14,
   );
+  const hasDeadlines = apps.some((a) => a.deadline);
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="font-display text-xl font-semibold tracking-tight">My applications</h2>
         <span className="chip bg-surface-2 text-muted">{apps.length} tracked</span>
+
+        <div className="ml-auto flex items-center gap-2">
+          <div role="tablist" aria-label="View" className="inline-grid grid-cols-2 gap-1 rounded-xl border border-border bg-surface-2 p-1">
+            {(["list", "calendar"] as const).map((v) => (
+              <button
+                key={v}
+                role="tab"
+                aria-selected={view === v}
+                onClick={() => setView(v)}
+                className={`rounded-lg px-3 py-1 text-xs font-medium capitalize transition-all ${
+                  view === v ? "bg-surface text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                }`}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => downloadIcs(apps)}
+            disabled={!hasDeadlines}
+            title={hasDeadlines ? "Export deadlines as a calendar file (.ics)" : "No deadlines to export yet"}
+            className="btn-ghost px-3 py-1.5 text-xs disabled:pointer-events-none disabled:opacity-50"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4" />
+            </svg>
+            Export .ics
+          </button>
+        </div>
       </div>
 
       {thisWeek.length > 0 && (
@@ -155,17 +188,21 @@ export function ApplicationsTracker() {
         </div>
       )}
 
-      <div className="space-y-3">
-        {sorted.map((a) => (
-          <ApplicationCard
-            key={a.id}
-            a={a}
-            onToggleDoc={onToggleDoc}
-            onStatus={onStatus}
-            onDelete={onDelete}
-          />
-        ))}
-      </div>
+      {view === "calendar" ? (
+        <DeadlineCalendar apps={apps} />
+      ) : (
+        <div className="space-y-3">
+          {sorted.map((a) => (
+            <ApplicationCard
+              key={a.id}
+              a={a}
+              onToggleDoc={onToggleDoc}
+              onStatus={onStatus}
+              onDelete={onDelete}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
