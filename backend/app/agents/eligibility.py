@@ -48,9 +48,14 @@ class EligibilityAgent:
         language_test: str | None,
     ) -> ScholarshipMatch:
         reasons: list[str] = []
+        # "improve eligibility" hints: only things the student can fix by adding info.
+        tips: list[str] = []
         hard_fail = False
         missing_hard = False   # a hard criterion exists but profile lacks the input
         missing_soft = False   # a soft criterion (language) is unmet only for lack of input
+        # Fit score: starts at 100; each issue deducts. Disqualifiers cost most;
+        # missing-input/soft criteria cost less because the student can still fix them.
+        score = 100
 
         # --- degree (matched on the candidate program) ---
         allowed_degrees = [d.lower() for d in _split(sch.degree_levels)]
@@ -59,6 +64,7 @@ class EligibilityAgent:
                 reasons.append(f"{plan.degree_level.title()} level eligible ✓")
             else:
                 hard_fail = True
+                score -= 55
                 reasons.append(
                     f"Requires {'/'.join(allowed_degrees)}; this is a {plan.degree_level} program ✗"
                 )
@@ -70,6 +76,7 @@ class EligibilityAgent:
                 reasons.append(f"{plan.field} field eligible ✓")
             else:
                 hard_fail = True
+                score -= 55
                 reasons.append(f"Restricted to {'/'.join(allowed_fields)} ✗")
 
         # --- nationality (include list and/or "!"-prefixed excludes) ---
@@ -81,16 +88,20 @@ class EligibilityAgent:
                 nat = nationality.lower()
                 if any(x in nat for x in excludes):
                     hard_fail = True
+                    score -= 55
                     reasons.append(f"Not open to {nationality} ✗")
                 elif includes and not any(i in nat for i in includes):
                     hard_fail = True
+                    score -= 55
                     reasons.append(f"Open only to: {'/'.join(includes)} ✗")
                 else:
                     reasons.append("Open to your nationality ✓")
             else:
                 if includes:
                     missing_hard = True
+                    score -= 25
                     reasons.append(f"Nationality-restricted ({'/'.join(includes)}); add yours to confirm")
+                    tips.append(f"Add your nationality to confirm this award (open to: {'/'.join(includes)}).")
                 else:
                     reasons.append("Nationality not provided — assumed not excluded")
 
@@ -102,10 +113,13 @@ class EligibilityAgent:
                     reasons.append(f"GPA {gpa:.1f} ≥ {min_gpa:.1f} ✓")
                 else:
                     hard_fail = True
+                    score -= 55
                     reasons.append(f"GPA {gpa:.1f} below required {min_gpa:.1f} ✗")
             else:
                 missing_hard = True
+                score -= 25
                 reasons.append(f"Requires GPA ≥ {min_gpa:.1f}; not provided")
+                tips.append(f"Add your GPA — this award needs ≥ {min_gpa:.1f}.")
 
         # --- language ---
         if sch.language_requirement:
@@ -113,7 +127,9 @@ class EligibilityAgent:
                 reasons.append(f"Language: {sch.language_requirement} (you noted: {language_test})")
             else:
                 missing_soft = True
+                score -= 10
                 reasons.append(f"Language proof needed: {sch.language_requirement}")
+                tips.append(f"Provide language proof: {sch.language_requirement}.")
 
         # --- deadline ---
         days = None
@@ -123,16 +139,20 @@ class EligibilityAgent:
                 reasons.append(f"Deadline in {days} days ({sch.deadline.isoformat()})")
             else:
                 hard_fail = True  # a passed deadline can't be applied to — rule it out
+                score -= 70
                 reasons.append(f"Deadline passed ({sch.deadline.isoformat()}) ✗")
 
         if hard_fail:
             eligibility = "ineligible"
+            tips = []  # a disqualified award can't be "improved" by adding info
         elif missing_hard:
             eligibility = "unknown"
         elif missing_soft:
             eligibility = "likely"
         else:
             eligibility = "eligible"
+
+        score = max(0, min(100, score))
 
         return ScholarshipMatch(
             scholarship_id=sch.id,
@@ -143,7 +163,9 @@ class EligibilityAgent:
             coverage_pct=float(sch.coverage_pct) if sch.coverage_pct is not None else None,
             currency=sch.currency,
             eligibility=eligibility,
+            match_score=score,
             reasons=reasons,
+            tips=tips,
             deadline=sch.deadline,
             days_until_deadline=days,
             renewable=sch.renewable,
