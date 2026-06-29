@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { postPlan, type PlanningRequest, type PlanResult } from "@/lib/api";
-import { BudgetForm } from "@/components/BudgetForm";
+import { OnboardingWizard } from "@/components/OnboardingWizard";
 import { PlanResults } from "@/components/PlanResults";
 import { ChatPanel } from "@/components/ChatPanel";
 import { Navbar } from "@/components/Navbar";
@@ -20,6 +21,7 @@ const TABS: { id: Tab; label: string; hint: string }[] = [
 ];
 
 export default function Home() {
+  const reduce = useReducedMotion();
   const [tab, setTab] = useState<Tab>("form");
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [request, setRequest] = useState<PlanningRequest | null>(null);
@@ -74,10 +76,18 @@ export default function Home() {
           ))}
         </div>
 
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: reduce ? 0 : 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: reduce ? 0 : -8 }}
+            transition={{ duration: reduce ? 0 : 0.25, ease: [0.16, 1, 0.3, 1] }}
+          >
         {tab === "form" ? (
           <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
             <div className="lg:sticky lg:top-24 lg:self-start">
-              <BudgetForm onSubmit={handlePlan} loading={loading} />
+              <OnboardingWizard onSubmit={handlePlan} loading={loading} />
             </div>
             <div className="min-w-0">
               {loading ? (
@@ -102,6 +112,8 @@ export default function Home() {
             <ApplicationsTracker />
           </div>
         )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       <Footer />

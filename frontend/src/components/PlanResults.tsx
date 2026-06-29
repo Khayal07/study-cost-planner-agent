@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Bar,
   BarChart,
@@ -39,6 +40,7 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
   const [rankBy, setRankBy] = useState<"cost" | "value">("cost");
   const [tracked, setTracked] = useState<Set<number>>(new Set());
   const colors = useChartColors();
+  const reduce = useReducedMotion();
   const { isAuthed, openAuth } = useAuth();
 
   async function trackScholarship(m: ScholarshipMatch, candidate: CandidatePlan) {
@@ -130,7 +132,7 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
             >
               {([
                 { id: "cost", label: "Cost" },
-                { id: "value", label: "🎓 Value after aid" },
+                { id: "value", label: "Value after aid" },
               ] as const).map((o) => (
                 <button
                   key={o.id}
@@ -196,6 +198,12 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
             <span className="h-2.5 w-2.5 rounded-sm" style={{ background: colors.muted }} /> over budget
           </span>
         </p>
+        <div
+          role="img"
+          aria-label={`Bar chart of annual ${valueMode ? "cost after scholarships" : "total"} for ${chartData
+            .map((d) => `${d.name}: ${money(d.total, cur)}, ${d.affordable ? "within budget" : "over budget"}`)
+            .join("; ")}.`}
+        >
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={chartData} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
             <defs>
@@ -230,21 +238,55 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+        </div>
+        {/* Screen-reader / no-JS data table fallback */}
+        <table className="sr-only">
+          <caption>{valueMode ? "Annual cost after scholarships" : "Annual total by option"}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Option</th>
+              <th scope="col">Annual total ({cur})</th>
+              <th scope="col">Budget status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {chartData.map((d) => (
+              <tr key={d.name}>
+                <th scope="row">{d.name}</th>
+                <td>{money(d.total, cur)}</td>
+                <td>{d.affordable ? "within budget" : "over budget"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Ranked candidate selector */}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <motion.div
+        className="grid gap-3 sm:grid-cols-2"
+        initial="hidden"
+        animate="show"
+        variants={{ show: { transition: { staggerChildren: reduce ? 0 : 0.05 } } }}
+      >
         {ordered.map((c, i) => (
-          <CandidateRow
+          <motion.div
             key={c.program_id}
-            c={c}
-            cur={cur}
-            valueMode={valueMode}
-            selected={i === selected}
-            onClick={() => pick(i)}
-          />
+            variants={{
+              hidden: { opacity: 0, y: reduce ? 0 : 12 },
+              show: { opacity: 1, y: 0 },
+            }}
+            transition={{ duration: reduce ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <CandidateRow
+              c={c}
+              cur={cur}
+              valueMode={valueMode}
+              selected={i === selected}
+              onClick={() => pick(i)}
+            />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Detailed breakdown */}
       <Breakdown c={top} cur={cur} />
@@ -328,7 +370,10 @@ function CandidateRow({
       {hasAid && (
         <div className="mt-2">
           <span className="chip bg-accent-weak text-accent">
-            🎓 aid ~{money(c.total_scholarship_value, cur)}/yr
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M22 10 12 5 2 10l10 5 10-5Z" /><path d="M6 12v5c0 1 2.5 2.5 6 2.5s6-1.5 6-2.5v-5" />
+            </svg>
+            aid ~{money(c.total_scholarship_value, cur)}/yr
           </span>
         </div>
       )}

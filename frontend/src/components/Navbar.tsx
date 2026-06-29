@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/lib/auth";
 
@@ -40,8 +42,25 @@ function Logo() {
 }
 
 export function Navbar() {
+  const reduce = useReducedMotion();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-border glass">
+    <motion.header
+      initial={reduce ? false : { y: -64, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: reduce ? 0 : 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className={`sticky top-0 z-40 border-b glass transition-shadow duration-300 ${
+        scrolled ? "border-border shadow-md" : "border-transparent"
+      }`}
+    >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <a href="/" className="flex items-center gap-2.5">
           <Logo />
@@ -78,6 +97,6 @@ export function Navbar() {
           <ThemeToggle />
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
