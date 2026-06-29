@@ -23,6 +23,9 @@ import { useChartColors } from "@/lib/theme";
 import { useAuth } from "@/lib/auth";
 import { CitationChip } from "./CitationChip";
 import { ScholarshipPanel } from "./ScholarshipPanel";
+import { ComparisonView } from "./ComparisonView";
+
+const MAX_PINNED = 3;
 
 // The total to display/rank by: net (after best scholarship) in value mode, else gross.
 function displayedTotal(c: CandidatePlan, valueMode: boolean): number {
@@ -38,7 +41,18 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
   const [selected, setSelected] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [rankBy, setRankBy] = useState<"cost" | "value">("cost");
+  const [pinned, setPinned] = useState<number[]>([]);
   const [tracked, setTracked] = useState<Set<number>>(new Set());
+
+  function togglePin(programId: number) {
+    setPinned((prev) =>
+      prev.includes(programId)
+        ? prev.filter((id) => id !== programId)
+        : prev.length >= MAX_PINNED
+          ? prev
+          : [...prev, programId],
+    );
+  }
   const colors = useChartColors();
   const reduce = useReducedMotion();
   const { isAuthed, openAuth } = useAuth();
@@ -283,10 +297,28 @@ export function PlanResults({ plan, request }: { plan: PlanResult; request: Plan
               valueMode={valueMode}
               selected={i === selected}
               onClick={() => pick(i)}
+              pinned={pinned.includes(c.program_id)}
+              pinDisabled={pinned.length >= MAX_PINNED && !pinned.includes(c.program_id)}
+              onTogglePin={() => togglePin(c.program_id)}
             />
           </motion.div>
         ))}
       </motion.div>
+
+      {/* Side-by-side comparison of pinned candidates */}
+      {pinned.length >= 2 && (
+        <ComparisonView
+          candidates={pinned
+            .map((id) => plan.candidates.find((c) => c.program_id === id))
+            .filter((c): c is CandidatePlan => Boolean(c))}
+          cur={cur}
+          onClose={() => setPinned([])}
+          onUnpin={(id) => togglePin(id)}
+        />
+      )}
+      {pinned.length === 1 && (
+        <p className="px-1 text-xs text-muted">Pin one more option to compare side by side.</p>
+      )}
 
       {/* Detailed breakdown */}
       <Breakdown c={top} cur={cur} />
@@ -330,12 +362,18 @@ function CandidateRow({
   selected,
   valueMode,
   onClick,
+  pinned,
+  pinDisabled,
+  onTogglePin,
 }: {
   c: CandidatePlan;
   cur: string;
   selected: boolean;
   valueMode: boolean;
   onClick: () => void;
+  pinned: boolean;
+  pinDisabled: boolean;
+  onTogglePin: () => void;
 }) {
   const rankNum = valueMode ? c.value_rank ?? c.rank : c.rank;
   const affordable = valueMode ? c.net_affordable ?? c.affordable : c.affordable;
@@ -343,16 +381,32 @@ function CandidateRow({
   const total = displayedTotal(c, valueMode);
   const hasAid = c.total_scholarship_value > 0;
   return (
+    <div className="relative h-full">
+      <button
+        onClick={onTogglePin}
+        disabled={pinDisabled}
+        aria-pressed={pinned}
+        title={pinned ? "Unpin from comparison" : pinDisabled ? "Pin up to 3 options" : "Pin to compare"}
+        className={`absolute right-3 top-3 z-10 grid h-7 w-7 place-items-center rounded-lg border transition-all ${
+          pinned
+            ? "border-primary bg-primary text-primary-fg shadow-sm"
+            : "border-border bg-surface text-muted hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+        }`}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill={pinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M9 4v6l-2 4h10l-2-4V4M12 18v3M8 4h8" />
+        </svg>
+      </button>
     <button
       onClick={onClick}
       aria-pressed={selected}
-      className={`group rounded-2xl border p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+      className={`group h-full w-full rounded-2xl border p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
         selected
           ? "border-primary bg-primary-weak/40 shadow-glow"
           : "border-border bg-surface hover:border-primary/40"
       }`}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pr-9">
         <span className="figure grid h-6 min-w-6 place-items-center rounded-lg bg-surface-2 px-1.5 text-xs font-semibold text-muted">
           #{rankNum}
         </span>
@@ -393,6 +447,7 @@ function CandidateRow({
         </div>
       </div>
     </button>
+    </div>
   );
 }
 
