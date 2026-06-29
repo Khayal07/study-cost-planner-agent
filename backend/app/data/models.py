@@ -53,9 +53,16 @@ class Country(Base):
     name: Mapped[str] = mapped_column(String(120), unique=True)
     iso_code: Mapped[str] = mapped_column(String(2))
     default_currency: Mapped[str] = mapped_column(String(3))
+    # Student part-time work rights (optional, sourced). NULL = no data → no offset shown.
+    work_hours_cap: Mapped[int | None] = mapped_column(Integer, nullable=True)        # term-time h/week
+    work_hourly_wage: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    work_wage_currency: Mapped[str | None] = mapped_column(String(3), nullable=True)
+    work_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    work_source_id: Mapped[int | None] = mapped_column(ForeignKey("sources.id"), nullable=True)
 
     cities: Mapped[list["City"]] = relationship(back_populates="country")
     universities: Mapped[list["University"]] = relationship(back_populates="country")
+    work_source: Mapped["Source | None"] = relationship()
 
 
 class City(Base):

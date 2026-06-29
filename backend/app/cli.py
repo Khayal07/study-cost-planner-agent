@@ -36,6 +36,16 @@ def migrate() -> None:
             "CREATE INDEX IF NOT EXISTS ix_scholarships_scope "
             "ON scholarships (scope_level, scope_id)"
         ))
+        # Phase 3 #7: student work-rights columns on an existing countries table.
+        # Idempotent — create_all() won't ALTER a table that already exists.
+        for ddl in (
+            "ALTER TABLE countries ADD COLUMN IF NOT EXISTS work_hours_cap INTEGER",
+            "ALTER TABLE countries ADD COLUMN IF NOT EXISTS work_hourly_wage NUMERIC(12,2)",
+            "ALTER TABLE countries ADD COLUMN IF NOT EXISTS work_wage_currency VARCHAR(3)",
+            "ALTER TABLE countries ADD COLUMN IF NOT EXISTS work_note TEXT",
+            "ALTER TABLE countries ADD COLUMN IF NOT EXISTS work_source_id INTEGER REFERENCES sources(id)",
+        ):
+            conn.execute(text(ddl))
     print("[cli] migrate: schema ready (pgvector enabled, perf indexes ensured)")
 
 
