@@ -57,7 +57,9 @@ export type ScholarshipMatch = {
   currency: string;
   estimated_value: number;
   eligibility: ScholarshipEligibility;
+  match_score: number;
   reasons: string[];
+  tips: string[];
   deadline: string | null;
   days_until_deadline: number | null;
   renewable: boolean;

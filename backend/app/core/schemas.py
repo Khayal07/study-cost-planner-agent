@@ -61,7 +61,9 @@ class ScholarshipMatch(BaseModel):
     currency: str
     estimated_value: float = 0.0          # annual saving in report currency
     eligibility: str = "unknown"          # eligible | likely | ineligible | unknown
+    match_score: int = 100                # 0–100 fit score (deterministic, explainable)
     reasons: list[str] = Field(default_factory=list)
+    tips: list[str] = Field(default_factory=list)  # actionable "improve eligibility" hints
     deadline: date | None = None
     days_until_deadline: int | None = None
     renewable: bool = False
