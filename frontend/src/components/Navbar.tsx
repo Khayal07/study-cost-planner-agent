@@ -4,13 +4,35 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
+
+function LocaleToggle() {
+  const { locale, setLocale } = useI18n();
+  return (
+    <div role="group" aria-label="Language" className="hidden items-center rounded-lg border border-border bg-surface p-0.5 sm:inline-flex">
+      {(["en", "az"] as const).map((l) => (
+        <button
+          key={l}
+          onClick={() => setLocale(l)}
+          aria-pressed={locale === l}
+          className={`rounded-md px-1.5 py-0.5 text-[11px] font-semibold uppercase transition-colors ${
+            locale === l ? "bg-primary text-primary-fg" : "text-muted hover:text-foreground"
+          }`}
+        >
+          {l}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function AccountButton() {
   const { isAuthed, user, openAuth, logout } = useAuth();
+  const { t } = useI18n();
   if (!isAuthed) {
     return (
       <button onClick={openAuth} className="btn-primary px-3 py-1.5 text-xs">
-        Sign in
+        {t("nav.signIn")}
       </button>
     );
   }
@@ -20,7 +42,7 @@ function AccountButton() {
         {user?.email}
       </span>
       <button onClick={logout} className="btn-ghost px-2.5 py-1.5 text-xs">
-        Sign out
+        {t("nav.signOut")}
       </button>
     </div>
   );
@@ -43,6 +65,7 @@ function Logo() {
 
 export function Navbar() {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -69,7 +92,7 @@ export function Navbar() {
               Study Cost Planner
             </span>
             <span className="mt-0.5 text-[11px] text-muted">
-              total real cost, sourced
+              {t("nav.tagline")}
             </span>
           </span>
         </a>
@@ -80,7 +103,7 @@ export function Navbar() {
               <span className="absolute inline-flex h-full w-full animate-pulse-ring rounded-full" />
               <span className="inline-flex h-2 w-2 rounded-full bg-primary" />
             </span>
-            Grounded in cited sources
+            {t("nav.grounded")}
           </span>
           <a
             href="https://github.com/Khayal07/study-cost-planner-agent"
@@ -93,6 +116,7 @@ export function Navbar() {
               <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.22.66-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.99 1.03-2.69-.1-.26-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.38.1 2.64.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.16.57.67.48A10 10 0 0 0 22 12 10 10 0 0 0 12 2Z" />
             </svg>
           </a>
+          <LocaleToggle />
           <AccountButton />
           <ThemeToggle />
         </div>

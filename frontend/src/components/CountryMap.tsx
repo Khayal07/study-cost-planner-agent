@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { getOptions } from "@/lib/api";
 import { useChartColors } from "@/lib/theme";
+import { useI18n } from "@/lib/i18n";
 
 const GEO_URL = "/countries-110m.json";
 
@@ -22,6 +23,7 @@ function keysFor(name: string): string[] {
 /** Interactive world map highlighting countries we cover; click one to pre-fill the wizard. */
 export function CountryMap({ onSelect }: { onSelect: (country: string) => void }) {
   const colors = useChartColors();
+  const { t } = useI18n();
   const [countries, setCountries] = useState<string[]>([]);
   const [hovered, setHovered] = useState<string | null>(null);
 
@@ -42,11 +44,11 @@ export function CountryMap({ onSelect }: { onSelect: (country: string) => void }
     <div className="card flex h-full min-h-[420px] flex-col overflow-hidden">
       <div className="flex items-center justify-between gap-2 border-b border-border bg-surface-2/60 px-5 py-3.5">
         <div>
-          <h3 className="font-display text-sm font-semibold leading-none">Explore by country</h3>
-          <p className="mt-1 text-xs text-muted">Tap a highlighted country to start a plan there</p>
+          <h3 className="font-display text-sm font-semibold leading-none">{t("map.title")}</h3>
+          <p className="mt-1 text-xs text-muted">{t("map.hint")}</p>
         </div>
         <span className="chip border border-primary/30 bg-primary-weak text-primary">
-          {countries.length} covered
+          {countries.length} {t("map.covered")}
         </span>
       </div>
 
@@ -101,10 +103,10 @@ export function CountryMap({ onSelect }: { onSelect: (country: string) => void }
 
       <div className="flex items-center gap-4 border-t border-border px-5 py-2.5 text-[11px] text-muted">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-primary" /> covered
+          <span className="h-2.5 w-2.5 rounded-sm bg-primary" /> {t("map.legend.covered")}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm" style={{ background: colors.grid }} /> no data yet
+          <span className="h-2.5 w-2.5 rounded-sm" style={{ background: colors.grid }} /> {t("map.legend.none")}
         </span>
       </div>
     </div>

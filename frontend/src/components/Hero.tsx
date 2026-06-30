@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { getStats } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 /** Counts up to `to` once visible (re-animates if `to` arrives later); respects reduced motion. */
 function useCountUp(to: number, durationMs = 1100) {
@@ -55,6 +56,7 @@ function Stat({ to, suffix, label }: { to: number; suffix?: string; label: strin
 }
 
 export function Hero() {
+  const { t } = useI18n();
   // Live dataset counters — never hardcoded; stays in sync as the seed grows.
   const [stats, setStats] = useState({ countries: 0, universities: 0, cited_figures: 0 });
   useEffect(() => {
@@ -78,24 +80,21 @@ export function Hero() {
         <div className="animate-fade-up">
           <span className="chip border border-primary/30 bg-primary-weak text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            AI study-cost intelligence
+            {t("hero.badge")}
           </span>
           <h1 className="mt-5 max-w-3xl font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
-            The <span className="text-primary">real cost</span> of studying abroad —
-            not just tuition.
+            {t("hero.titleA")} <span className="text-primary">{t("hero.titleHighlight")}</span> {t("hero.titleB")}
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
-            Tuition, living, insurance, visa, transport and the hidden fees nobody
-            quotes you. Every figure is converted to your currency and traced to a
-            cited source — <span className="font-medium text-foreground">sourced</span> or{" "}
-            <span className="font-medium text-foreground">clearly flagged as an estimate</span>.
+            {t("hero.subtitle")} <span className="font-medium text-foreground">{t("hero.sourced")}</span> {t("hero.or")}{" "}
+            <span className="font-medium text-foreground">{t("hero.flagged")}</span>.
           </p>
         </div>
 
         <div className="mt-10 grid w-full max-w-xl grid-cols-3 gap-6 rounded-2xl border border-border bg-surface/60 p-5 shadow-sm animate-fade-up sm:gap-8">
-          <Stat to={stats.countries} label="countries" />
-          <Stat to={stats.universities} label="universities" />
-          <Stat to={stats.cited_figures} label="cited figures" />
+          <Stat to={stats.countries} label={t("hero.countries")} />
+          <Stat to={stats.universities} label={t("hero.universities")} />
+          <Stat to={stats.cited_figures} label={t("hero.figures")} />
         </div>
       </div>
     </section>

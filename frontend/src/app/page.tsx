@@ -13,18 +13,20 @@ import { ResultsSkeleton } from "@/components/Skeletons";
 import { ApplicationsTracker } from "@/components/ApplicationsTracker";
 import { SavedPlans } from "@/components/SavedPlans";
 import { CountryMap } from "@/components/CountryMap";
+import { useI18n } from "@/lib/i18n";
 
 type Tab = "form" | "chat" | "applications" | "saved";
 
-const TABS: { id: Tab; label: string; hint: string }[] = [
-  { id: "form", label: "Budget form", hint: "Structured inputs" },
-  { id: "chat", label: "Chat", hint: "Ask in plain language" },
-  { id: "applications", label: "Applications", hint: "Track scholarships" },
-  { id: "saved", label: "Saved", hint: "Your plans & links" },
+const TABS: { id: Tab; labelKey: string; hintKey: string }[] = [
+  { id: "form", labelKey: "tab.form", hintKey: "tab.form.hint" },
+  { id: "chat", labelKey: "tab.chat", hintKey: "tab.chat.hint" },
+  { id: "applications", labelKey: "tab.applications", hintKey: "tab.applications.hint" },
+  { id: "saved", labelKey: "tab.saved", hintKey: "tab.saved.hint" },
 ];
 
 export default function Home() {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>("form");
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [request, setRequest] = useState<PlanningRequest | null>(null);
@@ -74,21 +76,21 @@ export default function Home() {
           aria-label="Planning mode"
           className="mb-8 inline-grid grid-cols-2 gap-1 rounded-2xl border border-border bg-surface-2 p-1 shadow-xs sm:grid-cols-4"
         >
-          {TABS.map((t) => (
+          {TABS.map((tt) => (
             <button
-              key={t.id}
+              key={tt.id}
               role="tab"
-              aria-selected={tab === t.id}
-              onClick={() => setTab(t.id)}
+              aria-selected={tab === tt.id}
+              onClick={() => setTab(tt.id)}
               className={`relative rounded-xl px-4 py-2 text-sm font-medium transition-all sm:px-6 ${
-                tab === t.id
+                tab === tt.id
                   ? "bg-surface text-foreground shadow-sm"
                   : "text-muted hover:text-foreground"
               }`}
             >
-              {t.label}
+              {t(tt.labelKey)}
               <span className="ml-2 hidden text-[11px] font-normal text-muted sm:inline">
-                {t.hint}
+                {t(tt.hintKey)}
               </span>
             </button>
           ))}
