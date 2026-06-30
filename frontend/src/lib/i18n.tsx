@@ -83,6 +83,117 @@ const DICT: Record<string, { en: string; az: string }> = {
   },
   "footer.sourced": { en: "teal = sourced", az: "yaşıl = mənbəli" },
   "footer.estimate": { en: "amber = estimate", az: "kəhrəba = təxmin" },
+
+  // Chat
+  "chat.newChat": { en: "New chat", az: "Yeni söhbət" },
+  "chat.delete": { en: "Delete conversation", az: "Söhbəti sil" },
+  "chat.advisor": { en: "Study Abroad Advisor", az: "Xaricdə Təhsil Məsləhətçisi" },
+  "chat.advisorSub": { en: "Remembers your plan · every figure is cited", az: "Planını yadda saxlayır · hər rəqəm sitatlıdır" },
+  "chat.intro": {
+    en: "Tell me your budget and where you'd like to study — I'll find universities that fit and explain every cost. Try:",
+    az: "Büdcəni və harada oxumaq istədiyini de — uyğun universitetləri tapıb hər xərci izah edəcəyəm. Sına:",
+  },
+  "chat.placeholder": { en: "e.g. I want to study CS in Poland, budget €10,000", az: "məs. Polşada İT oxumaq istəyirəm, büdcə €10,000" },
+  "chat.message": { en: "Message", az: "Mesaj" },
+  "chat.send": { en: "Send message", az: "Mesaj göndər" },
+  "chat.fits": { en: "Fits budget", az: "Büdcəyə uyğun" },
+  "chat.over": { en: "Over", az: "Büdcədən çox" },
+  "chat.explore": { en: "Explore", az: "Araşdır" },
+  "chat.tuition": { en: "Tuition", az: "Təhsil haqqı" },
+  "chat.living": { en: "Living", az: "Yaşayış" },
+  "chat.free": { en: "free", az: "pulsuz" },
+  "chat.perYear": { en: "/year", az: "/il" },
+  "chat.perMo": { en: "/mo", az: "/ay" },
+  "chat.aid": { en: "aid ~", az: "təqaüd ~" },
+  "chat.breakdown": { en: "Annual breakdown · every figure cited", az: "İllik bölgü · hər rəqəm sitatlı" },
+  "chat.matchTitle": { en: "Budget-fit match score", az: "Büdcə uyğunluq balı" },
+  "chat.download": { en: "Download report", az: "Hesabatı yüklə" },
+  "chat.preparing": { en: "Preparing…", az: "Hazırlanır…" },
+  "chat.errReach": {
+    en: "I couldn't reach the planning service. Please check the backend is running and try again.",
+    az: "Planlama xidmətinə çıxa bilmədim. Backend işlədiyini yoxla və yenidən cəhd et.",
+  },
+  "chat.errPdf": {
+    en: "I couldn't generate the PDF just now. Please try again in a moment.",
+    az: "PDF yarada bilmədim. Bir az sonra yenidən cəhd et.",
+  },
+
+  // Applications
+  "app.st.planned": { en: "Planned", az: "Planlanıb" },
+  "app.st.in_progress": { en: "In progress", az: "Davam edir" },
+  "app.st.submitted": { en: "Submitted", az: "Göndərilib" },
+  "app.st.accepted": { en: "Accepted", az: "Qəbul olunub" },
+  "app.st.rejected": { en: "Rejected", az: "Rədd edilib" },
+  "app.signinTitle": { en: "Track your scholarship applications", az: "Təqaüd müraciətlərini izlə" },
+  "app.signinBody": {
+    en: "Sign in to save scholarships, manage deadlines and tick off documents as you go — all stored to your account.",
+    az: "Təqaüdləri saxlamaq, son tarixləri idarə etmək və sənədləri işarələmək üçün daxil ol — hamısı hesabında saxlanır.",
+  },
+  "app.signinBtn": { en: "Sign in / Create account", az: "Daxil ol / Hesab yarat" },
+  "app.errLoad": { en: "Couldn't load your applications.", az: "Müraciətlərini yükləyə bilmədik." },
+  "app.errStatus": { en: "Couldn't update status.", az: "Statusu yeniləyə bilmədik." },
+  "app.emptyTitle": { en: "No applications yet", az: "Hələ müraciət yoxdur" },
+  "app.emptyBodyA": { en: "Build a plan, open a university's scholarships and tap", az: "Plan qur, universitetin təqaüdlərini aç və əlavə etmək üçün" },
+  "app.emptyBodyB": { en: "to add one here.", az: "düyməsinə toxun." },
+  "app.track": { en: "Track", az: "İzlə" },
+  "app.heading": { en: "My applications", az: "Müraciətlərim" },
+  "app.tracked": { en: "tracked", az: "izlənir" },
+  "app.view": { en: "View", az: "Görünüş" },
+  "app.view.list": { en: "list", az: "siyahı" },
+  "app.view.calendar": { en: "calendar", az: "təqvim" },
+  "app.export": { en: "Export .ics", az: ".ics yüklə" },
+  "app.exportHas": { en: "Export deadlines as a calendar file (.ics)", az: "Son tarixləri təqvim faylı kimi yüklə (.ics)" },
+  "app.exportNone": { en: "No deadlines to export yet", az: "Hələ ixrac üçün son tarix yoxdur" },
+  "app.thisWeek": { en: "This week", az: "Bu həftə" },
+  "app.submit": { en: "Submit", az: "Göndər" },
+  "app.by": { en: "by", az: "—son tarix" },
+  "app.daysLeft": { en: "days left", az: "gün qalıb" },
+  "app.status": { en: "Application status", az: "Müraciət statusu" },
+  "app.remove": { en: "Remove application", az: "Müraciəti sil" },
+  "app.worth": { en: "Worth", az: "Dəyəri" },
+  "app.deadline": { en: "Deadline", az: "Son tarix" },
+  "app.overdue": { en: "overdue", az: "vaxtı keçib" },
+  "app.dLeft": { en: "left", az: "qalıb" },
+  "app.apply": { en: "Apply", az: "Müraciət et" },
+  "app.documents": { en: "Documents", az: "Sənədlər" },
+  "app.ready": { en: "ready", az: "hazır" },
+
+  // Saved plans
+  "saved.signinTitle": { en: "Sign in to save plans", az: "Planları saxlamaq üçün daxil ol" },
+  "saved.signinBody": {
+    en: "Save any cost plan and get a shareable link you can revisit or send to others.",
+    az: "İstənilən xərc planını saxla və yenidən aça və ya başqalarına göndərə biləcəyin link al.",
+  },
+  "saved.signinBtn": { en: "Sign in", az: "Daxil ol" },
+  "saved.emptyTitle": { en: "No saved plans yet", az: "Hələ saxlanan plan yoxdur" },
+  "saved.emptyBodyA": { en: "Build a plan, then use", az: "Plan qur, sonra nəticələrdə" },
+  "saved.emptyBodyB": { en: "on the results to keep it here.", az: "düyməsi ilə onu burada saxla." },
+  "saved.shareAction": { en: "Save & share", az: "Saxla və paylaş" },
+  "saved.heading": { en: "Saved plans", az: "Saxlanan planlar" },
+  "saved.open": { en: "Open", az: "Aç" },
+  "saved.copy": { en: "Copy link", az: "Linki kopyala" },
+  "saved.copied": { en: "Copied!", az: "Kopyalandı!" },
+  "saved.delete": { en: "Delete saved plan", az: "Saxlanan planı sil" },
+
+  // Calendar
+  "cal.today": { en: "Today", az: "Bu gün" },
+  "cal.prev": { en: "Previous month", az: "Əvvəlki ay" },
+  "cal.next": { en: "Next month", az: "Növbəti ay" },
+  "cal.more": { en: "more", az: "daha" },
+  "cal.none": {
+    en: "None of your tracked applications has a deadline yet.",
+    az: "İzlədiyin müraciətlərin heç birində son tarix yoxdur.",
+  },
+};
+
+// Localised month + weekday names for the deadline calendar.
+export const MONTH_NAMES: Record<Locale, string[]> = {
+  en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  az: ["Yanvar", "Fevral", "Mart", "Aprel", "May", "İyun", "İyul", "Avqust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"],
+};
+export const WEEKDAY_NAMES: Record<Locale, string[]> = {
+  en: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  az: ["B.e", "Ç.a", "Çər", "C.a", "Cüm", "Şən", "Baz"],
 };
 
 export const localeInitScript = `
