@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { CitationChip } from "./CitationChip";
 import { ScholarshipPanel } from "./ScholarshipPanel";
+import { useI18n } from "@/lib/i18n";
 
 type Turn = { role: "user" | "assistant"; text: string; res?: ChatResponse };
 type Conversation = {
@@ -23,12 +24,20 @@ type Conversation = {
 
 const STORE_KEY = "scp-chats-v1";
 
-const SAMPLES = [
-  "I want to study Computer Science in Germany, my budget is €12,000/year",
-  "Can I study at METU with €9,000?",
-  "Compare universities in Poland",
-  "Almaniyada viza nə qədərdir?",
-];
+const SAMPLES: Record<string, string[]> = {
+  en: [
+    "I want to study Computer Science in Germany, my budget is €12,000/year",
+    "Can I study at METU with €9,000?",
+    "Compare universities in Poland",
+    "Almaniyada viza nə qədərdir?",
+  ],
+  az: [
+    "Almaniyada Kompüter Elmləri oxumaq istəyirəm, büdcəm €12,000/il",
+    "€9,000 ilə METU-da oxuya bilərəmmi?",
+    "Polşadakı universitetləri müqayisə et",
+    "Almaniyada viza nə qədərdir?",
+  ],
+};
 
 const SYMBOL: Record<string, string> = {
   EUR: "€", USD: "$", GBP: "£", TRY: "₺", PLN: "zł", HUF: "Ft", AZN: "₼",
@@ -86,12 +95,13 @@ function RichText({ text }: { text: string }) {
 function AffordBadge({ affordable, gap, currency }: {
   affordable: boolean | null; gap?: number | null; currency: string;
 }) {
+  const { t } = useI18n();
   if (affordable === true)
-    return <span className="chip border-primary/30 bg-primary-weak text-primary">Fits budget</span>;
+    return <span className="chip border-primary/30 bg-primary-weak text-primary">{t("chat.fits")}</span>;
   if (affordable === false)
     return (
       <span className="chip border-warning/30 bg-accent-weak text-accent">
-        Over{gap != null ? ` by ${money(Math.abs(gap), currency)}` : ""}
+        {t("chat.over")}{gap != null ? ` ${money(Math.abs(gap), currency)}` : ""}
       </span>
     );
   return null;
@@ -99,10 +109,11 @@ function AffordBadge({ affordable, gap, currency }: {
 
 /** A budget-fit meter rendered in the ledger spirit — teal when it fits. */
 function MatchMeter({ score, affordable }: { score: number | null; affordable: boolean | null }) {
+  const { t } = useI18n();
   if (score == null) return null;
   const tone = affordable ? "bg-primary" : score >= 50 ? "bg-warning" : "bg-danger";
   return (
-    <div className="flex items-center gap-2" title={`Budget-fit match score: ${score}/100`}>
+    <div className="flex items-center gap-2" title={`${t("chat.matchTitle")}: ${score}/100`}>
       <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-2">
         <div className={`h-full rounded-full ${tone}`} style={{ width: `${score}%` }} />
       </div>
@@ -114,6 +125,7 @@ function MatchMeter({ score, affordable }: { score: number | null; affordable: b
 function CandidateCard({ c, score, valueMode = false, onExplore }: {
   c: CandidatePlan; score: number | null; valueMode?: boolean; onExplore: () => void;
 }) {
+  const { t } = useI18n();
   const cur = c.report_currency;
   const hasAid = c.total_scholarship_value > 0;
   const rankNum = valueMode ? c.value_rank ?? c.rank : c.rank;
@@ -138,7 +150,7 @@ function CandidateCard({ c, score, valueMode = false, onExplore }: {
           ) : (
             <>
               <p className="figure text-sm font-semibold text-foreground">{money(c.total_annual, cur)}</p>
-              <p className="text-[11px] text-muted">/year</p>
+              <p className="text-[11px] text-muted">{t("chat.perYear")}</p>
             </>
           )}
         </div>
@@ -150,7 +162,7 @@ function CandidateCard({ c, score, valueMode = false, onExplore }: {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M22 10 12 5 2 10l10 5 10-5Z" /><path d="M6 12v5c0 1 2.5 2.5 6 2.5s6-1.5 6-2.5v-5" />
             </svg>
-            aid ~{money(c.total_scholarship_value, cur)}/yr
+            {t("chat.aid")}{money(c.total_scholarship_value, cur)}/yr
           </span>
         </div>
       )}
@@ -164,7 +176,7 @@ function CandidateCard({ c, score, valueMode = false, onExplore }: {
           onClick={onExplore}
           className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary-weak"
         >
-          Explore
+          {t("chat.explore")}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M5 12h14M13 6l6 6-6 6" />
           </svg>
@@ -172,8 +184,8 @@ function CandidateCard({ c, score, valueMode = false, onExplore }: {
       </div>
 
       <div className="mt-2.5 flex gap-4 border-t border-border pt-2.5 text-[11px] text-muted">
-        <span>Tuition <span className="figure text-foreground">{c.annual_tuition > 0 ? money(c.annual_tuition, cur) : "free"}</span></span>
-        <span>Living <span className="figure text-foreground">{money(c.monthly_living, cur)}</span>/mo</span>
+        <span>{t("chat.tuition")} <span className="figure text-foreground">{c.annual_tuition > 0 ? money(c.annual_tuition, cur) : t("chat.free")}</span></span>
+        <span>{t("chat.living")} <span className="figure text-foreground">{money(c.monthly_living, cur)}</span>{t("chat.perMo")}</span>
       </div>
     </div>
   );
@@ -181,10 +193,11 @@ function CandidateCard({ c, score, valueMode = false, onExplore }: {
 
 /** Grounded figures with a clickable source on each — the chat's ledger. */
 function SourceLedger({ c }: { c: CandidatePlan }) {
+  const { t } = useI18n();
   return (
     <div className="mt-2 flex flex-col gap-1.5 rounded-xl border border-border bg-surface p-2.5">
       <p className="mb-0.5 text-[11px] font-medium uppercase tracking-wide text-muted">
-        Annual breakdown · every figure cited
+        {t("chat.breakdown")}
       </p>
       {c.lines.map((line, i) => (
         <div key={i} className="flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -200,6 +213,7 @@ function SourceLedger({ c }: { c: CandidatePlan }) {
 }
 
 export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
+  const { t, locale } = useI18n();
   const [convos, setConvos] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState("");
   const [input, setInput] = useState("");
@@ -270,7 +284,7 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
     } catch {
       patchActive((c) => ({
         ...c,
-        turns: [...c.turns, { role: "assistant", text: "I couldn't reach the planning service. Please check the backend is running and try again." }],
+        turns: [...c.turns, { role: "assistant", text: t("chat.errReach") }],
         updatedAt: Date.now(),
       }));
     } finally {
@@ -316,7 +330,7 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
     } catch {
       patchActive((c) => ({
         ...c,
-        turns: [...c.turns, { role: "assistant", text: "I couldn't generate the PDF just now. Please try again in a moment." }],
+        turns: [...c.turns, { role: "assistant", text: t("chat.errPdf") }],
         updatedAt: Date.now(),
       }));
     } finally {
@@ -399,7 +413,7 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
                 disabled={exporting}
                 className="btn-primary px-3 py-1.5 text-xs"
               >
-                {exporting ? "Preparing…" : "Download report"}
+                {exporting ? t("chat.preparing") : t("chat.download")}
                 {!exporting && (
                   <svg className="ml-1" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" />
@@ -433,12 +447,13 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 5v14M5 12h14" />
           </svg>
-          New chat
+          {t("chat.newChat")}
         </button>
 
         <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
           {listConvos.map((c) => {
             const isActive = c.id === activeId;
+            const label = c.title === "New chat" ? t("chat.newChat") : c.title;
             return (
               <div key={c.id} className="group relative shrink-0 lg:shrink">
                 <button
@@ -448,13 +463,13 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
                       ? "border-primary/50 bg-primary-weak/50 text-foreground"
                       : "border-border bg-surface-2/40 text-muted hover:border-primary/30 hover:text-foreground"
                   }`}
-                  title={c.title}
+                  title={label}
                 >
-                  {c.title}
+                  {label}
                 </button>
                 <button
                   onClick={() => deleteConvo(c.id)}
-                  aria-label="Delete conversation"
+                  aria-label={t("chat.delete")}
                   className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted opacity-0 transition-opacity hover:bg-danger/10 hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -477,8 +492,8 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
             </svg>
           </span>
           <div>
-            <h2 className="font-display text-sm font-semibold leading-none">Study Abroad Advisor</h2>
-            <p className="mt-1 text-xs text-muted">Remembers your plan · every figure is cited</p>
+            <h2 className="font-display text-sm font-semibold leading-none">{t("chat.advisor")}</h2>
+            <p className="mt-1 text-xs text-muted">{t("chat.advisorSub")}</p>
           </div>
         </div>
 
@@ -487,11 +502,10 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
           {turns.length === 0 && (
             <div className="animate-fade-in">
               <p className="mb-3 text-sm text-muted">
-                Tell me your budget and where you&apos;d like to study — I&apos;ll find universities that
-                fit and explain every cost. Try:
+                {t("chat.intro")}
               </p>
               <div className="flex flex-col gap-2">
-                {SAMPLES.map((s) => (
+                {SAMPLES[locale].map((s) => (
                   <button
                     key={s}
                     onClick={() => send(s)}
@@ -556,11 +570,11 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="e.g. I want to study CS in Poland, budget €10,000"
+              placeholder={t("chat.placeholder")}
               className="input"
-              aria-label="Message"
+              aria-label={t("chat.message")}
             />
-            <button type="submit" disabled={loading || !input.trim()} className="btn-primary px-3.5" aria-label="Send message">
+            <button type="submit" disabled={loading || !input.trim()} className="btn-primary px-3.5" aria-label={t("chat.send")}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z" />
               </svg>

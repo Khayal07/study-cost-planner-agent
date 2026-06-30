@@ -9,18 +9,12 @@ import {
   type ApplicationOut,
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { ApplicationsSkeleton } from "./Skeletons";
 import { DeadlineCalendar } from "./DeadlineCalendar";
 import { downloadIcs } from "@/lib/ics";
 
 const STATUSES = ["planned", "in_progress", "submitted", "accepted", "rejected"] as const;
-const STATUS_LABEL: Record<string, string> = {
-  planned: "Planned",
-  in_progress: "In progress",
-  submitted: "Submitted",
-  accepted: "Accepted",
-  rejected: "Rejected",
-};
 const STATUS_CLS: Record<string, string> = {
   planned: "bg-surface-2 text-muted",
   in_progress: "bg-accent-weak text-accent",
@@ -50,6 +44,7 @@ function byDeadline(a: ApplicationOut, b: ApplicationOut): number {
 
 export function ApplicationsTracker() {
   const { isAuthed, ready, openAuth } = useAuth();
+  const { t } = useI18n();
   const [apps, setApps] = useState<ApplicationOut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +55,7 @@ export function ApplicationsTracker() {
     setLoading(true);
     listApplications()
       .then(setApps)
-      .catch(() => setError("Couldn't load your applications."))
+      .catch(() => setError(t("app.errLoad")))
       .finally(() => setLoading(false));
   }, [ready, isAuthed]);
 
@@ -86,7 +81,7 @@ export function ApplicationsTracker() {
     try {
       replace(await updateApplication(appId, { status }));
     } catch {
-      setError("Couldn't update status.");
+      setError(t("app.errStatus"));
     }
   }
 
@@ -102,12 +97,11 @@ export function ApplicationsTracker() {
   if (ready && !isAuthed) {
     return (
       <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface/40 p-10 text-center">
-        <h3 className="font-display text-lg font-semibold">Track your scholarship applications</h3>
+        <h3 className="font-display text-lg font-semibold">{t("app.signinTitle")}</h3>
         <p className="mt-1.5 max-w-sm text-sm text-muted">
-          Sign in to save scholarships, manage deadlines and tick off documents as you go —
-          all stored to your account.
+          {t("app.signinBody")}
         </p>
-        <button onClick={openAuth} className="btn-primary mt-4">Sign in / Create account</button>
+        <button onClick={openAuth} className="btn-primary mt-4">{t("app.signinBtn")}</button>
       </div>
     );
   }
@@ -118,10 +112,10 @@ export function ApplicationsTracker() {
   if (apps.length === 0) {
     return (
       <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface/40 p-10 text-center">
-        <h3 className="font-display text-lg font-semibold">No applications yet</h3>
+        <h3 className="font-display text-lg font-semibold">{t("app.emptyTitle")}</h3>
         <p className="mt-1.5 max-w-sm text-sm text-muted">
-          Build a plan, open a university&apos;s scholarships and tap{" "}
-          <span className="font-medium text-foreground">Track</span> to add one here.
+          {t("app.emptyBodyA")}{" "}
+          <span className="font-medium text-foreground">{t("app.track")}</span> {t("app.emptyBodyB")}
         </p>
       </div>
     );
@@ -137,50 +131,50 @@ export function ApplicationsTracker() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="font-display text-xl font-semibold tracking-tight">My applications</h2>
-        <span className="chip bg-surface-2 text-muted">{apps.length} tracked</span>
+        <h2 className="font-display text-xl font-semibold tracking-tight">{t("app.heading")}</h2>
+        <span className="chip bg-surface-2 text-muted">{apps.length} {t("app.tracked")}</span>
 
         <div className="ml-auto flex items-center gap-2">
-          <div role="tablist" aria-label="View" className="inline-grid grid-cols-2 gap-1 rounded-xl border border-border bg-surface-2 p-1">
+          <div role="tablist" aria-label={t("app.view")} className="inline-grid grid-cols-2 gap-1 rounded-xl border border-border bg-surface-2 p-1">
             {(["list", "calendar"] as const).map((v) => (
               <button
                 key={v}
                 role="tab"
                 aria-selected={view === v}
                 onClick={() => setView(v)}
-                className={`rounded-lg px-3 py-1 text-xs font-medium capitalize transition-all ${
+                className={`rounded-lg px-3 py-1 text-xs font-medium transition-all ${
                   view === v ? "bg-surface text-foreground shadow-sm" : "text-muted hover:text-foreground"
                 }`}
               >
-                {v}
+                {t(`app.view.${v}`)}
               </button>
             ))}
           </div>
           <button
             onClick={() => downloadIcs(apps)}
             disabled={!hasDeadlines}
-            title={hasDeadlines ? "Export deadlines as a calendar file (.ics)" : "No deadlines to export yet"}
+            title={hasDeadlines ? t("app.exportHas") : t("app.exportNone")}
             className="btn-ghost px-3 py-1.5 text-xs disabled:pointer-events-none disabled:opacity-50"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4" />
             </svg>
-            Export .ics
+            {t("app.export")}
           </button>
         </div>
       </div>
 
       {thisWeek.length > 0 && (
         <div className="card border-accent/30 bg-accent-weak/40 p-4">
-          <div className="mb-2 text-sm font-semibold text-accent">⏰ This week</div>
+          <div className="mb-2 text-sm font-semibold text-accent">⏰ {t("app.thisWeek")}</div>
           <ul className="space-y-1.5 text-sm">
             {thisWeek.map((a) => (
               <li key={a.id} className="flex gap-2 leading-relaxed">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
                 <span>
-                  Submit <b>{a.scholarship_name}</b>
-                  {a.university_name ? ` (${a.university_name})` : ""} by {a.deadline} —{" "}
-                  {a.days_until_deadline} days left.
+                  {t("app.submit")} <b>{a.scholarship_name}</b>
+                  {a.university_name ? ` (${a.university_name})` : ""} {t("app.by")} {a.deadline} —{" "}
+                  {a.days_until_deadline} {t("app.daysLeft")}.
                 </span>
               </li>
             ))}
@@ -218,6 +212,7 @@ function ApplicationCard({
   onStatus: (appId: number, status: string) => void;
   onDelete: (appId: number) => void;
 }) {
+  const { t } = useI18n();
   const done = a.documents.filter((d) => d.done).length;
   const overdue = a.days_until_deadline != null && a.days_until_deadline < 0;
   const soon = a.days_until_deadline != null && a.days_until_deadline >= 0 && a.days_until_deadline <= 14;
@@ -236,15 +231,15 @@ function ApplicationCard({
             value={a.status}
             onChange={(e) => onStatus(a.id, e.target.value)}
             className={`rounded-lg border border-border px-2 py-1 text-xs font-medium ${STATUS_CLS[a.status] ?? ""}`}
-            aria-label="Application status"
+            aria-label={t("app.status")}
           >
             {STATUSES.map((s) => (
-              <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+              <option key={s} value={s}>{t(`app.st.${s}`)}</option>
             ))}
           </select>
           <button
             onClick={() => onDelete(a.id)}
-            aria-label="Remove application"
+            aria-label={t("app.remove")}
             className="rounded-lg p-1.5 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -257,22 +252,22 @@ function ApplicationCard({
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
         {a.estimated_value != null && (
           <span className="text-muted">
-            Worth <span className="figure font-semibold text-foreground">{money(a.estimated_value, a.currency)}/yr</span>
+            {t("app.worth")} <span className="figure font-semibold text-foreground">{money(a.estimated_value, a.currency)}/yr</span>
           </span>
         )}
         {a.deadline && (
           <span className={overdue ? "font-medium text-danger" : soon ? "font-medium text-accent" : "text-muted"}>
-            Deadline {a.deadline}
+            {t("app.deadline")} {a.deadline}
             {a.days_until_deadline != null
               ? overdue
-                ? " · overdue"
-                : ` · ${a.days_until_deadline}d left`
+                ? ` · ${t("app.overdue")}`
+                : ` · ${a.days_until_deadline}d ${t("app.dLeft")}`
               : ""}
           </span>
         )}
         {a.application_url && (
           <a href={a.application_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-            Apply ↗
+            {t("app.apply")} ↗
           </a>
         )}
       </div>
@@ -280,8 +275,8 @@ function ApplicationCard({
       {a.documents.length > 0 && (
         <div className="mt-3 border-t border-border pt-3">
           <div className="mb-2 flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-muted">
-            <span>Documents</span>
-            <span>{done}/{a.documents.length} ready</span>
+            <span>{t("app.documents")}</span>
+            <span>{done}/{a.documents.length} {t("app.ready")}</span>
           </div>
           <div className="grid gap-1.5 sm:grid-cols-2">
             {a.documents.map((d) => (
