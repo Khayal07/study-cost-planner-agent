@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider, themeInitScript } from "@/lib/theme";
+import { LocaleProvider, localeInitScript } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -37,12 +38,15 @@ export default function RootLayout({
       <head>
         {/* Resolve theme before first paint to avoid a flash (static constant). */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
       </head>
       <body className={`${inter.variable} ${display.variable} ${mono.variable} font-sans`}>
         <ThemeProvider>
-          <AuthProvider>
-            <ErrorBoundary>{children}</ErrorBoundary>
-          </AuthProvider>
+          <LocaleProvider>
+            <AuthProvider>
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </AuthProvider>
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>
