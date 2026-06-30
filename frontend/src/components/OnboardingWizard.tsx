@@ -3,19 +3,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { getOptions, type PlanningRequest } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 // Fallback only — live lists come from /meta/options so new countries/currencies
 // appear automatically once their data is seeded.
 const FALLBACK_COUNTRIES = ["Germany", "Netherlands", "Poland", "Hungary", "Turkey", "Czechia", "Italy"];
 const FALLBACK_CURRENCIES = ["EUR", "USD", "TRY", "PLN", "HUF", "CZK", "AZN", "GBP"];
 
-const LIFESTYLES: { id: string; label: string; blurb: string }[] = [
-  { id: "frugal", label: "Frugal", blurb: "Shared housing, cook at home, minimal extras" },
-  { id: "moderate", label: "Moderate", blurb: "Typical student spending and comfort" },
-  { id: "comfortable", label: "Comfortable", blurb: "Private room, eating out, more buffer" },
+const LIFESTYLES = [
+  { id: "frugal", labelKey: "wiz.lf.frugal", blurbKey: "wiz.lf.frugal.blurb" },
+  { id: "moderate", labelKey: "wiz.lf.moderate", blurbKey: "wiz.lf.moderate.blurb" },
+  { id: "comfortable", labelKey: "wiz.lf.comfortable", blurbKey: "wiz.lf.comfortable.blurb" },
 ];
 
-const STEPS = ["Study", "Budget", "Lifestyle", "Eligibility"] as const;
+const STEP_KEYS = ["wiz.s.study", "wiz.s.budget", "wiz.s.lifestyle", "wiz.s.eligibility"] as const;
 
 export function OnboardingWizard({
   onSubmit,
@@ -27,6 +28,7 @@ export function OnboardingWizard({
   initialCountry?: string | null;
 }) {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
 
@@ -82,7 +84,7 @@ export function OnboardingWizard({
   function go(delta: number) {
     if (delta > 0 && !validateStep(step)) return;
     setDir(delta);
-    setStep((s) => Math.min(STEPS.length - 1, Math.max(0, s + delta)));
+    setStep((s) => Math.min(STEP_KEYS.length - 1, Math.max(0, s + delta)));
   }
 
   function submit() {
@@ -102,7 +104,7 @@ export function OnboardingWizard({
     });
   }
 
-  const isLast = step === STEPS.length - 1;
+  const isLast = step === STEP_KEYS.length - 1;
   const variants = {
     enter: (d: number) => ({ opacity: 0, x: reduce ? 0 : d * 24 }),
     center: { opacity: 1, x: 0 },
@@ -114,14 +116,14 @@ export function OnboardingWizard({
       {/* Header + progress */}
       <div className="border-b border-border bg-surface-2/60 px-5 py-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-base font-semibold leading-none">Build a cost plan</h2>
+          <h2 className="font-display text-base font-semibold leading-none">{t("wiz.title")}</h2>
           <span className="figure text-xs text-muted">
-            Step {step + 1} / {STEPS.length}
+            {t("wiz.step")} {step + 1} / {STEP_KEYS.length}
           </span>
         </div>
         <div className="mt-3 flex gap-1.5" role="list" aria-label="Progress">
-          {STEPS.map((label, i) => (
-            <div key={label} className="flex-1" role="listitem" aria-current={i === step}>
+          {STEP_KEYS.map((labelKey, i) => (
+            <div key={labelKey} className="flex-1" role="listitem" aria-current={i === step}>
               <div className="h-1.5 overflow-hidden rounded-full bg-border">
                 <motion.div
                   className="h-full rounded-full bg-primary"
@@ -135,7 +137,7 @@ export function OnboardingWizard({
                   i === step ? "text-primary" : "text-muted"
                 }`}
               >
-                {label}
+                {t(labelKey)}
               </span>
             </div>
           ))}
@@ -157,7 +159,7 @@ export function OnboardingWizard({
             {step === 0 && (
               <>
                 <div>
-                  <label htmlFor="w-field" className="field-label">Field of study</label>
+                  <label htmlFor="w-field" className="field-label">{t("wiz.field")}</label>
                   <input
                     id="w-field"
                     className="input"
@@ -168,14 +170,14 @@ export function OnboardingWizard({
                   {errors.field && <p className="mt-1 text-[11px] text-danger">{errors.field}</p>}
                 </div>
                 <div>
-                  <label htmlFor="w-country" className="field-label">Destination country</label>
+                  <label htmlFor="w-country" className="field-label">{t("wiz.country")}</label>
                   <select id="w-country" className="input" value={country} onChange={(e) => setCountry(e.target.value)}>
-                    <option value="">All countries</option>
+                    <option value="">{t("wiz.allCountries")}</option>
                     {countries.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
-                  <p className="mt-1.5 text-[11px] text-muted">Leave on “All countries” to compare everywhere.</p>
+                  <p className="mt-1.5 text-[11px] text-muted">{t("wiz.countryHint")}</p>
                 </div>
               </>
             )}
@@ -183,7 +185,7 @@ export function OnboardingWizard({
             {step === 1 && (
               <>
                 <div>
-                  <label htmlFor="w-budget" className="field-label">Yearly budget</label>
+                  <label htmlFor="w-budget" className="field-label">{t("wiz.budget")}</label>
                   <input
                     id="w-budget"
                     type="number"
@@ -198,7 +200,7 @@ export function OnboardingWizard({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="w-bcur" className="field-label">Budget currency</label>
+                    <label htmlFor="w-bcur" className="field-label">{t("wiz.budgetCurrency")}</label>
                     <select id="w-bcur" className="input" value={budgetCurrency} onChange={(e) => setBudgetCurrency(e.target.value)}>
                       {currencies.map((c) => (
                         <option key={c} value={c}>{c}</option>
@@ -206,7 +208,7 @@ export function OnboardingWizard({
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="w-rcur" className="field-label">Show results in</label>
+                    <label htmlFor="w-rcur" className="field-label">{t("wiz.showIn")}</label>
                     <select id="w-rcur" className="input" value={reportCurrency} onChange={(e) => setReportCurrency(e.target.value)}>
                       {currencies.map((c) => (
                         <option key={c} value={c}>{c}</option>
@@ -236,7 +238,7 @@ export function OnboardingWizard({
                     >
                       <div className="flex items-center justify-between">
                         <span className={`text-sm font-semibold ${active ? "text-primary" : "text-foreground"}`}>
-                          {l.label}
+                          {t(l.labelKey)}
                         </span>
                         <span
                           className={`grid h-4 w-4 place-items-center rounded-full border ${
@@ -246,7 +248,7 @@ export function OnboardingWizard({
                           {active && <span className="h-1.5 w-1.5 rounded-full bg-primary-fg" />}
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-muted">{l.blurb}</p>
+                      <p className="mt-1 text-xs text-muted">{t(l.blurbKey)}</p>
                     </button>
                   );
                 })}
@@ -256,10 +258,10 @@ export function OnboardingWizard({
             {step === 3 && (
               <>
                 <p className="text-[11px] text-muted">
-                  Optional — used only to estimate scholarships you may qualify for. Leave blank to skip.
+                  {t("wiz.elig.note")}
                 </p>
                 <div>
-                  <label htmlFor="w-nat" className="field-label">Nationality</label>
+                  <label htmlFor="w-nat" className="field-label">{t("wiz.nationality")}</label>
                   <input
                     id="w-nat"
                     className="input"
@@ -270,7 +272,7 @@ export function OnboardingWizard({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="w-gpa" className="field-label">GPA (0–4)</label>
+                    <label htmlFor="w-gpa" className="field-label">{t("wiz.gpa")}</label>
                     <input
                       id="w-gpa"
                       type="number"
@@ -286,7 +288,7 @@ export function OnboardingWizard({
                     {errors.gpa && <p className="mt-1 text-[11px] text-danger">{errors.gpa}</p>}
                   </div>
                   <div>
-                    <label htmlFor="w-lang" className="field-label">Language test</label>
+                    <label htmlFor="w-lang" className="field-label">{t("wiz.langTest")}</label>
                     <input
                       id="w-lang"
                       className="input"
@@ -313,18 +315,18 @@ export function OnboardingWizard({
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M19 12H5M11 18l-6-6 6-6" />
           </svg>
-          Back
+          {t("wiz.back")}
         </button>
 
         {isLast ? (
           <button type="button" onClick={submit} disabled={loading} className="btn-primary min-w-[150px]">
             {loading ? (
               <>
-                <Spinner /> Planning…
+                <Spinner /> {t("wiz.planning")}
               </>
             ) : (
               <>
-                Build cost plan
+                {t("wiz.build")}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
@@ -333,7 +335,7 @@ export function OnboardingWizard({
           </button>
         ) : (
           <button type="button" onClick={() => go(1)} className="btn-primary min-w-[110px]">
-            Next
+            {t("wiz.next")}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
