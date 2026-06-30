@@ -2,18 +2,16 @@
 
 import { useMemo, useState } from "react";
 import type { ApplicationOut } from "@/lib/api";
-
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+import { useI18n, MONTH_NAMES, WEEKDAY_NAMES } from "@/lib/i18n";
 
 const ymd = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 /** Month grid of tracked scholarship deadlines. Pure frontend over Application.deadline. */
 export function DeadlineCalendar({ apps }: { apps: ApplicationOut[] }) {
+  const { locale, t } = useI18n();
+  const MONTHS = MONTH_NAMES[locale];
+  const WEEKDAYS = WEEKDAY_NAMES[locale];
   const withDeadline = apps.filter((a) => a.deadline);
   const today = new Date();
   const todayKey = ymd(today);
@@ -64,13 +62,13 @@ export function DeadlineCalendar({ apps }: { apps: ApplicationOut[] }) {
           {MONTHS[view.month]} {view.year}
         </h3>
         <div className="flex gap-1">
-          <button onClick={() => shift(-1)} aria-label="Previous month" className="btn-ghost px-2 py-1.5">
+          <button onClick={() => shift(-1)} aria-label={t("cal.prev")} className="btn-ghost px-2 py-1.5">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
           </button>
           <button onClick={() => setView({ year: today.getFullYear(), month: today.getMonth() })} className="btn-ghost px-3 py-1.5 text-xs">
-            Today
+            {t("cal.today")}
           </button>
-          <button onClick={() => shift(1)} aria-label="Next month" className="btn-ghost px-2 py-1.5">
+          <button onClick={() => shift(1)} aria-label={t("cal.next")} className="btn-ghost px-2 py-1.5">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg>
           </button>
         </div>
@@ -120,7 +118,7 @@ export function DeadlineCalendar({ apps }: { apps: ApplicationOut[] }) {
                   </div>
                 ))}
                 {hits.length > 2 && (
-                  <div className="px-1 text-[10px] text-muted">+{hits.length - 2} more</div>
+                  <div className="px-1 text-[10px] text-muted">+{hits.length - 2} {t("cal.more")}</div>
                 )}
               </div>
             </div>
@@ -129,7 +127,7 @@ export function DeadlineCalendar({ apps }: { apps: ApplicationOut[] }) {
       </div>
 
       {withDeadline.length === 0 && (
-        <p className="mt-3 text-center text-xs text-muted">None of your tracked applications has a deadline yet.</p>
+        <p className="mt-3 text-center text-xs text-muted">{t("cal.none")}</p>
       )}
     </div>
   );
