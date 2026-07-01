@@ -144,6 +144,19 @@
   .chip {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium;
   }
+  /* Advisor identity glyph — small teal "verified" mark beside messages/starters */
+  .chat-avatar {
+    @apply grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary-weak text-primary
+           ring-1 ring-primary/15;
+  }
+  /* Faint "ledger paper" glow behind the conversation, masked so text stays crisp */
+  .chat-canvas {
+    background-image: radial-gradient(
+      34rem 20rem at 50% -6%,
+      rgb(var(--primary) / 0.06),
+      transparent 62%
+    );
+  }
   /* Subtle gridded / glow backdrop for the hero */
   .hero-grid {
     background-image:
