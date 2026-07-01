@@ -2153,6 +2153,790 @@
           "accessed_date": "2026-06-29"
         }
       }
+    },
+    {
+      "name": "Spain",
+      "iso_code": "ES",
+      "default_currency": "EUR",
+      "visa": {
+        "amount": 80,
+        "currency": "EUR",
+        "period": "one_time",
+        "confidence": "sourced",
+        "valid_as_of": "2025-09-01",
+        "note": "National (type D) long-stay student visa fee, standard EUR 80. Varies by nationality under reciprocity (e.g. USD 160 for US citizens). A separate TIE residence-card fee (~EUR 16-21) applies after arrival for stays over 6 months.",
+        "source": {
+          "url": "https://www.exteriores.gob.es/Consulados/londres/en/ServiciosConsulares/Paginas/Consular/Student-visa.aspx",
+          "title": "Student visa — long-stay national visa fees",
+          "publisher": "Ministry of Foreign Affairs, EU and Cooperation (Spain)",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      },
+      "insurance": {
+        "amount": 45,
+        "currency": "EUR",
+        "period": "monthly",
+        "confidence": "estimate",
+        "valid_as_of": "2025-09-01",
+        "note": "Private student health insurance is mandatory for the student visa (minimum EUR 30,000 cover, no co-payments). Typical premiums EUR 35-56/month (~EUR 480-600/year); ~EUR 45 typical for a student under 30 (e.g. Sanitas, Adeslas).",
+        "source": {
+          "url": "https://studying-in-spain.com/moving-to-spain/health-insurance-for-international-students-in-spain/",
+          "title": "Health Insurance for International Students in Spain (2025 Guide)",
+          "publisher": "Studying in Spain",
+          "source_type": "statistical_portal",
+          "accessed_date": "2026-07-01"
+        }
+      },
+      "hidden": [],
+      "cities": [
+        {
+          "name": "Barcelona",
+          "living_source": {
+            "url": "https://www.numbeo.com/cost-of-living/in/Barcelona",
+            "title": "Cost of Living in Barcelona",
+            "publisher": "Numbeo",
+            "source_type": "statistical_portal",
+            "accessed_date": "2026-07-01"
+          },
+          "living": [
+            {
+              "cost_type": "rent",
+              "amount": 1100,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo: 1-bedroom apartment outside centre (~EUR 1,101); a shared room is typically cheaper"
+            },
+            {
+              "cost_type": "food",
+              "amount": 350,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo grocery basket, one person (~EUR 300-400)"
+            },
+            {
+              "cost_type": "transport",
+              "amount": 22,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo monthly pass regular (~EUR 22.80, T-usual); under-30s use the discounted T-jove"
+            },
+            {
+              "cost_type": "utilities",
+              "amount": 155,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Student-sized apartment estimate; Numbeo lists ~EUR 155 for an 85 m2 flat"
+            }
+          ]
+        },
+        {
+          "name": "Madrid",
+          "living_source": {
+            "url": "https://www.numbeo.com/cost-of-living/in/Madrid",
+            "title": "Cost of Living in Madrid",
+            "publisher": "Numbeo",
+            "source_type": "statistical_portal",
+            "accessed_date": "2026-07-01"
+          },
+          "living": [
+            {
+              "cost_type": "rent",
+              "amount": 1100,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo: 1-bedroom apartment outside centre (~EUR 1,102); a shared room is typically cheaper"
+            },
+            {
+              "cost_type": "food",
+              "amount": 300,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo grocery basket, one person (~EUR 250-350)"
+            },
+            {
+              "cost_type": "transport",
+              "amount": 35,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo monthly pass regular (~EUR 35); under-26s pay EUR 20/month (Abono Joven)"
+            },
+            {
+              "cost_type": "utilities",
+              "amount": 175,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Student-sized apartment estimate; Numbeo lists ~EUR 174 for an 85 m2 flat"
+            }
+          ]
+        }
+      ],
+      "universities": [
+        {
+          "name": "Universitat Politecnica de Catalunya (BarcelonaTech)",
+          "city": "Barcelona",
+          "official_url": "https://www.upc.edu",
+          "fee_source": {
+            "url": "https://www.upc.edu/en/masters/fees-grants/fees",
+            "title": "Master's degree fees — UPC",
+            "publisher": "Universitat Politecnica de Catalunya",
+            "source_type": "official_university",
+            "accessed_date": "2026-07-01"
+          },
+          "programs": [
+            {
+              "name": "Master in Innovation and Research in Informatics (MIRI)",
+              "field": "Computer Science",
+              "degree_level": "master",
+              "language": "English",
+              "duration_years": 2.0,
+              "tuition": {
+                "amount": 2700,
+                "currency": "EUR",
+                "period": "annual",
+                "confidence": "sourced",
+                "valid_as_of": "2025-09-01",
+                "note": "Non-EU first-enrolment price EUR 45/credit; MIRI is 120 ECTS = EUR 5,400 over 2 years (EUR 2,700/yr). EU/EEA students pay ~EUR 17.69-19.37/credit."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Universidad Politecnica de Madrid",
+          "city": "Madrid",
+          "official_url": "https://www.upm.es",
+          "fee_source": {
+            "url": "https://www.upm.es/internacional/Students/StudiesDegrees/UniversityMasters/?fmt=detail&id=CON06485",
+            "title": "Public prices for Official Masters — UPM",
+            "publisher": "Universidad Politecnica de Madrid",
+            "source_type": "official_university",
+            "accessed_date": "2026-07-01"
+          },
+          "programs": [
+            {
+              "name": "Master in Software and Systems (MUSS)",
+              "field": "Computer Science",
+              "degree_level": "master",
+              "language": "English",
+              "duration_years": 1.0,
+              "tuition": {
+                "amount": 5044,
+                "currency": "EUR",
+                "period": "annual",
+                "confidence": "sourced",
+                "valid_as_of": "2025-09-01",
+                "note": "Non-EU public price EUR 84.07/credit ('other master's' band) x 60 ECTS = EUR 5,044 for the one-year programme. EU/EEA students pay EUR 45.02/credit."
+              }
+            }
+          ]
+        }
+      ],
+      "work": {
+        "hours_cap": 30,
+        "hourly_wage": 8.63,
+        "wage_currency": "EUR",
+        "note": "Higher-education students may work up to 30 h/week under Royal Decree 1155/2024 (in force May 2025). Wage derived from the 2025 SMI (minimum wage) of EUR 1,184/month x 14 payments = EUR 16,576/yr, ~EUR 8.63/h.",
+        "source": {
+          "url": "https://www.lamoncloa.gob.es/lang/en/gobierno/councilministers/paginas/2025/20250211-council-press-conference.aspx",
+          "title": "Government raises the minimum wage (SMI) for 2025",
+          "publisher": "La Moncloa (Government of Spain)",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      }
+    },
+    {
+      "name": "France",
+      "iso_code": "FR",
+      "default_currency": "EUR",
+      "visa": {
+        "amount": 99,
+        "currency": "EUR",
+        "period": "one_time",
+        "confidence": "sourced",
+        "valid_as_of": "2025-09-01",
+        "note": "Long-stay student visa (VLS-TS) application fee EUR 99. A separate OFII validation tax (~EUR 200) is paid after arrival to activate the residence permit.",
+        "source": {
+          "url": "https://www.campusfrance.org/en/student-long-stay-visa",
+          "title": "Long-Stay Visa used as Residence Permit (VLS-TS)",
+          "publisher": "Campus France",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      },
+      "insurance": {
+        "amount": 0,
+        "currency": "EUR",
+        "period": "monthly",
+        "confidence": "sourced",
+        "valid_as_of": "2025-09-01",
+        "note": "Registration with the French student social security (Assurance Maladie, via etudiant-etranger.ameli.fr) is free and covers ~70% of medical costs. An optional complementary mutuelle (~EUR 50-200/yr) tops up the rest.",
+        "source": {
+          "url": "https://www.campusfrance.org/en/healthcare-student-social-security",
+          "title": "Health, social security and insurance",
+          "publisher": "Campus France",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      },
+      "hidden": [],
+      "cities": [
+        {
+          "name": "Grenoble",
+          "living_source": {
+            "url": "https://www.numbeo.com/cost-of-living/in/Grenoble",
+            "title": "Cost of Living in Grenoble",
+            "publisher": "Numbeo",
+            "source_type": "statistical_portal",
+            "accessed_date": "2026-07-01"
+          },
+          "living": [
+            {
+              "cost_type": "rent",
+              "amount": 517,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo: 1-bedroom apartment outside centre (~EUR 517); a shared room is typically cheaper"
+            },
+            {
+              "cost_type": "food",
+              "amount": 400,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo grocery basket, one person (~EUR 350-450)"
+            },
+            {
+              "cost_type": "transport",
+              "amount": 40,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Grenoble TAG network monthly pass; students under 25 pay a reduced tariff"
+            },
+            {
+              "cost_type": "utilities",
+              "amount": 150,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Student-sized apartment estimate; Numbeo lists ~EUR 249 for an 85 m2 flat"
+            },
+            {
+              "cost_type": "hidden_misc",
+              "amount": 105,
+              "currency": "EUR",
+              "period": "annual",
+              "confidence": "sourced",
+              "valid_as_of": "2025-09-01",
+              "note": "Compulsory Student & Campus Life Contribution (CVEC), EUR 105/year, paid once per academic year by every student",
+              "source": {
+                "url": "https://www.campusfrance.org/en/10-things-you-need-to-know-about-the-student-and-campus-life-contribution-cvec",
+                "title": "The Student and Campus Life Contribution (CVEC)",
+                "publisher": "Campus France",
+                "source_type": "government",
+                "accessed_date": "2026-07-01"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paris",
+          "living_source": {
+            "url": "https://www.numbeo.com/cost-of-living/in/Paris",
+            "title": "Cost of Living in Paris",
+            "publisher": "Numbeo",
+            "source_type": "statistical_portal",
+            "accessed_date": "2026-07-01"
+          },
+          "living": [
+            {
+              "cost_type": "rent",
+              "amount": 1043,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo: 1-bedroom apartment outside centre (~EUR 1,043); a shared room / student residence is typically cheaper"
+            },
+            {
+              "cost_type": "food",
+              "amount": 350,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo grocery basket, one person (~EUR 300-400)"
+            },
+            {
+              "cost_type": "transport",
+              "amount": 90,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo monthly pass regular (Navigo ~EUR 90); the under-26 imagine R tariff is cheaper"
+            },
+            {
+              "cost_type": "utilities",
+              "amount": 175,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Student-sized apartment estimate; Numbeo lists ~EUR 225 for an 85 m2 flat"
+            },
+            {
+              "cost_type": "hidden_misc",
+              "amount": 105,
+              "currency": "EUR",
+              "period": "annual",
+              "confidence": "sourced",
+              "valid_as_of": "2025-09-01",
+              "note": "Compulsory Student & Campus Life Contribution (CVEC), EUR 105/year, paid once per academic year by every student",
+              "source": {
+                "url": "https://www.campusfrance.org/en/10-things-you-need-to-know-about-the-student-and-campus-life-contribution-cvec",
+                "title": "The Student and Campus Life Contribution (CVEC)",
+                "publisher": "Campus France",
+                "source_type": "government",
+                "accessed_date": "2026-07-01"
+              }
+            }
+          ]
+        }
+      ],
+      "universities": [
+        {
+          "name": "Universite Grenoble Alpes",
+          "city": "Grenoble",
+          "official_url": "https://www.univ-grenoble-alpes.fr",
+          "fee_source": {
+            "url": "https://mosig.imag.fr/MainEn/Tuition",
+            "title": "MoSIG — Tuition and Financial Aids",
+            "publisher": "Universite Grenoble Alpes",
+            "source_type": "official_university",
+            "accessed_date": "2026-07-01"
+          },
+          "programs": [
+            {
+              "name": "Master of Science in Informatics at Grenoble (MoSIG)",
+              "field": "Computer Science",
+              "degree_level": "master",
+              "language": "English",
+              "duration_years": 2.0,
+              "tuition": {
+                "amount": 250,
+                "currency": "EUR",
+                "period": "annual",
+                "confidence": "sourced",
+                "valid_as_of": "2025-09-01",
+                "note": "Non-EU students receive an automatic partial waiver, so they pay the national registration rate (~EUR 250/yr) instead of the EUR 3,950 differentiated fee. Plus the CVEC (see hidden cost)."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Universite Paris-Saclay",
+          "city": "Paris",
+          "official_url": "https://www.universite-paris-saclay.fr",
+          "fee_source": {
+            "url": "https://www.universite-paris-saclay.fr/en/admission/tuition-fees",
+            "title": "Tuition fees — Universite Paris-Saclay",
+            "publisher": "Universite Paris-Saclay",
+            "source_type": "official_university",
+            "accessed_date": "2026-07-01"
+          },
+          "programs": [
+            {
+              "name": "M.Sc. Computer Science",
+              "field": "Computer Science",
+              "degree_level": "master",
+              "language": "English",
+              "duration_years": 2.0,
+              "tuition": {
+                "amount": 254,
+                "currency": "EUR",
+                "period": "annual",
+                "confidence": "sourced",
+                "valid_as_of": "2025-09-01",
+                "note": "Non-EU students get a partial exemption bringing the differentiated fee in line with the national rate (EUR 254/yr for a master, 2025-26). Plus the CVEC (see hidden cost)."
+              }
+            }
+          ]
+        }
+      ],
+      "work": {
+        "hours_cap": 20,
+        "hourly_wage": 11.65,
+        "wage_currency": "EUR",
+        "note": "Non-EU students may work up to 60% of full-time (964 h/year, ~20 h/week) on their residence permit. Statutory minimum wage (SMIC) 2025 = EUR 11.65 gross/hour.",
+        "source": {
+          "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F2300?lang=en",
+          "title": "Minimum wage (SMIC) — 2025 hourly rate",
+          "publisher": "Service-Public.fr (French Government)",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      }
+    },
+    {
+      "name": "Sweden",
+      "iso_code": "SE",
+      "default_currency": "SEK",
+      "visa": {
+        "amount": 1500,
+        "currency": "SEK",
+        "period": "one_time",
+        "confidence": "sourced",
+        "valid_as_of": "2025-09-01",
+        "note": "Residence permit for higher-education studies, adult fee SEK 1,500 (Swedish Migration Agency). A separate university application fee of SEK 900 is paid once via universityadmissions.se.",
+        "source": {
+          "url": "https://www.migrationsverket.se/en/you-want-to-apply/study/higher-education.html",
+          "title": "Apply for a residence permit for studies at higher education",
+          "publisher": "Swedish Migration Agency (Migrationsverket)",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      },
+      "insurance": {
+        "amount": 0,
+        "currency": "SEK",
+        "period": "monthly",
+        "confidence": "sourced",
+        "valid_as_of": "2025-09-01",
+        "note": "Fee-paying non-EU students receive free FAS/FASplus insurance via Kammarkollegiet (paid by the university). Students staying over 1 year also get a personnummer and access public healthcare at citizen rates (~SEK 50-300/visit).",
+        "source": {
+          "url": "https://www.kammarkollegiet.se/engelska/start/all-services/insurance/insurance-for-students-and-foreign-visitors/insurance-for-students-who-pay-tuition-fees-fas-and-fasplus",
+          "title": "Insurance for students who pay tuition fees (FAS and FASplus)",
+          "publisher": "Kammarkollegiet (Legal, Financial and Administrative Services Agency)",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      },
+      "hidden": [],
+      "cities": [
+        {
+          "name": "Stockholm",
+          "living_source": {
+            "url": "https://www.numbeo.com/cost-of-living/in/Stockholm",
+            "title": "Cost of Living in Stockholm",
+            "publisher": "Numbeo",
+            "source_type": "statistical_portal",
+            "accessed_date": "2026-07-01"
+          },
+          "living": [
+            {
+              "cost_type": "rent",
+              "amount": 11232,
+              "currency": "SEK",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo: 1-bedroom apartment outside centre (~SEK 11,232); a student corridor room is typically cheaper"
+            },
+            {
+              "cost_type": "food",
+              "amount": 4500,
+              "currency": "SEK",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo grocery basket, one person (~SEK 4,000-5,000)"
+            },
+            {
+              "cost_type": "transport",
+              "amount": 1060,
+              "currency": "SEK",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo SL monthly pass regular (~SEK 1,060); students get a discounted tariff"
+            },
+            {
+              "cost_type": "utilities",
+              "amount": 1500,
+              "currency": "SEK",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Student-sized apartment estimate; Numbeo lists ~SEK 2,705 for an 85 m2 flat"
+            }
+          ]
+        },
+        {
+          "name": "Lund",
+          "living_source": {
+            "url": "https://www.numbeo.com/cost-of-living/in/Lund",
+            "title": "Cost of Living in Lund",
+            "publisher": "Numbeo",
+            "source_type": "statistical_portal",
+            "accessed_date": "2026-07-01"
+          },
+          "living": [
+            {
+              "cost_type": "rent",
+              "amount": 6733,
+              "currency": "SEK",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo: 1-bedroom apartment outside centre (~SEK 6,733); a student corridor room is typically cheaper"
+            },
+            {
+              "cost_type": "food",
+              "amount": 3800,
+              "currency": "SEK",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo grocery basket, one person (~SEK 3,500-4,000)"
+            },
+            {
+              "cost_type": "transport",
+              "amount": 634,
+              "currency": "SEK",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo Skanetrafiken monthly pass regular (~SEK 634); students get a discounted tariff"
+            },
+            {
+              "cost_type": "utilities",
+              "amount": 800,
+              "currency": "SEK",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Student-sized apartment estimate; Numbeo lists ~SEK 778 for an 85 m2 flat"
+            }
+          ]
+        }
+      ],
+      "universities": [
+        {
+          "name": "KTH Royal Institute of Technology",
+          "city": "Stockholm",
+          "official_url": "https://www.kth.se",
+          "fee_source": {
+            "url": "https://www.kth.se/en/studies/master/computer-science/fees-communication-systems-1.909945",
+            "title": "Fees and scholarships for Computer Science — KTH",
+            "publisher": "KTH Royal Institute of Technology",
+            "source_type": "official_university",
+            "accessed_date": "2026-07-01"
+          },
+          "programs": [
+            {
+              "name": "M.Sc. Computer Science",
+              "field": "Computer Science",
+              "degree_level": "master",
+              "language": "English",
+              "duration_years": 2.0,
+              "tuition": {
+                "amount": 180000,
+                "currency": "SEK",
+                "period": "annual",
+                "confidence": "sourced",
+                "valid_as_of": "2025-09-01",
+                "note": "Non-EU/EEA full programme tuition SEK 360,000 over 2 years = SEK 180,000/yr. EU/EEA/Swiss citizens study free of tuition."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lund University",
+          "city": "Lund",
+          "official_url": "https://www.lunduniversity.lu.se",
+          "fee_source": {
+            "url": "https://www.lunduniversity.lu.se/lubas/i-uoh-lu-NABER-BEMA",
+            "title": "Computational Science, Scientific Computing — Master Programme",
+            "publisher": "Lund University",
+            "source_type": "official_university",
+            "accessed_date": "2026-07-01"
+          },
+          "programs": [
+            {
+              "name": "M.Sc. Computational Science / Scientific Computing",
+              "field": "Computer Science",
+              "degree_level": "master",
+              "language": "English",
+              "duration_years": 2.0,
+              "tuition": {
+                "amount": 185000,
+                "currency": "SEK",
+                "period": "annual",
+                "confidence": "sourced",
+                "valid_as_of": "2025-09-01",
+                "note": "Non-EU/EEA full programme tuition SEK 370,000 over 2 years = SEK 185,000/yr (SEK 92,500/semester). EU/EEA/Swiss citizens study free of tuition."
+              }
+            }
+          ]
+        }
+      ],
+      "work": {
+        "hours_cap": 15,
+        "hourly_wage": 130,
+        "wage_currency": "SEK",
+        "note": "Students with a permit granted on/after 11 June 2026 may work max 15 h/week (previously uncapped). Sweden has no statutory minimum wage; collective agreements set ~SEK 120-150/h for student jobs (~SEK 130 typical).",
+        "source": {
+          "url": "https://www.eurofound.europa.eu/en/countries/sweden/minimum-wage",
+          "title": "Minimum wage in Sweden (collective bargaining, no statutory rate)",
+          "publisher": "Eurofound (European Union)",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      }
+    },
+    {
+      "name": "Ireland",
+      "iso_code": "IE",
+      "default_currency": "EUR",
+      "visa": {
+        "amount": 100,
+        "currency": "EUR",
+        "period": "one_time",
+        "confidence": "sourced",
+        "valid_as_of": "2025-09-01",
+        "note": "Long-stay (D) study visa EUR 100 multi-entry (EUR 60 single-entry). After arrival, non-EEA students must register for an IRP (Stamp 2) at EUR 300 per year.",
+        "source": {
+          "url": "https://www.citizensinformation.ie/en/moving-country/visas-for-ireland/student-visas/",
+          "title": "Student visas to study in Ireland",
+          "publisher": "Citizens Information (Government of Ireland)",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      },
+      "insurance": {
+        "amount": 17,
+        "currency": "EUR",
+        "period": "monthly",
+        "confidence": "estimate",
+        "valid_as_of": "2025-09-01",
+        "note": "Private medical insurance is mandatory for IRP registration. Student plans start from ~EUR 200/year (~EUR 17/month).",
+        "source": {
+          "url": "https://www.citizensinformation.ie/en/moving-country/moving-to-ireland/studying-in-ireland/immigration-nonEEA-students/",
+          "title": "Immigration rules for full-time non-EEA students",
+          "publisher": "Citizens Information (Government of Ireland)",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      },
+      "hidden": [],
+      "cities": [
+        {
+          "name": "Dublin",
+          "living_source": {
+            "url": "https://www.numbeo.com/cost-of-living/in/Dublin",
+            "title": "Cost of Living in Dublin",
+            "publisher": "Numbeo",
+            "source_type": "statistical_portal",
+            "accessed_date": "2026-07-01"
+          },
+          "living": [
+            {
+              "cost_type": "rent",
+              "amount": 1897,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo: 1-bedroom apartment outside centre (~EUR 1,897); a shared house / student residence is typically cheaper"
+            },
+            {
+              "cost_type": "food",
+              "amount": 350,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo grocery basket, one person (~EUR 300-400)"
+            },
+            {
+              "cost_type": "transport",
+              "amount": 96,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Numbeo monthly pass regular (~EUR 96); the Student Leap Card fare is capped much lower"
+            },
+            {
+              "cost_type": "utilities",
+              "amount": 175,
+              "currency": "EUR",
+              "period": "monthly",
+              "confidence": "estimate",
+              "note": "Student-sized apartment estimate; Numbeo lists ~EUR 233 for an 85 m2 flat"
+            }
+          ]
+        }
+      ],
+      "universities": [
+        {
+          "name": "Trinity College Dublin",
+          "city": "Dublin",
+          "official_url": "https://www.tcd.ie",
+          "fee_source": {
+            "url": "https://www.tcd.ie/courses/postgraduate/fees/",
+            "title": "Postgraduate course fees — Trinity College Dublin",
+            "publisher": "Trinity College Dublin",
+            "source_type": "official_university",
+            "accessed_date": "2026-07-01"
+          },
+          "programs": [
+            {
+              "name": "M.Sc. Computer Science (Intelligent Systems)",
+              "field": "Computer Science",
+              "degree_level": "master",
+              "language": "English",
+              "duration_years": 1.0,
+              "tuition": {
+                "amount": 25000,
+                "currency": "EUR",
+                "period": "annual",
+                "confidence": "sourced",
+                "valid_as_of": "2025-09-01",
+                "note": "Non-EU MSc Computer Science strands ~EUR 25,000-25,820 for 2025/26. EU fee is far lower (~EUR 12,000). A separate annual Student Levy applies."
+              }
+            }
+          ]
+        },
+        {
+          "name": "University College Dublin",
+          "city": "Dublin",
+          "official_url": "https://www.ucd.ie",
+          "fee_source": {
+            "url": "https://www.ucd.ie/students/fees/noneucoursefees/non-eugraduatetaughtfees202526/",
+            "title": "Non-EU Graduate Taught Fees 2025/26 — UCD",
+            "publisher": "University College Dublin",
+            "source_type": "official_university",
+            "accessed_date": "2026-07-01"
+          },
+          "programs": [
+            {
+              "name": "M.Sc. Computer Science (T102)",
+              "field": "Computer Science",
+              "degree_level": "master",
+              "language": "English",
+              "duration_years": 1.0,
+              "tuition": {
+                "amount": 15440,
+                "currency": "EUR",
+                "period": "annual",
+                "confidence": "sourced",
+                "valid_as_of": "2025-09-01",
+                "note": "Non-EU MSc Computer Science (T102) full-time fee EUR 15,440/yr for 2025/26 (plus a EUR 5 student levy)."
+              }
+            }
+          ]
+        }
+      ],
+      "work": {
+        "hours_cap": 20,
+        "hourly_wage": 13.50,
+        "wage_currency": "EUR",
+        "note": "Non-EEA students on eligible full-time courses may work 20 h/week in term and 40 h/week during holidays. National minimum wage 2025 = EUR 13.50/hour.",
+        "source": {
+          "url": "https://www.citizensinformation.ie/en/employment/employment-rights-and-conditions/pay-and-employment/minimum-wage/",
+          "title": "National minimum wage (2025)",
+          "publisher": "Citizens Information (Government of Ireland)",
+          "source_type": "government",
+          "accessed_date": "2026-07-01"
+        }
+      }
     }
   ],
   "scholarships": [
