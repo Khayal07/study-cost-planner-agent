@@ -24,20 +24,49 @@ type Conversation = {
 
 const STORE_KEY = "scp-chats-v1";
 
-const SAMPLES: Record<string, string[]> = {
+/** Starter prompts, grouped by the chat mode each one exercises (Discover /
+ *  Afford / Compare / Ask) so the empty state teaches what the advisor can do. */
+type Starter = { cat: "discover" | "afford" | "compare" | "ask"; prompt: string };
+const STARTERS: Record<string, Starter[]> = {
   en: [
-    "I want to study Computer Science in Germany, my budget is €12,000/year",
-    "Can I study at METU with €9,000?",
-    "Compare universities in Poland",
-    "Almaniyada viza nə qədərdir?",
+    { cat: "discover", prompt: "I want to study Computer Science in Germany, my budget is €12,000/year" },
+    { cat: "afford", prompt: "Can I study at METU with €9,000?" },
+    { cat: "compare", prompt: "Compare universities in Poland" },
+    { cat: "ask", prompt: "Almaniyada viza nə qədərdir?" },
   ],
   az: [
-    "Almaniyada Kompüter Elmləri oxumaq istəyirəm, büdcəm €12,000/il",
-    "€9,000 ilə METU-da oxuya bilərəmmi?",
-    "Polşadakı universitetləri müqayisə et",
-    "Almaniyada viza nə qədərdir?",
+    { cat: "discover", prompt: "Almaniyada Kompüter Elmləri oxumaq istəyirəm, büdcəm €12,000/il" },
+    { cat: "afford", prompt: "€9,000 ilə METU-da oxuya bilərəmmi?" },
+    { cat: "compare", prompt: "Polşadakı universitetləri müqayisə et" },
+    { cat: "ask", prompt: "Almaniyada viza nə qədərdir?" },
   ],
 };
+const CAT_LABEL: Record<Starter["cat"], { en: string; az: string }> = {
+  discover: { en: "Discover", az: "Kəşf et" },
+  afford: { en: "Afford", az: "Büdcə" },
+  compare: { en: "Compare", az: "Müqayisə" },
+  ask: { en: "Ask", az: "Sual" },
+};
+function CatIcon({ cat }: { cat: Starter["cat"] }) {
+  const p = { width: 15, height: 15, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+  if (cat === "discover")
+    return <svg {...p}><circle cx="12" cy="12" r="9" /><path d="m15 9-2 4-4 2 2-4 4-2Z" /></svg>;
+  if (cat === "afford")
+    return <svg {...p}><path d="M3 8.5 12 4l9 4.5M4 10v7m16-7v7M3 20h18" /><path d="M9 13h6" /></svg>;
+  if (cat === "compare")
+    return <svg {...p}><path d="M4 20V9M10 20V4M16 20v-8M22 20H2" /></svg>;
+  return <svg {...p}><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.7.3-.9.7-.9 1.4M12 17h.01" /></svg>;
+}
+/** The advisor's small "verified ledger" check, shown beside each of its replies. */
+function AdvisorMark() {
+  return (
+    <span className="chat-avatar mt-0.5">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="m5 12 4.5 4.5L19 7" />
+      </svg>
+    </span>
+  );
+}
 
 const SYMBOL: Record<string, string> = {
   EUR: "€", USD: "$", GBP: "£", TRY: "₺", PLN: "zł", HUF: "Ft", AZN: "₼",
@@ -486,69 +515,81 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
       <div className="card flex h-[calc(100dvh-11rem)] max-h-[820px] min-h-[460px] flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-border bg-surface-2/60 px-5 py-3.5">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-weak text-primary">
+          <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-primary-weak text-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
             </svg>
+            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface-2 bg-success" aria-hidden="true" />
           </span>
-          <div>
+          <div className="min-w-0">
             <h2 className="font-display text-sm font-semibold leading-none">{t("chat.advisor")}</h2>
-            <p className="mt-1 text-xs text-muted">{t("chat.advisorSub")}</p>
+            <p className="mt-1 truncate text-xs text-muted">{t("chat.advisorSub")}</p>
           </div>
+          <span
+            className="chip ml-auto shrink-0 border-primary/20 bg-primary-weak text-primary"
+            title={locale === "az" ? "Cavablar bu valyutada" : "Answers shown in this currency"}
+          >
+            {SYMBOL[reportCurrency] ?? reportCurrency} {reportCurrency}
+          </span>
         </div>
 
         {/* Messages */}
-        <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
+        <div ref={scrollRef} className="chat-canvas flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
           {turns.length === 0 && (
             <div className="animate-fade-in">
-              <p className="mb-3 text-sm text-muted">
+              <p className="mb-4 text-sm text-muted">
                 {t("chat.intro")}
               </p>
-              <div className="flex flex-col gap-2">
-                {SAMPLES[locale].map((s) => (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {STARTERS[locale].map(({ cat, prompt }) => (
                   <button
-                    key={s}
-                    onClick={() => send(s)}
-                    className="group flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-2/50 px-3.5 py-2.5 text-left text-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
+                    key={prompt}
+                    onClick={() => send(prompt)}
+                    className="group flex items-start gap-3 rounded-xl border border-border bg-surface-2/50 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
                   >
-                    <span>{s}</span>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-muted transition-colors group-hover:text-primary" aria-hidden="true">
-                      <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
+                    <span className="chat-avatar mt-0.5 transition-colors group-hover:ring-primary/40">
+                      <CatIcon cat={cat} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[10px] font-semibold uppercase tracking-wider text-primary/80">
+                        {CAT_LABEL[cat][locale as "en" | "az"]}
+                      </span>
+                      <span className="mt-0.5 block text-[13px] leading-snug text-foreground">{prompt}</span>
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {turns.map((t, i) => (
-            <div key={i} className={`flex animate-fade-up ${t.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={t.role === "user" ? "max-w-[85%]" : "w-full max-w-[92%]"}>
-                <div
-                  className={`rounded-2xl px-4 py-2.5 ${
-                    t.role === "user"
-                      ? "rounded-br-md bg-primary text-primary-fg shadow-sm"
-                      : "rounded-bl-md border border-border bg-surface-2/70 text-foreground"
-                  }`}
-                >
-                  {t.role === "user" ? (
-                    <span className="whitespace-pre-wrap text-sm leading-relaxed">{t.text}</span>
-                  ) : (
-                    <RichText text={t.text} />
-                  )}
+          {turns.map((turn, i) =>
+            turn.role === "user" ? (
+              <div key={i} className="flex animate-fade-up justify-end">
+                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-primary-fg shadow-sm">
+                  <span className="whitespace-pre-wrap text-sm leading-relaxed">{turn.text}</span>
                 </div>
-                {t.role === "assistant" && t.res && renderAssistant(t.res)}
               </div>
-            </div>
-          ))}
+            ) : (
+              <div key={i} className="flex animate-fade-up justify-start gap-2.5">
+                <AdvisorMark />
+                <div className="min-w-0 flex-1">
+                  <div className="rounded-2xl rounded-bl-md border border-border bg-surface-2/70 px-4 py-2.5 text-foreground shadow-xs">
+                    <RichText text={turn.text} />
+                  </div>
+                  {turn.res && renderAssistant(turn.res)}
+                </div>
+              </div>
+            ),
+          )}
 
           {loading && (
-            <div className="flex justify-start">
-              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-border bg-surface-2/70 px-4 py-3">
+            <div className="flex animate-fade-up justify-start gap-2.5">
+              <AdvisorMark />
+              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-border bg-surface-2/70 px-4 py-3 shadow-xs">
                 {[0, 1, 2].map((d) => (
                   <span
                     key={d}
-                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted"
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/60"
                     style={{ animationDelay: `${d * 0.15}s` }}
                   />
                 ))}
@@ -564,22 +605,35 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
               e.preventDefault();
               send(input);
             }}
-            className="flex gap-2"
+            className="flex items-center gap-2 rounded-2xl border border-border bg-surface px-2 py-1.5 shadow-xs transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20"
           >
             <input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={t("chat.placeholder")}
-              className="input"
+              className="flex-1 bg-transparent px-2 py-1.5 text-sm text-foreground outline-none placeholder:text-muted/70"
               aria-label={t("chat.message")}
             />
-            <button type="submit" disabled={loading || !input.trim()} className="btn-primary px-3.5" aria-label={t("chat.send")}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-fg shadow-sm transition-all hover:shadow-glow hover:brightness-[1.05] active:scale-95 disabled:pointer-events-none disabled:opacity-45"
+              aria-label={t("chat.send")}
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z" />
               </svg>
             </button>
           </form>
+          <p className="mt-2 flex items-center gap-1.5 px-1 text-[11px] text-muted">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-primary/70">
+              <path d="m9 12 2 2 4-4" /><circle cx="12" cy="12" r="9" />
+            </svg>
+            {locale === "az"
+              ? "Hər rəqəm istinad edilmiş mənbəyə əsaslanır"
+              : "Every figure is grounded in a cited source"}
+          </p>
         </div>
       </div>
     </div>

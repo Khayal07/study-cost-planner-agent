@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import re
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.agents.intent import COUNTRY_SYNONYMS, extract_slots
@@ -147,12 +147,52 @@ def _suggestion(label: str, message: str) -> ChatSuggestion:
     return ChatSuggestion(label=label, message=message)
 
 
-def _country_chips() -> list[ChatSuggestion]:
+def _coverage(session: Session) -> tuple[list[tuple[str, str]], int]:
+    """Countries that actually have a programme, as (name, iso_code), plus the total
+    university count — read from the DB so coverage copy never goes stale as data grows."""
+    rows = session.execute(
+        select(Country.name, Country.iso_code,
+               func.count(func.distinct(University.id)))
+        .join(University, University.country_id == Country.id)
+        .join(Program, Program.university_id == University.id)
+        .group_by(Country.name, Country.iso_code)
+        .order_by(Country.name)
+    ).all()
+    countries = [(name, iso) for name, iso, _ in rows]
+    uni_count = sum(n for _, _, n in rows)
+    return countries, uni_count
+
+
+def _flag(iso: str) -> str:
+    """Regional-indicator flag emoji from a 2-letter ISO code ('DE' -> 🇩🇪)."""
+    iso = (iso or "").upper()
+    if len(iso) != 2 or not iso.isalpha():
+        return ""
+    return "".join(chr(0x1F1E6 + ord(ch) - ord("A")) for ch in iso)
+
+
+def _fmt_and(names: list[str]) -> str:
+    """Join names as an English list: 'A, B and C'."""
+    if not names:
+        return ""
+    if len(names) == 1:
+        return names[0]
+    return ", ".join(names[:-1]) + " and " + names[-1]
+
+
+def _coverage_phrase(session: Session) -> tuple[str, int, int]:
+    """('Germany, the Netherlands ... and Ireland', n_countries, n_universities)."""
+    countries, uni_count = _coverage(session)
+    names = ["the Netherlands" if n == "Netherlands" else n for n, _ in countries]
+    return _fmt_and(names), len(countries), uni_count
+
+
+def _country_chips(session: Session) -> list[ChatSuggestion]:
+    """Quick-pick chips, one per covered country (with its flag) — DB-driven."""
+    countries, _ = _coverage(session)
     return [
-        _suggestion("🇩🇪 Germany", "I want to study in Germany"),
-        _suggestion("🇳🇱 Netherlands", "I want to study in the Netherlands"),
-        _suggestion("🇵🇱 Poland", "I want to study in Poland"),
-        _suggestion("🇹🇷 Turkey", "I want to study in Turkey"),
+        _suggestion(f"{_flag(iso)} {name}".strip(), f"I want to study in {name}")
+        for name, iso in countries
     ]
 
 
@@ -340,7 +380,8 @@ def _resolve_ordinal_program(text: str, profile: ChatProfile) -> int | None:
 
 # --- response builders -----------------------------------------------------------
 
-def _greeting(profile: ChatProfile) -> ChatResponse:
+def _greeting(session: Session, profile: ChatProfile) -> ChatResponse:
+    phrase, n_countries, n_unis = _coverage_phrase(session)
     answer = (
         "Hi! 👋 I'm your study-abroad cost advisor. I can help you find universities "
         "that fit your budget, break down the real cost of studying in each country "
@@ -349,8 +390,8 @@ def _greeting(profile: ChatProfile) -> ChatResponse:
         "To point you in the right direction, tell me a little about your plan:\n"
         "1. Which country are you interested in?\n"
         "2. What's your yearly budget (and currency)?\n\n"
-        "I currently have grounded, source-cited data for Computer Science master's "
-        "programmes in Germany, the Netherlands, Poland, Hungary and Turkey."
+        f"I currently have grounded, source-cited data for Computer Science master's "
+        f"programmes in {phrase} — {n_countries} countries, {n_unis} universities in all."
     )
     return ChatResponse(
         mode="greeting", answer=answer, profile=profile,
@@ -382,7 +423,7 @@ def _ask_for_budget(session: Session, profile: ChatProfile) -> ChatResponse:
     plan = _run_pipeline(session, profile, max_results=6)
     report = plan.report_currency
     if not plan.candidates:
-        return _no_coverage(profile)
+        return _no_coverage(session, profile)
     _store_candidates(session, profile, plan.candidates)
     lines = "\n".join(
         f"• {c.university_name} ({c.city_name}) — ~{_money(c.total_annual, report)}/yr total"
@@ -407,19 +448,21 @@ def _ask_for_budget(session: Session, profile: ChatProfile) -> ChatResponse:
     )
 
 
-def _ask_for_country(profile: ChatProfile) -> ChatResponse:
+def _ask_for_country(session: Session, profile: ChatProfile) -> ChatResponse:
     """Budget known, country missing — warm follow-up with country chips."""
     report = (profile.report_currency or "EUR").upper()
     budget_txt = _money(profile.budget_amount or 0, profile.budget_currency or report)
+    countries, _ = _coverage(session)
+    flag_row = "  ".join(f"{_flag(iso)} {name}" for name, iso in countries)
     answer = (
         f"Perfect — a budget of about {budget_txt} per year gives you real options. 🎯\n\n"
         f"To recommend the best-fitting universities, which country are you leaning "
-        f"toward? I have grounded cost data for:\n"
-        f"• 🇩🇪 Germany  • 🇳🇱 Netherlands  • 🇵🇱 Poland  • 🇭🇺 Hungary  • 🇹🇷 Turkey\n\n"
+        f"toward? I have grounded cost data for {len(countries)} countries:\n"
+        f"{flag_row}\n\n"
         f"If you're open to anywhere, just say \"any country\" and I'll show you the "
         f"best value across all of them."
     )
-    chips = _country_chips()
+    chips = _country_chips(session)
     chips.append(_suggestion("Any country — cheapest", "Show me the cheapest options in any country"))
     return ChatResponse(mode="clarify", answer=answer, profile=profile, suggestions=chips)
 
@@ -429,7 +472,7 @@ def _discovery(session: Session, profile: ChatProfile) -> ChatResponse:
     plan = _run_pipeline(session, profile, max_results=6)
     report = plan.report_currency
     if not plan.candidates:
-        return _no_coverage(profile)
+        return _no_coverage(session, profile)
 
     _store_candidates(session, profile, plan.candidates)
     budget_r = _budget_in_report(session, profile)
@@ -479,7 +522,7 @@ def _detail(session: Session, profile: ChatProfile, program_id: int,
             *, affordability: bool = False) -> ChatResponse:
     plan = _run_pipeline(session, profile, program_ids=[program_id], max_results=1)
     if not plan.candidates:
-        return _no_coverage(profile)
+        return _no_coverage(session, profile)
     c = plan.candidates[0]
     report = plan.report_currency
     profile.focus_program_id = program_id
@@ -571,7 +614,7 @@ def _compare(session: Session, profile: ChatProfile) -> ChatResponse:
         # Nothing to compare yet — run discovery instead.
         if profile.budget_amount or profile.country:
             return _discovery(session, profile)
-        return _ask_for_country(profile)
+        return _ask_for_country(session, profile)
 
     ids = [r.program_id for r in refs]
     plan = _run_pipeline(session, profile, program_ids=ids, max_results=len(ids))
@@ -631,7 +674,7 @@ def _scholarships(session: Session, profile: ChatProfile,
     else:
         plan = _run_pipeline(session, profile, max_results=6)
     if not plan.candidates:
-        return _no_coverage(profile)
+        return _no_coverage(session, profile)
     report = plan.report_currency
     _store_candidates(session, profile, plan.candidates)
 
@@ -673,7 +716,7 @@ def _scholarships(session: Session, profile: ChatProfile,
             "broad programmes."
         )
         return ChatResponse(mode="scholarships", answer=answer, profile=profile,
-                            candidates=plan.candidates, suggestions=_country_chips())
+                            candidates=plan.candidates, suggestions=_country_chips(session))
     best = min(with_aid, key=_net_of)
     lines = []
     for c in with_aid[:5]:
@@ -698,7 +741,7 @@ def _value(session: Session, profile: ChatProfile) -> ChatResponse:
     """Rank the current options by net cost after scholarships (best value first)."""
     plan = _run_pipeline(session, profile, max_results=6)
     if not plan.candidates:
-        return _no_coverage(profile)
+        return _no_coverage(session, profile)
     report = plan.report_currency
     cands = sorted(plan.candidates, key=lambda c: c.value_rank or 9_999)
     _store_candidates(session, profile, cands)
@@ -737,7 +780,7 @@ def _pdf_offer(session: Session, profile: ChatProfile) -> ChatResponse:
                "\"any country\")")
             + ". Then I'll generate a PDF with full cost breakdowns, lifestyle scenarios "
             "and a cited source for every figure.",
-            profile=profile, suggestions=_country_chips(),
+            profile=profile, suggestions=_country_chips(session),
         )
     report = (profile.report_currency or "EUR").upper()
     budget_txt = _money(profile.budget_amount, profile.budget_currency or report)
@@ -776,7 +819,8 @@ def _focus_university_name(session: Session, profile: ChatProfile) -> str | None
     return row[0] if row else None
 
 
-def _no_coverage(profile: ChatProfile, named: str | None = None) -> ChatResponse:
+def _no_coverage(session: Session, profile: ChatProfile,
+                 named: str | None = None) -> ChatResponse:
     if named:
         lead = (f"I don't have grounded, source-cited data for **{named}** in my dataset "
                 f"yet, so I won't guess at its costs — being accurate matters more than "
@@ -785,14 +829,15 @@ def _no_coverage(profile: ChatProfile, named: str | None = None) -> ChatResponse
         where = f" for {profile.country}" if profile.country else ""
         lead = (f"I'm sorry — I don't have grounded, source-cited data{where} in my dataset "
                 f"yet, so I won't guess at the numbers (accuracy matters more). 🙏\n\n")
+    phrase, n_countries, n_unis = _coverage_phrase(session)
     answer = (
         lead +
-        "Right now I cover Computer Science master's programmes in **Germany, the "
-        "Netherlands, Poland, Hungary and Turkey** — 15 universities, each figure cited. "
+        f"Right now I cover Computer Science master's programmes in **{phrase}** — "
+        f"{n_unis} universities across {n_countries} countries, each figure cited. "
         "Would you like to explore one of those?"
     )
     return ChatResponse(mode="clarify", answer=answer, profile=profile,
-                        suggestions=_country_chips())
+                        suggestions=_country_chips(session))
 
 
 def _grounded_answer(session: Session, message: str, text: str,
@@ -851,7 +896,7 @@ def _grounded_answer(session: Session, message: str, text: str,
     )
     chips = [_suggestion("Plan my full costs", "My budget is 12000 EUR")]
     if not country:
-        chips = _country_chips()
+        chips = _country_chips(session)
     return ChatResponse(mode="answer", answer=answer, profile=profile,
                         figures=shown, suggestions=chips)
 
@@ -871,7 +916,7 @@ def handle_chat(session: Session, message: str, report_currency: str,
     if _has_any(text, THANKS_TOKENS) and len(text) < 40:
         return _thanks(profile)
     if _has_any(text, GREETING_TOKENS) and len(text) < 25:
-        return _greeting(profile)
+        return _greeting(session, profile)
 
     # 1) Merge any newly-mentioned slots into memory (so users never repeat themselves).
     slots = extract_slots(message, profile.report_currency)
@@ -903,13 +948,13 @@ def handle_chat(session: Session, message: str, report_currency: str,
     if _has_any(text, VALUE_TOKENS):
         if profile.country or profile.budget_amount:
             return _value(session, profile)
-        return _ask_for_country(profile)
+        return _ask_for_country(session, profile)
     if _has_any(text, SCHOLARSHIP_TOKENS):
         if program_id is not None:
             return _scholarships(session, profile, program_id)
         if profile.country or profile.budget_amount:
             return _scholarships(session, profile)
-        return _ask_for_country(profile)
+        return _ask_for_country(session, profile)
     if _has_any(text, COMPARE_TOKENS):
         return _compare(session, profile)
 
@@ -923,7 +968,7 @@ def handle_chat(session: Session, message: str, report_currency: str,
     if not profile.country:
         unknown = _unknown_institution(session, message)
         if unknown:
-            return _no_coverage(profile, named=unknown)
+            return _no_coverage(session, profile, named=unknown)
 
     # 6) Affordability phrased generally ("can I afford Germany with X") -> discovery.
     if _has_any(text, AFFORD_TOKENS) and (profile.budget_amount and profile.country):
@@ -941,9 +986,9 @@ def handle_chat(session: Session, message: str, report_currency: str,
     if profile.budget_amount and profile.country is None:
         if _has_any(text, ANYWHERE_TOKENS) or "cheapest" in text:
             return _discovery(session, profile)
-        return _ask_for_country(profile)
+        return _ask_for_country(session, profile)
     if profile.country and not profile.budget_amount:
         return _ask_for_budget(session, profile)
 
     # 9) Nothing actionable yet — warm onboarding.
-    return _greeting(profile)
+    return _greeting(session, profile)
