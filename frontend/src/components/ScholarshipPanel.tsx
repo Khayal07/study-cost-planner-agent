@@ -150,29 +150,37 @@ function ScholarshipRow({
 }
 
 /** On-demand live web search for scholarships. Explicit button → one paid API
- *  call (cached 24h server-side), results shown separately from the dataset. */
+ *  call (cached 24h server-side), results shown separately from the dataset.
+ *  Selected awards preview a reduced total and can be folded into the PDF. */
 function LiveScholarshipSearch({
   country,
   field,
   degreeLevel,
   currency,
+  totalAnnual,
+  onExportLive,
 }: {
   country: string;
   field: string;
   degreeLevel: string | null;
   currency: string;
+  totalAnnual: number;
+  onExportLive?: (selected: LiveScholarship[]) => Promise<void> | void;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<LiveScholarship[] | null>(null);
   const [cached, setCached] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [exporting, setExporting] = useState(false);
 
   const canSearch = country.trim().length > 1 && field.trim().length > 1;
 
   async function run() {
     setLoading(true);
     setError(null);
+    setSelected(new Set());
     try {
       const resp = await searchLiveScholarships(country, field, degreeLevel, currency);
       setResults(resp.results);
@@ -182,6 +190,31 @@ function LiveScholarshipSearch({
       setError("Live search failed. Please try again in a moment.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  function toggle(i: number) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }
+
+  const selectedList = results ? [...selected].map((i) => results[i]).filter(Boolean) : [];
+  const selectedValue = selectedList.reduce((sum, r) => sum + (r.annual_value ?? 0), 0);
+  const adjustedTotal = Math.max(0, totalAnnual - selectedValue);
+
+  async function generate() {
+    if (!onExportLive) return;
+    setExporting(true);
+    try {
+      await onExportLive(selectedList);
+    } catch {
+      setError("Could not generate the PDF. Please try again.");
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -219,39 +252,91 @@ function LiveScholarshipSearch({
             <p className="text-xs text-muted">{note ?? "No live scholarships found."}</p>
           ) : (
             <div className="space-y-2">
-              {results.map((r, i) => (
-                <div key={i} className="rounded-xl border border-accent/30 bg-accent-weak/20 p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{r.name}</p>
-                      {r.provider && <p className="truncate text-xs text-muted">{r.provider}</p>}
+              <p className="text-[11px] text-muted">
+                Tick the awards you may pursue to preview your total after aid, then generate a PDF.
+              </p>
+              {results.map((r, i) => {
+                const isSel = selected.has(i);
+                return (
+                  <label
+                    key={i}
+                    className={`block cursor-pointer rounded-xl border p-3 transition ${
+                      isSel ? "border-primary bg-primary-weak/30" : "border-accent/30 bg-accent-weak/20"
+                    }`}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <input
+                        type="checkbox"
+                        checked={isSel}
+                        onChange={() => toggle(i)}
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--primary)]"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold">{r.name}</p>
+                            {r.provider && <p className="truncate text-xs text-muted">{r.provider}</p>}
+                          </div>
+                          <span className="figure shrink-0 text-xs font-semibold text-accent">
+                            {r.annual_value != null
+                              ? `~${money(r.annual_value, currency)}/yr`
+                              : r.amount ?? "varies"}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]">
+                          {r.coverage_type && <span className="chip">{r.coverage_type}</span>}
+                          {r.deadline && <span className="text-muted">Deadline: {r.deadline}</span>}
+                          {r.annual_value == null && (
+                            <span className="text-muted">Value not estimated — won&apos;t change total</span>
+                          )}
+                        </div>
+                        {r.eligibility && (
+                          <p className="mt-1.5 text-[11px] text-foreground/80">{r.eligibility}</p>
+                        )}
+                        {r.official_url && (
+                          <a
+                            href={r.official_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="mt-2 inline-block text-[11px] font-medium text-primary underline"
+                          >
+                            Official source ↗
+                          </a>
+                        )}
+                      </div>
                     </div>
-                    {r.amount && (
-                      <span className="figure shrink-0 text-xs font-semibold text-accent">{r.amount}</span>
-                    )}
-                  </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]">
-                    {r.coverage_type && <span className="chip">{r.coverage_type}</span>}
-                    {r.deadline && <span className="text-muted">Deadline: {r.deadline}</span>}
-                  </div>
-                  {r.eligibility && (
-                    <p className="mt-1.5 text-[11px] text-foreground/80">{r.eligibility}</p>
-                  )}
-                  {r.official_url && (
-                    <a
-                      href={r.official_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 inline-block text-[11px] font-medium text-primary underline"
-                    >
-                      Official source ↗
-                    </a>
+                  </label>
+                );
+              })}
+
+              {selected.size > 0 && (
+                <div className="rounded-xl border border-primary/30 bg-primary-weak/40 p-3 text-sm">
+                  Applying {selected.size} selected award{selected.size > 1 ? "s" : ""} (~
+                  <span className="figure font-semibold">{money(selectedValue, currency)}</span>) lowers
+                  this option&apos;s total from{" "}
+                  <span className="figure text-muted line-through">{money(totalAnnual, currency)}</span> to{" "}
+                  <span className="figure font-semibold text-primary">
+                    {money(adjustedTotal, currency)}/yr
+                  </span>
+                  .
+                  {onExportLive && (
+                    <div className="mt-2.5">
+                      <button
+                        onClick={generate}
+                        disabled={exporting}
+                        className="btn-primary px-3 py-1.5 text-xs disabled:opacity-50"
+                      >
+                        {exporting ? "Generating…" : "Generate PDF with selected 📄"}
+                      </button>
+                    </div>
                   )}
                 </div>
-              ))}
+              )}
+
               <p className="text-[11px] text-muted">
                 These results are gathered live by AI and may be incomplete or out of date.
-                Always confirm terms and deadlines at the official source.
+                Always confirm terms and deadlines at the official source before applying.
               </p>
             </div>
           )}
@@ -265,10 +350,13 @@ export function ScholarshipPanel({
   candidate,
   onTrack,
   trackedIds,
+  onExportLive,
 }: {
   candidate: CandidatePlan;
   onTrack?: (m: ScholarshipMatch, candidate: CandidatePlan) => void;
   trackedIds?: Set<number>;
+  // When provided, selected live scholarships can be folded into a PDF for this candidate.
+  onExportLive?: (selected: LiveScholarship[], candidate: CandidatePlan) => Promise<void> | void;
 }) {
   const currency = candidate.report_currency;
   const all = [...candidate.scholarships].sort(
@@ -293,6 +381,8 @@ export function ScholarshipPanel({
           field={candidate.field}
           degreeLevel={candidate.degree_level}
           currency={currency}
+          totalAnnual={candidate.total_annual}
+          onExportLive={onExportLive ? (sel) => onExportLive(sel, candidate) : undefined}
         />
       </div>
     );
@@ -372,6 +462,8 @@ export function ScholarshipPanel({
         field={candidate.field}
         degreeLevel={candidate.degree_level}
         currency={currency}
+        totalAnnual={candidate.total_annual}
+        onExportLive={onExportLive ? (sel) => onExportLive(sel, candidate) : undefined}
       />
     </div>
   );

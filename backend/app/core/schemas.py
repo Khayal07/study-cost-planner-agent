@@ -132,6 +132,24 @@ class VerificationReport(BaseModel):
     summary: str | None = None       # human-readable (LLM) summary
 
 
+class LiveScholarship(BaseModel):
+    """A scholarship found by the live web search (AI-fetched, source-cited).
+
+    Fields are free text (values vary in phrasing across sources) except
+    ``annual_value``: the AI's best numeric estimate of the yearly cash value in
+    the report currency, used to fold a user-selected award into the net total.
+    """
+
+    name: str
+    provider: str | None = None
+    amount: str | None = None            # display text (e.g. "€1,200/month" or "Full tuition")
+    coverage_type: str | None = None     # free text summary
+    deadline: str | None = None          # free text (dates vary in phrasing)
+    eligibility: str | None = None       # short eligibility summary
+    official_url: str | None = None
+    annual_value: float | None = None    # yearly value in report currency (for totals)
+
+
 class PlanningRequest(BaseModel):
     country: str | None = Field(default=None, max_length=120)
     field: str | None = Field(default="Computer Science", max_length=120)
@@ -155,6 +173,9 @@ class PlanningRequest(BaseModel):
     nationality: str | None = Field(default=None, max_length=80)
     gpa: float | None = Field(default=None, ge=0, le=4.0)
     language_test: str | None = Field(default=None, max_length=120)
+    # User-selected live (web-found) scholarships to fold into the featured university's
+    # net cost and list in the PDF. Empty for a normal plan; only the PDF export uses these.
+    extra_scholarships: list[LiveScholarship] = Field(default_factory=list, max_length=20)
 
 
 class PlanResult(BaseModel):
@@ -235,16 +256,6 @@ class LiveScholarshipSearchRequest(BaseModel):
     field: str = Field(min_length=2, max_length=120)
     degree_level: str | None = Field(default=None, max_length=40)
     report_currency: str = Field(default="EUR", max_length=3)
-
-
-class LiveScholarship(BaseModel):
-    name: str
-    provider: str | None = None
-    amount: str | None = None            # free text (e.g. "€1,200/month" or "Full tuition")
-    coverage_type: str | None = None     # free text summary
-    deadline: str | None = None          # free text (dates vary in phrasing)
-    eligibility: str | None = None       # short eligibility summary
-    official_url: str | None = None
 
 
 class LiveScholarshipSearchResponse(BaseModel):

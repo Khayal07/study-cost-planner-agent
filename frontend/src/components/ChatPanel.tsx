@@ -416,7 +416,19 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
         {res.detail && res.detail.scholarships && res.detail.scholarships.length > 0 &&
           (res.mode === "scholarships" || res.mode === "detail" || res.mode === "affordability") && (
             <div className="mt-3">
-              <ScholarshipPanel candidate={res.detail} />
+              <ScholarshipPanel
+                candidate={res.detail}
+                onExportLive={
+                  res.can_export && res.profile
+                    ? (sel, cand) =>
+                        exportPdf({
+                          ...profileToPlanRequest(res.profile),
+                          focus_program_id: cand.program_id,
+                          extra_scholarships: sel,
+                        })
+                    : undefined
+                }
+              />
             </div>
           )}
 

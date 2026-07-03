@@ -129,6 +129,8 @@ export type PlanningRequest = {
   nationality?: string | null;
   gpa?: number | null;
   language_test?: string | null;
+  // User-selected live (web-found) scholarships to fold into the PDF + net total.
+  extra_scholarships?: LiveScholarship[];
 };
 
 export type PlanResult = {
@@ -490,6 +492,7 @@ export interface LiveScholarship {
   deadline: string | null;
   eligibility: string | null;
   official_url: string | null;
+  annual_value: number | null;
 }
 
 export interface LiveScholarshipSearchResponse {

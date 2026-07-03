@@ -99,10 +99,14 @@ def _build_prompt(country: str, field: str, degree: str, currency: str) -> str:
         f"pages (universities, governments, foundations). Return ONLY a JSON array (no prose) "
         f"of up to {settings.scholarship_search_max_results} items. Each item MUST be an object "
         f"with these string keys: "
-        f'"name", "provider", "amount" (award value, prefer {currency} or note the currency), '
+        f'"name", "provider", "amount" (award value as text, prefer {currency} or note the currency), '
+        f'"annual_value" (ALWAYS give your best numeric estimate of the yearly cash value in '
+        f"{currency} as a plain number, no symbols or commas, e.g. 12000. For a monthly stipend "
+        f"multiply by 12; for a range use a typical mid value; for a full-tuition waiver estimate "
+        f"the yearly tuition it covers. Only use null if the award has genuinely no monetary value), "
         f'"coverage_type" (e.g. full tuition / partial / stipend), "deadline", '
         f'"eligibility" (one short sentence), "official_url" (the real application/info page). '
-        f"Only include scholarships you found a real source URL for. If unsure of a field, use null."
+        f"Only include scholarships you found a real source URL for. If unsure of a text field, use null."
     )
 
 
@@ -117,16 +121,31 @@ def _parse_results(raw: str) -> list[dict]:
     if not isinstance(data, list):
         return []
     out: list[dict] = []
-    allowed = {"name", "provider", "amount", "coverage_type", "deadline", "eligibility", "official_url"}
+    text_keys = {"name", "provider", "amount", "coverage_type", "deadline", "eligibility", "official_url"}
     for item in data:
         if not isinstance(item, dict) or not item.get("name"):
             continue
-        clean = {k: (str(item[k]).strip() if item.get(k) not in (None, "", "null") else None) for k in allowed}
+        clean = {k: (str(item[k]).strip() if item.get(k) not in (None, "", "null") else None) for k in text_keys}
         clean["name"] = str(item["name"]).strip()
+        clean["annual_value"] = _to_number(item.get("annual_value"))
         out.append(clean)
         if len(out) >= settings.scholarship_search_max_results:
             break
     return out
+
+
+def _to_number(value) -> float | None:
+    """Coerce a model-provided value (number, or text like '12,000 EUR') to a float."""
+    if value in (None, "", "null"):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value) if value > 0 else None
+    digits = re.sub(r"[^0-9.]", "", str(value).replace(",", ""))
+    try:
+        num = float(digits)
+    except ValueError:
+        return None
+    return num if num > 0 else None
 
 
 def _fetch_from_web(country: str, field: str, degree: str, currency: str) -> list[dict]:

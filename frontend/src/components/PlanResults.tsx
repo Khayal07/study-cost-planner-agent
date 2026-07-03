@@ -407,7 +407,14 @@ export function PlanResults({
       <WorkOffsetCard c={top} cur={cur} />
 
       {/* Scholarships for the selected university */}
-      <ScholarshipPanel candidate={top} onTrack={trackScholarship} trackedIds={tracked} />
+      <ScholarshipPanel
+        candidate={top}
+        onTrack={trackScholarship}
+        trackedIds={tracked}
+        onExportLive={(sel, cand) =>
+          exportPdf({ ...request, focus_program_id: cand.program_id, extra_scholarships: sel })
+        }
+      />
 
       {/* Verification */}
       {plan.verification && <Verification report={plan.verification} />}
