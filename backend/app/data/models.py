@@ -270,6 +270,29 @@ class ApplicationDocument(Base):
     application: Mapped["Application"] = relationship(back_populates="documents")
 
 
+class ScholarshipSearchCache(Base):
+    """Cached result of a live (web) scholarship search, keyed by the query.
+
+    Guards a paid OpenAI web-search call: a repeat query for the same
+    (country, field, degree_level) within ``scholarship_cache_hours`` is served
+    from here instead of re-hitting the API. ``payload`` is the JSON array of
+    results (as returned to the frontend). ``fetched_at`` also drives the simple
+    per-day call cap (count rows fetched since midnight)."""
+
+    __tablename__ = "scholarship_search_cache"
+    __table_args__ = (
+        Index("ix_scholarship_search_key", "country", "field", "degree_level", unique=True),
+        Index("ix_scholarship_search_fetched", "fetched_at"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    country: Mapped[str] = mapped_column(String(120))
+    field: Mapped[str] = mapped_column(String(120))
+    degree_level: Mapped[str] = mapped_column(String(40), default="")
+    payload: Mapped[str] = mapped_column(Text)  # JSON array of results
+    fetched_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class FxRate(Base):
     __tablename__ = "fx_rates"
     # Index for the cache lookup in CurrencyService.get_rate (base, quote, newest first).

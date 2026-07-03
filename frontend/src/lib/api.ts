@@ -480,6 +480,40 @@ export async function postChat(
   return res.json();
 }
 
+// --- Live scholarship search (web-sourced, AI-fetched) ---
+
+export interface LiveScholarship {
+  name: string;
+  provider: string | null;
+  amount: string | null;
+  coverage_type: string | null;
+  deadline: string | null;
+  eligibility: string | null;
+  official_url: string | null;
+}
+
+export interface LiveScholarshipSearchResponse {
+  results: LiveScholarship[];
+  cached: boolean;
+  limited: boolean;
+  note: string | null;
+}
+
+export async function searchLiveScholarships(
+  country: string,
+  field: string,
+  degree_level: string | null,
+  report_currency: string,
+): Promise<LiveScholarshipSearchResponse> {
+  const res = await fetch(`${API_BASE_URL}/scholarships/search`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ country, field, degree_level, report_currency }),
+  });
+  if (!res.ok) throw new Error(`Live scholarship search failed: ${res.status}`);
+  return res.json();
+}
+
 // Build the PlanningRequest the advisor's profile implies, for the PDF export.
 export function profileToPlanRequest(profile: ChatProfile): PlanningRequest {
   return {

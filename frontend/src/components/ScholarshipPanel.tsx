@@ -1,4 +1,13 @@
-import type { CandidatePlan, ScholarshipEligibility, ScholarshipMatch } from "@/lib/api";
+"use client";
+
+import { useState } from "react";
+import type {
+  CandidatePlan,
+  LiveScholarship,
+  ScholarshipEligibility,
+  ScholarshipMatch,
+} from "@/lib/api";
+import { searchLiveScholarships } from "@/lib/api";
 import { CitationChip } from "./CitationChip";
 
 const ELIGIBILITY: Record<
@@ -140,6 +149,118 @@ function ScholarshipRow({
   );
 }
 
+/** On-demand live web search for scholarships. Explicit button → one paid API
+ *  call (cached 24h server-side), results shown separately from the dataset. */
+function LiveScholarshipSearch({
+  country,
+  field,
+  degreeLevel,
+  currency,
+}: {
+  country: string;
+  field: string;
+  degreeLevel: string | null;
+  currency: string;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [results, setResults] = useState<LiveScholarship[] | null>(null);
+  const [cached, setCached] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+
+  const canSearch = country.trim().length > 1 && field.trim().length > 1;
+
+  async function run() {
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await searchLiveScholarships(country, field, degreeLevel, currency);
+      setResults(resp.results);
+      setCached(resp.cached);
+      setNote(resp.note);
+    } catch {
+      setError("Live search failed. Please try again in a moment.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 border-t border-border pt-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="flex items-center gap-1.5 text-sm font-semibold">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
+            </svg>
+            Live scholarships from the web
+          </p>
+          <p className="truncate text-[11px] text-muted">
+            AI-fetched for {field} in {country} — verify each at its source.
+          </p>
+        </div>
+        <button
+          onClick={run}
+          disabled={loading || !canSearch}
+          className="btn-primary shrink-0 px-3 py-1.5 text-xs disabled:opacity-50"
+        >
+          {loading ? "Searching…" : results ? "Search again" : "Find live scholarships 🔍"}
+        </button>
+      </div>
+
+      {error && <p className="mt-3 text-xs text-red-500">{error}</p>}
+
+      {results && (
+        <div className="mt-3">
+          {cached && (
+            <span className="chip mb-2 inline-block text-[11px]">Cached (updated within 24h)</span>
+          )}
+          {results.length === 0 ? (
+            <p className="text-xs text-muted">{note ?? "No live scholarships found."}</p>
+          ) : (
+            <div className="space-y-2">
+              {results.map((r, i) => (
+                <div key={i} className="rounded-xl border border-accent/30 bg-accent-weak/20 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{r.name}</p>
+                      {r.provider && <p className="truncate text-xs text-muted">{r.provider}</p>}
+                    </div>
+                    {r.amount && (
+                      <span className="figure shrink-0 text-xs font-semibold text-accent">{r.amount}</span>
+                    )}
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]">
+                    {r.coverage_type && <span className="chip">{r.coverage_type}</span>}
+                    {r.deadline && <span className="text-muted">Deadline: {r.deadline}</span>}
+                  </div>
+                  {r.eligibility && (
+                    <p className="mt-1.5 text-[11px] text-foreground/80">{r.eligibility}</p>
+                  )}
+                  {r.official_url && (
+                    <a
+                      href={r.official_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-block text-[11px] font-medium text-primary underline"
+                    >
+                      Official source ↗
+                    </a>
+                  )}
+                </div>
+              ))}
+              <p className="text-[11px] text-muted">
+                These results are gathered live by AI and may be incomplete or out of date.
+                Always confirm terms and deadlines at the official source.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ScholarshipPanel({
   candidate,
   onTrack,
@@ -167,6 +288,12 @@ export function ScholarshipPanel({
           No scholarships in the dataset match this option yet. Add your nationality, GPA and
           language test above to refine eligibility.
         </p>
+        <LiveScholarshipSearch
+          country={candidate.country_name}
+          field={candidate.field}
+          degreeLevel={candidate.degree_level}
+          currency={currency}
+        />
       </div>
     );
   }
@@ -239,6 +366,13 @@ export function ScholarshipPanel({
         Eligibility is an automated read from the profile you provided. Confirm each award&apos;s
         terms at its cited source before applying.
       </p>
+
+      <LiveScholarshipSearch
+        country={candidate.country_name}
+        field={candidate.field}
+        degreeLevel={candidate.degree_level}
+        currency={currency}
+      />
     </div>
   );
 }

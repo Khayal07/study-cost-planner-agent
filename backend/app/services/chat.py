@@ -675,6 +675,7 @@ def _scholarships(session: Session, profile: ChatProfile,
         plan = _run_pipeline(session, profile, max_results=6)
     if not plan.candidates:
         return _no_coverage(session, profile)
+    profile.pending_action = None  # request satisfied
     report = plan.report_currency
     _store_candidates(session, profile, plan.candidates)
 
@@ -742,6 +743,7 @@ def _value(session: Session, profile: ChatProfile) -> ChatResponse:
     plan = _run_pipeline(session, profile, max_results=6)
     if not plan.candidates:
         return _no_coverage(session, profile)
+    profile.pending_action = None  # request satisfied
     report = plan.report_currency
     cands = sorted(plan.candidates, key=lambda c: c.value_rank or 9_999)
     _store_candidates(session, profile, cands)
@@ -771,6 +773,9 @@ def _value(session: Session, profile: ChatProfile) -> ChatResponse:
 def _pdf_offer(session: Session, profile: ChatProfile) -> ChatResponse:
     focus_name = _focus_university_name(session, profile)
     if not profile.budget_amount:
+        # Remember the report request so the next turn (once the budget lands) resumes
+        # here instead of dropping the user into a generic discovery listing.
+        profile.pending_action = "pdf"
         target = f" for **{focus_name}**" if focus_name else ""
         return ChatResponse(
             mode="clarify",
@@ -782,6 +787,7 @@ def _pdf_offer(session: Session, profile: ChatProfile) -> ChatResponse:
             "and a cited source for every figure.",
             profile=profile, suggestions=_country_chips(session),
         )
+    profile.pending_action = None  # request satisfied
     report = (profile.report_currency or "EUR").upper()
     budget_txt = _money(profile.budget_amount, profile.budget_currency or report)
     if focus_name:
@@ -941,6 +947,27 @@ def handle_chat(session: Session, message: str, report_currency: str,
     if program_id is not None:
         profile.focus_program_id = program_id
 
+    # 2.5) Resume an action we paused to collect a missing slot (e.g. a report request
+    # waiting on the budget). This keeps the user's intent alive across the follow-up so
+    # answering "12000 EUR" finishes the report instead of dumping them into a fresh,
+    # scholarship-free discovery list. A brand-new explicit action (or a university
+    # mention) below overrides the pending one.
+    _new_intent = (
+        _has_any(text, PDF_TOKENS) or _has_any(text, VALUE_TOKENS)
+        or _has_any(text, SCHOLARSHIP_TOKENS) or _has_any(text, COMPARE_TOKENS)
+        or program_id is not None
+    )
+    if _new_intent:
+        profile.pending_action = None
+    elif profile.pending_action:
+        action = profile.pending_action
+        if action == "pdf" and profile.budget_amount:
+            return _pdf_offer(session, profile)
+        if action == "value" and (profile.country or profile.budget_amount):
+            return _value(session, profile)
+        if action == "scholarships" and (profile.country or profile.budget_amount):
+            return _scholarships(session, profile)
+
     # 3) Explicit actions on existing context (the focus above is already applied).
     if _has_any(text, PDF_TOKENS):
         return _pdf_offer(session, profile)
@@ -948,12 +975,14 @@ def handle_chat(session: Session, message: str, report_currency: str,
     if _has_any(text, VALUE_TOKENS):
         if profile.country or profile.budget_amount:
             return _value(session, profile)
+        profile.pending_action = "value"
         return _ask_for_country(session, profile)
     if _has_any(text, SCHOLARSHIP_TOKENS):
         if program_id is not None:
             return _scholarships(session, profile, program_id)
         if profile.country or profile.budget_amount:
             return _scholarships(session, profile)
+        profile.pending_action = "scholarships"
         return _ask_for_country(session, profile)
     if _has_any(text, COMPARE_TOKENS):
         return _compare(session, profile)

@@ -23,31 +23,48 @@ _JSON_RE = re.compile(r"\{.*\}", re.DOTALL)
 class LLMClient:
     def __init__(self) -> None:
         self.enabled = settings.llm_enabled
+        self.use_openai = settings.use_openai
         self._client = None
         if self.enabled:
             from openai import OpenAI
 
-            # Fail fast: free models can hang or rate-limit. A short timeout with no
-            # SDK-internal retries means a slow model degrades to our deterministic
-            # path instead of blocking the chat request.
-            self._client = OpenAI(
-                api_key=settings.openrouter_api_key,
-                base_url=settings.openrouter_base_url,
-                timeout=settings.llm_timeout_seconds,
-                max_retries=0,
-            )
+            # Fail fast: a slow model can hang or rate-limit. A short timeout with no
+            # SDK-internal retries means it degrades to our deterministic path instead
+            # of blocking the chat request. When an OpenAI key is set we point at
+            # OpenAI directly (cheap gpt-4o-mini); otherwise fall back to OpenRouter.
+            if self.use_openai:
+                self._client = OpenAI(
+                    api_key=settings.openai_api_key,
+                    base_url=settings.openai_base_url,
+                    timeout=settings.llm_timeout_seconds,
+                    max_retries=0,
+                )
+            else:
+                self._client = OpenAI(
+                    api_key=settings.openrouter_api_key,
+                    base_url=settings.openrouter_base_url,
+                    timeout=settings.llm_timeout_seconds,
+                    max_retries=0,
+                )
 
     @property
     def _headers(self) -> dict:
+        # OpenRouter analytics headers; harmless (ignored) when talking to OpenAI.
         return {
             "HTTP-Referer": settings.openrouter_app_url,
             "X-Title": settings.openrouter_app_title,
         }
 
+    @property
+    def _models(self) -> tuple[str, ...]:
+        if self.use_openai:
+            return (settings.openai_model,)
+        return (settings.openrouter_model, settings.openrouter_fallback_model)
+
     def _chat(self, system: str, user: str, max_tokens: int) -> str | None:
         if not self.enabled:
             return None
-        for model in (settings.openrouter_model, settings.openrouter_fallback_model):
+        for model in self._models:
             try:
                 resp = self._client.chat.completions.create(
                     model=model,

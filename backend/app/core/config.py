@@ -27,6 +27,23 @@ class Settings(BaseSettings):
     # callers fall back to their deterministic path.
     llm_timeout_seconds: float = 12.0
 
+    # --- LLM (OpenAI, preferred when a key is set) ---
+    # When openai_api_key is provided the chat/intent LLM uses OpenAI directly
+    # (base_url below) instead of OpenRouter. Keeps calls small and cheap.
+    openai_api_key: str = ""
+    openai_base_url: str = "https://api.openai.com/v1"
+    openai_model: str = "gpt-4o-mini"
+    # Model with built-in web search, used only by the live scholarship search.
+    openai_search_model: str = "gpt-4o-mini-search-preview"
+
+    # --- Live scholarship search (web) ---
+    # Guardrails so a $5 credit lasts: cache results per (country, field, degree),
+    # cap searches per day, and keep result count / tokens small.
+    scholarship_cache_hours: int = 24
+    scholarship_search_daily_limit: int = 40
+    scholarship_search_max_results: int = 6
+    scholarship_search_timeout_seconds: float = 30.0
+
     # --- Database ---
     database_url: str = "postgresql+psycopg://studyplanner:studyplanner@localhost:5432/studyplanner"
 
@@ -59,8 +76,15 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
 
     @property
+    def use_openai(self) -> bool:
+        """Prefer OpenAI directly when a real key is configured."""
+        return bool(self.openai_api_key and not self.openai_api_key.startswith("sk-xxx"))
+
+    @property
     def llm_enabled(self) -> bool:
-        """LLM features are only active when an API key is configured."""
+        """LLM features are active when either OpenAI or OpenRouter has a real key."""
+        if self.use_openai:
+            return True
         return bool(self.openrouter_api_key and not self.openrouter_api_key.startswith("sk-or-v1-xxx"))
 
     @model_validator(mode="after")

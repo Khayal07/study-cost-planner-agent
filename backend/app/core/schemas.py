@@ -208,6 +208,10 @@ class ChatProfile(BaseModel):
     # Conversation working set (bounded — this object is round-tripped from the client)
     last_candidates: list[ChatCandidateRef] = Field(default_factory=list, max_length=20)
     focus_program_id: int | None = None   # university most recently discussed
+    # An action the user asked for but that we had to pause to collect a missing slot
+    # (e.g. "pdf" while we ask for their budget). Resumed next turn once the slot lands,
+    # so the user doesn't lose their intent. One of: "pdf" | "value" | "scholarships".
+    pending_action: str | None = Field(default=None, max_length=20)
     turn: int = Field(default=0, ge=0, le=100_000)
 
 
@@ -222,6 +226,32 @@ class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=4000)
     report_currency: str = Field(default="EUR", max_length=3)
     profile: ChatProfile | None = None
+
+
+# --- Live scholarship search (web-sourced, AI-fetched) ---
+
+class LiveScholarshipSearchRequest(BaseModel):
+    country: str = Field(min_length=2, max_length=120)
+    field: str = Field(min_length=2, max_length=120)
+    degree_level: str | None = Field(default=None, max_length=40)
+    report_currency: str = Field(default="EUR", max_length=3)
+
+
+class LiveScholarship(BaseModel):
+    name: str
+    provider: str | None = None
+    amount: str | None = None            # free text (e.g. "€1,200/month" or "Full tuition")
+    coverage_type: str | None = None     # free text summary
+    deadline: str | None = None          # free text (dates vary in phrasing)
+    eligibility: str | None = None       # short eligibility summary
+    official_url: str | None = None
+
+
+class LiveScholarshipSearchResponse(BaseModel):
+    results: list[LiveScholarship] = []
+    cached: bool = False        # served from the 24h cache (no API call)
+    limited: bool = False       # daily cap hit — results may be empty/stale
+    note: str | None = None     # human-readable status (e.g. LLM disabled)
 
 
 # --- Accounts + application tracker (Phase H) ---
