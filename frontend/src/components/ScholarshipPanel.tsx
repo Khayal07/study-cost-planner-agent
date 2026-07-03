@@ -261,7 +261,7 @@ function LiveScholarshipSearch({
                   <label
                     key={i}
                     className={`block cursor-pointer rounded-xl border p-3 transition ${
-                      isSel ? "border-primary bg-primary-weak/30" : "border-accent/30 bg-accent-weak/20"
+                      isSel ? "border-primary ring-1 ring-primary/40 bg-primary-weak/20" : "border-border bg-surface"
                     }`}
                   >
                     <div className="flex items-start gap-2.5">
@@ -269,7 +269,7 @@ function LiveScholarshipSearch({
                         type="checkbox"
                         checked={isSel}
                         onChange={() => toggle(i)}
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--primary)]"
+                        className="mt-1 h-4 w-4 shrink-0 accent-[var(--primary)]"
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-3">
@@ -277,33 +277,48 @@ function LiveScholarshipSearch({
                             <p className="truncate text-sm font-semibold">{r.name}</p>
                             {r.provider && <p className="truncate text-xs text-muted">{r.provider}</p>}
                           </div>
-                          <span className="figure shrink-0 text-xs font-semibold text-accent">
-                            {r.annual_value != null
-                              ? `~${money(r.annual_value, currency)}/yr`
-                              : r.amount ?? "varies"}
+                          <span className="shrink-0 rounded-full bg-accent-weak px-2 py-0.5 text-[11px] font-semibold text-accent">
+                            <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-accent align-middle" />
+                            Web
                           </span>
                         </div>
-                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]">
-                          {r.coverage_type && <span className="chip">{r.coverage_type}</span>}
-                          {r.deadline && <span className="text-muted">Deadline: {r.deadline}</span>}
-                          {r.annual_value == null && (
-                            <span className="text-muted">Value not estimated — won&apos;t change total</span>
+
+                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                          <span className="text-muted">
+                            Worth{" "}
+                            <span className="figure font-semibold text-foreground">
+                              {r.annual_value != null
+                                ? `~${money(r.annual_value, currency)}/yr`
+                                : r.amount ?? "varies"}
+                            </span>
+                          </span>
+                          {r.coverage_type && <span className="chip text-[11px]">{r.coverage_type}</span>}
+                          {r.deadline && <span className="text-muted">Deadline {r.deadline}</span>}
+                        </div>
+
+                        {r.eligibility && (
+                          <ul className="mt-2 space-y-0.5 text-[11px] text-muted">
+                            <li>• {r.eligibility}</li>
+                            {r.annual_value == null && (
+                              <li>• Value not estimated — won&apos;t change the total</li>
+                            )}
+                          </ul>
+                        )}
+
+                        <div className="mt-2 flex items-center justify-between gap-2">
+                          <span className="text-[11px] text-muted">AI-found · verify at source</span>
+                          {r.official_url && (
+                            <a
+                              href={r.official_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="btn-ghost px-2.5 py-1 text-xs"
+                            >
+                              Apply ↗
+                            </a>
                           )}
                         </div>
-                        {r.eligibility && (
-                          <p className="mt-1.5 text-[11px] text-foreground/80">{r.eligibility}</p>
-                        )}
-                        {r.official_url && (
-                          <a
-                            href={r.official_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="mt-2 inline-block text-[11px] font-medium text-primary underline"
-                          >
-                            Official source ↗
-                          </a>
-                        )}
                       </div>
                     </div>
                   </label>
