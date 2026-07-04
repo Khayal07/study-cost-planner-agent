@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.rate_limit import RateLimitMiddleware
+from app.core.security_headers import SecurityHeadersMiddleware
 
 app = FastAPI(
     title="Study Cost Planning Agent",
@@ -18,22 +19,27 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# Baseline hardening headers on every response (nosniff, deny framing, CSP, HSTS in prod).
+app.add_middleware(SecurityHeadersMiddleware)
+
 # Restrict to the configured frontend origin(s). Auth uses bearer tokens (not cookies),
-# so credentials stay off; the tracker adds PUT/PATCH/DELETE to the served verbs.
+# so credentials stay off; the tracker adds PUT/PATCH/DELETE to the served verbs. Only the
+# headers the frontend actually sends are allowed.
 _cors_origins = [o.strip() for o in settings.cors_allow_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
-# Throttle the expensive public endpoints (per client IP, in-memory).
-# /scholarships covers the paid live web-search endpoint.
+# Throttle the expensive public endpoints (per client IP, in-memory). /scholarships
+# covers the paid live web-search endpoint; /auth blunts login brute-force attempts.
 app.add_middleware(
     RateLimitMiddleware,
-    protected_prefixes=("/plan", "/chat", "/export", "/scholarships"),
+    protected_prefixes=("/plan", "/chat", "/export", "/scholarships", "/auth"),
+    trust_proxy_header=settings.trust_proxy_header,
 )
 
 

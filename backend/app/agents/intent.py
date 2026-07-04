@@ -10,7 +10,7 @@ import re
 from app.core.config import settings
 from app.core.llm_client import llm
 from app.core.schemas import PlanningRequest
-from app.core.text import fold
+from app.core.text import fold, sanitize_prompt_field
 
 # Map local/native country names to the canonical names used in the DB.
 COUNTRY_SYNONYMS = {
@@ -174,7 +174,9 @@ def extract_slots(message: str, report_currency: str | None = None) -> dict:
             "lifestyle ('frugal'|'moderate'|'comfortable' or null), "
             "nationality (country of citizenship or null), gpa (number 0-4 or null), "
             "language_test (e.g. 'IELTS 6.5' or null).",
-            user=message,
+            # Strip control chars/newlines so the message can't inject instructions;
+            # slot extraction is unaffected for normal single-line prose.
+            user=sanitize_prompt_field(message, max_len=4000),
         )
         if data:
             # LLM fills gaps but never overrides a confident regex hit.

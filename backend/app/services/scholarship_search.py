@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.schemas import LiveScholarship, LiveScholarshipSearchResponse
+from app.core.text import sanitize_prompt_field
 from app.data.models import ScholarshipSearchCache
 
 logger = logging.getLogger(__name__)
@@ -92,6 +93,12 @@ def _calls_today(session: Session) -> int:
 
 
 def _build_prompt(country: str, field: str, degree: str, currency: str) -> str:
+    # These values are interpolated into the instruction, so strip anything that could
+    # break out of it (newlines/control chars) before they reach the model.
+    country = sanitize_prompt_field(country)
+    field = sanitize_prompt_field(field)
+    degree = sanitize_prompt_field(degree, max_len=40)
+    currency = sanitize_prompt_field(currency, max_len=8)
     degree_txt = f" {degree}" if degree else ""
     return (
         f"Find real, currently-open scholarships for international students who want to "

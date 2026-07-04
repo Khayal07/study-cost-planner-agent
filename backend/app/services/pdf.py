@@ -63,6 +63,20 @@ def _citation_html(cit) -> str:
     return f"{link}{acc}"
 
 
+def _data_only_url_fetcher(url: str):
+    """Block WeasyPrint from fetching any remote resource while rendering.
+
+    The report embeds every image as a ``data:`` URI and uses inline CSS, so nothing
+    legitimate is fetched. Refusing all other schemes closes off SSRF/local-file reads
+    should attacker-influenced text ever reach a resource-loading position.
+    """
+    from weasyprint.urls import default_url_fetcher
+
+    if url.startswith("data:"):
+        return default_url_fetcher(url)
+    raise ValueError(f"Refusing to fetch external resource during PDF render: {url[:64]}")
+
+
 def render_plan_pdf(plan: PlanResult) -> bytes:
     from weasyprint import HTML
 
@@ -228,4 +242,4 @@ def render_plan_pdf(plan: PlanResult) -> bytes:
       <div class="disc">{escape(plan.disclaimer)}<br/>Generated {plan.generated_at:%Y-%m-%d %H:%M} UTC.</div>
     </body></html>"""
 
-    return HTML(string=html).write_pdf()
+    return HTML(string=html, url_fetcher=_data_only_url_fetcher).write_pdf()

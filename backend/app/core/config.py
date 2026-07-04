@@ -70,6 +70,11 @@ class Settings(BaseSettings):
     # config (e.g. a real JWT secret) at startup.
     environment: str = "development"
 
+    # Only honour the client-supplied X-Forwarded-For header for rate-limiting when
+    # the API actually sits behind a trusted reverse proxy. Left False, any client
+    # could spoof XFF to get a fresh rate-limit bucket and bypass throttling.
+    trust_proxy_header: bool = False
+
     # --- Auth (accounts + application tracker) ---
     # Override in production via JWT_SECRET. The default is for local dev only.
     jwt_secret: str = _INSECURE_JWT_SECRET

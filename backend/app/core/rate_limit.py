@@ -32,18 +32,24 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         capacity: int = 30,
         refill_per_second: float = 0.5,
         protected_prefixes: tuple[str, ...] = ("/plan", "/chat", "/export"),
+        trust_proxy_header: bool = False,
     ) -> None:
         super().__init__(app)
         self.capacity = capacity
         self.refill_per_second = refill_per_second
         self.protected_prefixes = protected_prefixes
+        self.trust_proxy_header = trust_proxy_header
         self._buckets: dict[str, _Bucket] = {}
         self._lock = Lock()
 
     def _client_ip(self, request: Request) -> str:
-        fwd = request.headers.get("x-forwarded-for")
-        if fwd:
-            return fwd.split(",")[0].strip()
+        # X-Forwarded-For is client-controlled unless a trusted proxy sets it, so a
+        # spoofed value would hand out a fresh bucket per request. Only trust it when
+        # explicitly configured to sit behind a proxy; otherwise use the peer address.
+        if self.trust_proxy_header:
+            fwd = request.headers.get("x-forwarded-for")
+            if fwd:
+                return fwd.split(",")[0].strip()
         return request.client.host if request.client else "unknown"
 
     def _allow(self, key: str) -> bool:

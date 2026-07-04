@@ -9,8 +9,9 @@ services:
     ports:
       # Host 5433 -> container 5432. Host 5432 is taken by a native PostgreSQL
       # install on this machine, so we expose 5433 to avoid connecting to the
-      # wrong server. Inside the compose network the backend still uses db:5432.
-      - "5433:5432"
+      # wrong server. Bound to loopback only so the DB isn't reachable off-host.
+      # Inside the compose network the backend still uses db:5432.
+      - "127.0.0.1:5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
