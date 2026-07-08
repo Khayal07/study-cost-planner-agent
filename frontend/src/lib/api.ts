@@ -517,6 +517,45 @@ export async function searchLiveScholarships(
   return res.json();
 }
 
+// --- Cost forecast (deterministic projection + optional AI commentary) ---
+
+export type ForecastYear = {
+  year_offset: number;
+  year_label: string;
+  tuition: number;
+  living: number;
+  total: number;
+};
+
+export type ForecastResponse = {
+  series: ForecastYear[];
+  assumptions: {
+    tuition_inflation_pct: number;
+    living_inflation_pct: number;
+    note: string;
+  };
+  commentary: string | null;
+};
+
+export async function postForecast(body: {
+  country_iso: string | null;
+  country_name: string;
+  annual_tuition: number;
+  annual_living: number;
+  currency: string;
+  years?: number;
+  with_commentary?: boolean;
+  language?: "en" | "az";
+}): Promise<ForecastResponse> {
+  const res = await fetch(`${API_BASE_URL}/forecast`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Forecast failed: ${res.status}`);
+  return res.json();
+}
+
 // Build the PlanningRequest the advisor's profile implies, for the PDF export.
 export function profileToPlanRequest(profile: ChatProfile): PlanningRequest {
   return {

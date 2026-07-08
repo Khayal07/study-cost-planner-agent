@@ -28,6 +28,8 @@ import { ScholarshipPanel } from "./ScholarshipPanel";
 import { ComparisonView } from "./ComparisonView";
 import { CostSankey } from "./CostSankey";
 import { CashFlowChart } from "./CashFlowChart";
+import { CostForecast } from "./CostForecast";
+import { ShareCard } from "./ShareCard";
 
 const MAX_PINNED = 3;
 
@@ -60,6 +62,7 @@ export function PlanResults({
   const [rankBy, setRankBy] = useState<"cost" | "value">("cost");
   const [pinned, setPinned] = useState<number[]>([]);
   const [tracked, setTracked] = useState<Set<number>>(new Set());
+  const [showShareCard, setShowShareCard] = useState(false);
 
   function togglePin(programId: number) {
     setPinned((prev) =>
@@ -211,6 +214,12 @@ export function PlanResults({
           )}
         </div>
         <div className="flex shrink-0 gap-2">
+          <button onClick={() => setShowShareCard(true)} className="btn-ghost" title={`Share a summary card for ${top.university_name}`}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.5-3.5L9 20" />
+            </svg>
+            Share card
+          </button>
           <button onClick={saveAndShare} disabled={saving} className="btn-ghost" title="Save this plan and get a shareable link">
             {saving ? (
               <Spinner />
@@ -410,6 +419,12 @@ export function PlanResults({
 
       {/* Month-by-month spend projection */}
       <CashFlowChart c={top} cur={cur} />
+
+      {/* Multi-year cost forecast */}
+      <CostForecast c={top} cur={cur} />
+
+      {/* Shareable PNG summary card */}
+      {showShareCard && <ShareCard c={top} cur={cur} onClose={() => setShowShareCard(false)} />}
 
       {/* Part-time work earnings offset */}
       <WorkOffsetCard c={top} cur={cur} />

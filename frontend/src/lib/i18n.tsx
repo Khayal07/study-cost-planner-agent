@@ -218,6 +218,35 @@ const DICT: Record<string, { en: string; az: string }> = {
     az: "Hər ox ən bahalı varianta görə miqyaslanıb (100). Real məbləğ üçün üzərinə gəl.",
   },
   "radar.axis": { en: "Category", az: "Kateqoriya" },
+
+  // Cost forecast
+  "forecast.title": { en: "Cost forecast (next 4 years)", az: "Xərc proqnozu (növbəti 4 il)" },
+  "forecast.hint": {
+    en: "Projected with fixed inflation assumptions — a planning aid, not a promise.",
+    az: "Sabit inflyasiya fərziyyələri ilə proqnoz — plan üçün bələdçidir, zəmanət deyil.",
+  },
+  "forecast.living": { en: "Living costs", az: "Yaşayış xərcləri" },
+  "forecast.assumption": { en: "Assumption", az: "Fərziyyə" },
+  "forecast.askAi": { en: "Get AI advice on this trend", az: "Bu trend üçün AI məsləhəti al" },
+  "forecast.loading": { en: "Thinking…", az: "Düşünür…" },
+  "forecast.noCommentary": {
+    en: "AI advice is unavailable right now — the projection above still stands.",
+    az: "AI məsləhəti hazırda mümkün deyil — yuxarıdakı proqnoz qüvvədədir.",
+  },
+  "forecast.aiDisclaimer": {
+    en: "AI-generated advice — verify before relying on it.",
+    az: "AI tərəfindən yaradılıb — istifadə etməzdən əvvəl yoxla.",
+  },
+
+  // Share card
+  "share.title": { en: "Share card", az: "Paylaşım kartı" },
+  "share.tagline": { en: "My study cost plan", az: "Mənim təhsil xərci planım" },
+  "share.totalLabel": { en: "Total per year", az: "İllik cəmi" },
+  "share.afterAid": { en: "After scholarships", az: "Təqaüddən sonra" },
+  "share.download": { en: "Download PNG", az: "PNG yüklə" },
+  "share.share": { en: "Share", az: "Paylaş" },
+  "share.close": { en: "Close", az: "Bağla" },
+  "share.footer": { en: "real costs, cited sources", az: "real xərclər, sitatlı mənbələr" },
 };
 
 // Localised month + weekday names for the deadline calendar.

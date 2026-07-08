@@ -265,6 +265,39 @@ class LiveScholarshipSearchResponse(BaseModel):
     note: str | None = None     # human-readable status (e.g. LLM disabled)
 
 
+# --- Cost forecast (deterministic projection + optional AI commentary) ---
+
+class ForecastRequest(BaseModel):
+    country_iso: str | None = Field(default=None, max_length=3)
+    country_name: str = Field(min_length=2, max_length=120)
+    annual_tuition: float = Field(ge=0, le=1_000_000)
+    annual_living: float = Field(ge=0, le=1_000_000)
+    currency: str = Field(default="EUR", min_length=3, max_length=3)
+    years: int = Field(default=4, ge=1, le=6)
+    with_commentary: bool = False
+    language: str = Field(default="en", pattern="^(en|az)$")
+
+
+class ForecastYear(BaseModel):
+    year_offset: int
+    year_label: str
+    tuition: float
+    living: float
+    total: float
+
+
+class ForecastAssumptions(BaseModel):
+    tuition_inflation_pct: float
+    living_inflation_pct: float
+    note: str
+
+
+class ForecastResponse(BaseModel):
+    series: list[ForecastYear]
+    assumptions: ForecastAssumptions
+    commentary: str | None = None
+
+
 # --- Accounts + application tracker (Phase H) ---
 
 class RegisterRequest(BaseModel):
