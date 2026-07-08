@@ -86,6 +86,12 @@ class Settings(BaseSettings):
     # could spoof XFF to get a fresh rate-limit bucket and bypass throttling.
     trust_proxy_header: bool = False
 
+    # Per-IP daily ceiling on the paid endpoints (chat/plan/export/scholarships/
+    # interview/transcribe). The token bucket above only blunts bursts and refills;
+    # this hard cap bounds a single client's daily spend. In-memory, single-instance
+    # (resets on restart) — swap in a shared store for multi-instance deploys.
+    paid_daily_limit_per_ip: int = 60
+
     # --- Auth (accounts + application tracker) ---
     # Override in production via JWT_SECRET. The default is for local dev only.
     jwt_secret: str = _INSECURE_JWT_SECRET

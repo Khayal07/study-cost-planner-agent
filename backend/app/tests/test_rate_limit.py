@@ -17,3 +17,23 @@ def test_buckets_are_per_key():
     assert mw._allow("a") is False
     # A different IP has its own bucket.
     assert mw._allow("b") is True
+
+
+def test_daily_cap_allows_limit_then_denies():
+    mw = RateLimitMiddleware(app=None, paid_daily_limit=3)
+    allowed = [mw._allow_daily("1.2.3.4") for _ in range(5)]
+    assert allowed == [True, True, True, False, False]
+
+
+def test_daily_cap_is_per_key():
+    mw = RateLimitMiddleware(app=None, paid_daily_limit=1)
+    assert mw._allow_daily("a") is True
+    assert mw._allow_daily("a") is False
+    # A different IP has its own daily allowance.
+    assert mw._allow_daily("b") is True
+
+
+def test_daily_cap_disabled_by_default():
+    # paid_daily_limit=0 means the daily ceiling is off (bucket still applies).
+    mw = RateLimitMiddleware(app=None, paid_daily_limit=0)
+    assert all(mw._allow_daily("x") for _ in range(1000))

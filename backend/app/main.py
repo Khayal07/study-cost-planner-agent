@@ -39,6 +39,10 @@ app.add_middleware(
 app.add_middleware(
     RateLimitMiddleware,
     protected_prefixes=("/plan", "/chat", "/export", "/scholarships", "/auth", "/forecast", "/letters", "/profile"),
+    # Paid (LLM/vision/whisper/web-search) endpoints also get a per-IP daily ceiling
+    # so the token bucket's refill can't let one client run up open-ended spend.
+    paid_prefixes=("/plan", "/chat", "/export", "/scholarships", "/letters", "/profile"),
+    paid_daily_limit=settings.paid_daily_limit_per_ip,
     trust_proxy_header=settings.trust_proxy_header,
 )
 
