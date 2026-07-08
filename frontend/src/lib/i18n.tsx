@@ -292,6 +292,40 @@ const DICT: Record<string, { en: string; az: string }> = {
     en: "The interviewer is unavailable — try again shortly.",
     az: "Müsahibəçi əlçatan deyil — bir azdan yenidən yoxla.",
   },
+
+  // Transcript upload
+  "transcript.title": { en: "Auto-fill from transcript", az: "Transkriptdən avtomatik doldur" },
+  "transcript.hint": {
+    en: "PNG, JPEG, WEBP or PDF · max 5 MB. AI reads the GPA; you confirm.",
+    az: "PNG, JPEG, WEBP və ya PDF · maks 5 MB. AI ortalamanı oxuyur; sən təsdiqləyirsən.",
+  },
+  "transcript.upload": { en: "Upload", az: "Yüklə" },
+  "transcript.analyzing": { en: "Reading…", az: "Oxunur…" },
+  "transcript.apply": { en: "Apply", az: "Tətbiq et" },
+  "transcript.applied": { en: "Applied ✓", az: "Tətbiq olundu ✓" },
+  "transcript.tooBig": { en: "File is over 5 MB.", az: "Fayl 5 MB-dan böyükdür." },
+  "transcript.error": { en: "Could not read the file.", az: "Fayl oxuna bilmədi." },
+  "transcript.signin": {
+    en: "Sign in to auto-fill your GPA from a transcript upload.",
+    az: "Transkript yükləyib ortalamanı avtomatik doldurmaq üçün daxil ol.",
+  },
+  "transcript.conf.high": { en: "high confidence", az: "yüksək əminlik" },
+  "transcript.conf.medium": { en: "medium confidence", az: "orta əminlik" },
+  "transcript.conf.low": { en: "low confidence", az: "aşağı əminlik" },
+
+  // Voice input
+  "voice.start": { en: "Speak your question", az: "Sualını səslə de" },
+  "voice.stop": { en: "Stop recording", az: "Yazmanı dayandır" },
+  "voice.denied": {
+    en: "Microphone access was denied — allow it in the browser settings.",
+    az: "Mikrofona icazə verilmədi — brauzer parametrlərindən icazə ver.",
+  },
+  "voice.limited": {
+    en: "Daily voice limit reached — type your question instead.",
+    az: "Günlük səs limiti doldu — sualını yazaraq göndər.",
+  },
+  "voice.empty": { en: "Nothing was heard — try again.", az: "Heç nə eşidilmədi — yenidən yoxla." },
+  "voice.error": { en: "Voice input failed — try again.", az: "Səsli daxiletmə alınmadı — yenidən yoxla." },
 };
 
 // Localised month + weekday names for the deadline calendar.

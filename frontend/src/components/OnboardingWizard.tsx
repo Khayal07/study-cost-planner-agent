@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { getOptions, type PlanningRequest } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import { TranscriptUpload } from "./TranscriptUpload";
 
 // Fallback only — live lists come from /meta/options so new countries/currencies
 // appear automatically once their data is seeded.
@@ -260,6 +261,7 @@ export function OnboardingWizard({
                 <p className="text-[11px] text-muted">
                   {t("wiz.elig.note")}
                 </p>
+                <TranscriptUpload onApply={(g) => setGpa(String(g))} />
                 <div>
                   <label htmlFor="w-nat" className="field-label">{t("wiz.nationality")}</label>
                   <input

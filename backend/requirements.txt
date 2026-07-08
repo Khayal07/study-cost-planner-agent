@@ -31,5 +31,8 @@ bcrypt==4.2.1
 # Utils
 python-dateutil==2.9.0.post0
 
+# Multipart uploads (transcript analysis + voice transcription)
+python-multipart==0.0.20
+
 # Dev / test
 pytest==8.3.4

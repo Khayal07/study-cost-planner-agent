@@ -351,6 +351,30 @@ class InterviewResponse(BaseModel):
     question_count: int = 0
 
 
+# --- Transcript analysis (auth; vision extraction, user confirms before saving) ---
+
+class TranscriptExtraction(BaseModel):
+    gpa: float | None = None            # as printed on the transcript
+    gpa_scale: float | None = None      # the scale it is printed on (4, 5, 10, 100…)
+    gpa_on_4_scale: float | None = Field(default=None, ge=0, le=4)
+    degree_level: str | None = None     # bachelor | master | phd | high_school
+    institution: str | None = None
+    confidence: str = "low"             # high | medium | low
+
+
+class TranscriptAnalysisResponse(BaseModel):
+    extraction: TranscriptExtraction
+    note: str | None = None
+
+
+# --- Voice transcription (whisper; feeds the chat input) ---
+
+class TranscribeResponse(BaseModel):
+    text: str
+    language: str | None = None
+    limited: bool = False  # daily cap hit
+
+
 # --- Accounts + application tracker (Phase H) ---
 
 class RegisterRequest(BaseModel):

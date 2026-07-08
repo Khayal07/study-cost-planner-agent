@@ -111,6 +111,58 @@ class LLMClient:
                 continue
         return None
 
+    def complete_json_content(self, system: str, content: list[dict], max_tokens: int = 400) -> dict | None:
+        """JSON completion where the user message is a multimodal content list
+        (text + image_url/file parts). Used by the transcript analyzer. Returns
+        None when disabled, on failure, or on unparseable output."""
+        if not self.enabled:
+            return None
+        raw = None
+        for model in self._models:
+            try:
+                resp = self._client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system + " Respond with ONLY a valid JSON object."},
+                        {"role": "user", "content": content},
+                    ],
+                    max_tokens=max_tokens,
+                    temperature=0.1,
+                    extra_headers=self._headers,
+                )
+                raw = resp.choices[0].message.content
+                if raw:
+                    break
+            except Exception as exc:
+                logger.warning("LLM vision call failed for model %s: %s", model, exc)
+                continue
+        if not raw:
+            return None
+        match = _JSON_RE.search(raw)
+        if not match:
+            return None
+        try:
+            return json.loads(match.group(0))
+        except json.JSONDecodeError:
+            return None
+
+    def transcribe(self, data: bytes, filename: str, language: str | None = None) -> str | None:
+        """Speech-to-text via whisper-1. Only available on the direct OpenAI path
+        (OpenRouter has no audio endpoint). Returns None when unavailable/failed."""
+        if not self.enabled or not self.use_openai:
+            return None
+        try:
+            resp = self._client.audio.transcriptions.create(
+                model=settings.openai_transcribe_model,
+                file=(filename, data),
+                language=language or None,
+            )
+            text = getattr(resp, "text", None)
+            return text.strip() if text else None
+        except Exception as exc:
+            logger.warning("Transcription failed: %s", exc)
+            return None
+
     def complete_json(self, system: str, user: str, max_tokens: int = 400) -> dict | None:
         raw = self._chat(system + " Respond with ONLY a valid JSON object.", user, max_tokens)
         if not raw:

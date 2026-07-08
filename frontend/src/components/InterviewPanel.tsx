@@ -7,6 +7,7 @@ import {
   type InterviewTurn,
 } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import { MicButton } from "./MicButton";
 
 const MAX_HISTORY = 16; // mirror of the backend schema bound
 
@@ -187,6 +188,13 @@ export function InterviewPanel() {
             maxLength={1200}
             className="flex-1 bg-transparent px-2 py-1.5 text-sm text-foreground outline-none placeholder:text-muted/70 disabled:opacity-60"
             aria-label={t("interview.placeholder")}
+          />
+          <MicButton
+            disabled={!started || done || loading}
+            onTranscript={(text) => {
+              setInput((prev) => (prev ? `${prev} ${text}` : text));
+              inputRef.current?.focus();
+            }}
           />
           <button
             type="submit"

@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     scholarship_search_max_results: int = 6
     scholarship_search_timeout_seconds: float = 30.0
 
+    # --- Uploads (transcript analysis + voice transcription) ---
+    transcript_max_bytes: int = 5 * 1024 * 1024   # 5 MB image/PDF cap
+    audio_max_bytes: int = 4 * 1024 * 1024        # ~90s of opus at 48kbps
+    voice_daily_limit: int = 200                  # paid whisper calls per day
+    openai_transcribe_model: str = "whisper-1"
+
     # --- Database ---
     database_url: str = "postgresql+psycopg://studyplanner:studyplanner@localhost:5432/studyplanner"
 

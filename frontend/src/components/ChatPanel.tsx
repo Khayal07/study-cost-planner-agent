@@ -12,6 +12,7 @@ import {
 import { CitationChip } from "./CitationChip";
 import { ScholarshipPanel } from "./ScholarshipPanel";
 import { InterviewPanel } from "./InterviewPanel";
+import { MicButton } from "./MicButton";
 import { useI18n } from "@/lib/i18n";
 
 type Turn = { role: "user" | "assistant"; text: string; res?: ChatResponse };
@@ -652,6 +653,13 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
               placeholder={t("chat.placeholder")}
               className="flex-1 bg-transparent px-2 py-1.5 text-sm text-foreground outline-none placeholder:text-muted/70"
               aria-label={t("chat.message")}
+            />
+            <MicButton
+              disabled={loading}
+              onTranscript={(text) => {
+                setInput((prev) => (prev ? `${prev} ${text}` : text));
+                inputRef.current?.focus();
+              }}
             />
             <button
               type="submit"

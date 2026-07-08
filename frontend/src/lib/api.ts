@@ -518,6 +518,71 @@ export async function searchLiveScholarships(
   return res.json();
 }
 
+// --- Profile (eligibility) ---
+
+export async function updateProfile(body: {
+  nationality: string | null;
+  gpa: number | null;
+  language_test: string | null;
+}): Promise<UserOut> {
+  const res = await authed("/auth/me/profile", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Profile update failed: ${res.status}`);
+  return res.json();
+}
+
+// --- Transcript analysis (auth; user confirms before the profile is written) ---
+
+export type TranscriptExtraction = {
+  gpa: number | null;
+  gpa_scale: number | null;
+  gpa_on_4_scale: number | null;
+  degree_level: string | null;
+  institution: string | null;
+  confidence: string;
+};
+
+export type TranscriptAnalysisResponse = {
+  extraction: TranscriptExtraction;
+  note: string | null;
+};
+
+export async function analyzeTranscript(file: File): Promise<TranscriptAnalysisResponse> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await authed("/profile/transcript", { method: "POST", body: fd });
+  if (!res.ok) {
+    const detail = (await res.json().catch(() => null))?.detail;
+    throw new Error(typeof detail === "string" ? detail : `Analysis failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+// --- Voice transcription (whisper -> chat input) ---
+
+export type TranscribeResponse = {
+  text: string;
+  language: string | null;
+  limited: boolean;
+};
+
+export async function transcribeAudio(blob: Blob, language: "az" | "en" | ""): Promise<TranscribeResponse> {
+  const fd = new FormData();
+  const type = blob.type || "audio/webm";
+  const ext = type.includes("ogg") ? "ogg" : type.includes("mp4") ? "mp4" : type.includes("wav") ? "wav" : "webm";
+  fd.append("file", new File([blob], `voice.${ext}`, { type }));
+  fd.append("language", language);
+  const res = await fetch(`${API_BASE_URL}/chat/transcribe`, { method: "POST", body: fd });
+  if (!res.ok) {
+    const detail = (await res.json().catch(() => null))?.detail;
+    throw new Error(typeof detail === "string" ? detail : `Transcription failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 // --- Motivation letter generator (auth) ---
 
 export type MotivationLetterResponse = {
