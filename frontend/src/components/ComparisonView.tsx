@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { CandidatePlan } from "@/lib/api";
+import { CostRadar } from "./CostRadar";
 
 function money(n: number, cur: string) {
   return `${n.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${cur}`;
@@ -86,6 +87,8 @@ export function ComparisonView({
             Clear
           </button>
         </div>
+
+        <CostRadar candidates={candidates} cur={cur} />
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[480px] border-collapse text-sm">

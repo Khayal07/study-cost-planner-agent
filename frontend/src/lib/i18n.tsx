@@ -184,6 +184,40 @@ const DICT: Record<string, { en: string; az: string }> = {
     en: "None of your tracked applications has a deadline yet.",
     az: "İzlədiyin müraciətlərin heç birində son tarix yoxdur.",
   },
+
+  // Cost categories (shared by Sankey / cash-flow / radar / forecast charts)
+  "cost.tuition": { en: "Tuition", az: "Təhsil haqqı" },
+  "cost.rent": { en: "Rent", az: "Kirayə" },
+  "cost.food": { en: "Food & groceries", az: "Yemək və ərzaq" },
+  "cost.transport": { en: "Transport", az: "Nəqliyyat" },
+  "cost.insurance": { en: "Health insurance", az: "Tibbi sığorta" },
+  "cost.visa": { en: "Visa / permit", az: "Viza / icazə" },
+  "cost.utilities": { en: "Utilities & internet", az: "Kommunal və internet" },
+  "cost.hidden_misc": { en: "Other fees", az: "Digər xərclər" },
+  "cost.total": { en: "Total / year", az: "Cəmi / il" },
+
+  // Sankey
+  "sankey.title": { en: "Where the money goes", az: "Pul hara gedir" },
+  "sankey.total": { en: "Annual total", az: "İllik cəm" },
+
+  // Cash-flow
+  "cashflow.title": { en: "Monthly cash flow", az: "Aylıq pul axını" },
+  "cashflow.hint": {
+    en: "Tuition shown as two installments per year; one-time costs land in month 1.",
+    az: "Təhsil haqqı ildə iki hissə kimi göstərilir; birdəfəlik xərclər 1-ci aydadır.",
+  },
+  "cashflow.month": { en: "Month", az: "Ay" },
+  "cashflow.cumulative": { en: "Cumulative spend", az: "Yığılmış xərc" },
+  "cashflow.oneTime": { en: "One-time", az: "Birdəfəlik" },
+  "cashflow.living": { en: "Living", az: "Yaşayış" },
+
+  // Radar comparison
+  "radar.title": { en: "Cost profile", az: "Xərc profili" },
+  "radar.hint": {
+    en: "Each axis is scaled to the most expensive option (100). Hover for real amounts.",
+    az: "Hər ox ən bahalı varianta görə miqyaslanıb (100). Real məbləğ üçün üzərinə gəl.",
+  },
+  "radar.axis": { en: "Category", az: "Kateqoriya" },
 };
 
 // Localised month + weekday names for the deadline calendar.

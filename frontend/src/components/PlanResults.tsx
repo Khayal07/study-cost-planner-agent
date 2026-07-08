@@ -26,6 +26,8 @@ import { useAuth } from "@/lib/auth";
 import { CitationChip } from "./CitationChip";
 import { ScholarshipPanel } from "./ScholarshipPanel";
 import { ComparisonView } from "./ComparisonView";
+import { CostSankey } from "./CostSankey";
+import { CashFlowChart } from "./CashFlowChart";
 
 const MAX_PINNED = 3;
 
@@ -402,6 +404,12 @@ export function PlanResults({
 
       {/* Detailed breakdown */}
       <Breakdown c={top} cur={cur} />
+
+      {/* Where the money goes (Sankey) */}
+      <CostSankey c={top} cur={cur} />
+
+      {/* Month-by-month spend projection */}
+      <CashFlowChart c={top} cur={cur} />
 
       {/* Part-time work earnings offset */}
       <WorkOffsetCard c={top} cur={cur} />
