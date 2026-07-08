@@ -44,6 +44,8 @@ def migrate() -> None:
             "ALTER TABLE countries ADD COLUMN IF NOT EXISTS work_wage_currency VARCHAR(3)",
             "ALTER TABLE countries ADD COLUMN IF NOT EXISTS work_note TEXT",
             "ALTER TABLE countries ADD COLUMN IF NOT EXISTS work_source_id INTEGER REFERENCES sources(id)",
+            # Phase 3 (9-feature upgrade): AI motivation letter persisted on the tracker.
+            "ALTER TABLE applications ADD COLUMN IF NOT EXISTS motivation_letter TEXT",
         ):
             conn.execute(text(ddl))
     print("[cli] migrate: schema ready (pgvector enabled, perf indexes ensured)")

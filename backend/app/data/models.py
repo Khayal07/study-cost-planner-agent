@@ -227,6 +227,8 @@ class Application(Base):
     application_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(16), default="planned")
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # AI-drafted motivation letter (user-editable; persisted with the application).
+    motivation_letter: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow

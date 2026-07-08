@@ -88,6 +88,29 @@ class LLMClient:
     def complete_text(self, system: str, user: str, max_tokens: int = 220) -> str | None:
         return self._chat(system, user, max_tokens)
 
+    def complete_messages(self, messages: list[dict], max_tokens: int = 400) -> str | None:
+        """Multi-message completion (system + alternating turns) for conversational
+        features like the interview simulator. Same timeout/fallback behaviour as
+        ``_chat``; returns None when disabled or every model fails."""
+        if not self.enabled:
+            return None
+        for model in self._models:
+            try:
+                resp = self._client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=0.4,
+                    extra_headers=self._headers,
+                )
+                content = resp.choices[0].message.content
+                if content:
+                    return content.strip()
+            except Exception as exc:
+                logger.warning("LLM call failed for model %s: %s", model, exc)
+                continue
+        return None
+
     def complete_json(self, system: str, user: str, max_tokens: int = 400) -> dict | None:
         raw = self._chat(system + " Respond with ONLY a valid JSON object.", user, max_tokens)
         if not raw:

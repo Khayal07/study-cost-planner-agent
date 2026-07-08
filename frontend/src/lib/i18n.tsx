@@ -247,6 +247,51 @@ const DICT: Record<string, { en: string; az: string }> = {
   "share.share": { en: "Share", az: "Paylaş" },
   "share.close": { en: "Close", az: "Bağla" },
   "share.footer": { en: "real costs, cited sources", az: "real xərclər, sitatlı mənbələr" },
+
+  // Motivation letter
+  "letter.title": { en: "Motivation letter (AI draft)", az: "Motivasiya məktubu (AI qaralama)" },
+  "letter.generate": { en: "Draft letter", az: "Məktub yarat" },
+  "letter.regenerate": { en: "Regenerate", az: "Yenidən yarat" },
+  "letter.generating": { en: "Drafting…", az: "Yazılır…" },
+  "letter.view": { en: "View letter", az: "Məktuba bax" },
+  "letter.language": { en: "Letter language", az: "Məktubun dili" },
+  "letter.tone": { en: "Tone", az: "Ton" },
+  "letter.tone.formal": { en: "Formal", az: "Rəsmi" },
+  "letter.tone.personal": { en: "Personal", az: "Şəxsi" },
+  "letter.notes": { en: "Your notes (optional)", az: "Qeydlərin (istəyə bağlı)" },
+  "letter.notesPh": {
+    en: "e.g. my robotics project, why this country…",
+    az: "məs. robototexnika layihəm, niyə bu ölkə…",
+  },
+  "letter.draft": { en: "Draft", az: "Qaralama" },
+  "letter.copy": { en: "Copy", az: "Kopyala" },
+  "letter.error": { en: "Drafting failed — try again.", az: "Alınmadı — yenidən yoxla." },
+  "letter.disclaimer": {
+    en: "AI draft — personalize the [placeholders] and facts before submitting.",
+    az: "AI qaralamasıdır — göndərməzdən əvvəl [yer tutucuları] və faktları fərdiləşdir.",
+  },
+
+  // Interview simulator
+  "interview.mode": { en: "Chat mode", az: "Söhbət rejimi" },
+  "interview.mode.advisor": { en: "Advisor", az: "Məsləhətçi" },
+  "interview.mode.interview": { en: "Interview practice", az: "Müsahibə məşqi" },
+  "interview.title": { en: "Interview practice", az: "Müsahibə məşqi" },
+  "interview.intro": {
+    en: "The AI plays a scholarship/admissions interviewer: ~5-6 questions, one at a time, then structured feedback on your answers.",
+    az: "AI təqaüd/qəbul müsahibəçisi rolundadır: bir-bir ~5-6 sual, sonra cavabların üzrə strukturlu rəy.",
+  },
+  "interview.start": { en: "Start interview", az: "Müsahibəyə başla" },
+  "interview.placeholder": { en: "Type your answer…", az: "Cavabını yaz…" },
+  "interview.finish": { en: "End interview & get feedback", az: "Müsahibəni bitir və rəy al" },
+  "interview.feedback": { en: "Interview feedback", az: "Müsahibə rəyi" },
+  "interview.strengths": { en: "Strengths", az: "Güclü tərəflər" },
+  "interview.improvements": { en: "To improve", az: "İnkişaf üçün" },
+  "interview.again": { en: "Practice again", az: "Yenidən məşq et" },
+  "interview.done": { en: "Interview finished", az: "Müsahibə bitdi" },
+  "interview.error": {
+    en: "The interviewer is unavailable — try again shortly.",
+    az: "Müsahibəçi əlçatan deyil — bir azdan yenidən yoxla.",
+  },
 };
 
 // Localised month + weekday names for the deadline calendar.

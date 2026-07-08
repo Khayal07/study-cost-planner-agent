@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { ApplicationsSkeleton } from "./Skeletons";
 import { DeadlineCalendar } from "./DeadlineCalendar";
+import { LetterModal } from "./LetterModal";
 import { downloadIcs } from "@/lib/ics";
 
 const STATUSES = ["planned", "in_progress", "submitted", "accepted", "rejected"] as const;
@@ -49,6 +50,7 @@ export function ApplicationsTracker() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<"list" | "calendar">("list");
+  const [letterFor, setLetterFor] = useState<ApplicationOut | null>(null);
 
   useEffect(() => {
     if (!ready || !isAuthed) return;
@@ -83,6 +85,25 @@ export function ApplicationsTracker() {
     } catch {
       setError(t("app.errStatus"));
     }
+  }
+
+  function onLetterSaved(appId: number, letter: string) {
+    // The backend persisted the draft and ticked the matching checklist item;
+    // mirror both locally so the card updates without a refetch.
+    setApps((prev) =>
+      prev.map((a) =>
+        a.id === appId
+          ? {
+              ...a,
+              motivation_letter: letter,
+              documents: a.documents.map((d) =>
+                /motivation|motivasiya/i.test(d.name) ? { ...d, done: true } : d,
+              ),
+            }
+          : a,
+      ),
+    );
+    setLetterFor((prev) => (prev && prev.id === appId ? { ...prev, motivation_letter: letter } : prev));
   }
 
   async function onDelete(appId: number) {
@@ -193,9 +214,14 @@ export function ApplicationsTracker() {
               onToggleDoc={onToggleDoc}
               onStatus={onStatus}
               onDelete={onDelete}
+              onLetter={() => setLetterFor(a)}
             />
           ))}
         </div>
+      )}
+
+      {letterFor && (
+        <LetterModal a={letterFor} onSaved={onLetterSaved} onClose={() => setLetterFor(null)} />
       )}
     </div>
   );
@@ -206,11 +232,13 @@ function ApplicationCard({
   onToggleDoc,
   onStatus,
   onDelete,
+  onLetter,
 }: {
   a: ApplicationOut;
   onToggleDoc: (appId: number, docId: number, done: boolean) => void;
   onStatus: (appId: number, status: string) => void;
   onDelete: (appId: number) => void;
+  onLetter: () => void;
 }) {
   const { t } = useI18n();
   const done = a.documents.filter((d) => d.done).length;
@@ -270,6 +298,12 @@ function ApplicationCard({
             {t("app.apply")} ↗
           </a>
         )}
+        <button onClick={onLetter} className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+          </svg>
+          {a.motivation_letter ? t("letter.view") : t("letter.generate")}
+        </button>
       </div>
 
       {a.documents.length > 0 && (

@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { CitationChip } from "./CitationChip";
 import { ScholarshipPanel } from "./ScholarshipPanel";
+import { InterviewPanel } from "./InterviewPanel";
 import { useI18n } from "@/lib/i18n";
 
 type Turn = { role: "user" | "assistant"; text: string; res?: ChatResponse };
@@ -248,6 +249,7 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [panelMode, setPanelMode] = useState<"advisor" | "interview">("advisor");
   const loadedRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -537,14 +539,38 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
             <h2 className="font-display text-sm font-semibold leading-none">{t("chat.advisor")}</h2>
             <p className="mt-1 truncate text-xs text-muted">{t("chat.advisorSub")}</p>
           </div>
+          <div
+            role="radiogroup"
+            aria-label={t("interview.mode")}
+            className="ml-auto inline-flex shrink-0 gap-1 rounded-xl border border-border bg-surface p-1"
+          >
+            {(["advisor", "interview"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                role="radio"
+                aria-checked={panelMode === m}
+                onClick={() => setPanelMode(m)}
+                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${
+                  panelMode === m ? "bg-primary text-primary-fg shadow-sm" : "text-muted hover:text-foreground"
+                }`}
+              >
+                {t(`interview.mode.${m}`)}
+              </button>
+            ))}
+          </div>
           <span
-            className="chip ml-auto shrink-0 border-primary/20 bg-primary-weak text-primary"
+            className="chip shrink-0 border-primary/20 bg-primary-weak text-primary"
             title={locale === "az" ? "Cavablar bu valyutada" : "Answers shown in this currency"}
           >
             {SYMBOL[reportCurrency] ?? reportCurrency} {reportCurrency}
           </span>
         </div>
 
+        {panelMode === "interview" ? (
+          <InterviewPanel />
+        ) : (
+        <>
         {/* Messages */}
         <div ref={scrollRef} className="chat-canvas flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
           {turns.length === 0 && (
@@ -647,6 +673,8 @@ export function ChatPanel({ reportCurrency }: { reportCurrency: string }) {
               : "Every figure is grounded in a cited source"}
           </p>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

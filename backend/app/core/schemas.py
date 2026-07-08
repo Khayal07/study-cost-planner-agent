@@ -298,6 +298,59 @@ class ForecastResponse(BaseModel):
     commentary: str | None = None
 
 
+# --- Motivation letter generator (auth; ties into the application tracker) ---
+
+class MotivationLetterRequest(BaseModel):
+    application_id: int | None = None  # when set (and owned), the draft is persisted
+    scholarship_name: str = Field(min_length=2, max_length=160)
+    provider: str | None = Field(default=None, max_length=160)
+    university_name: str | None = Field(default=None, max_length=160)
+    program_name: str | None = Field(default=None, max_length=160)
+    language: str = Field(default="en", pattern="^(en|az)$")
+    tone: str = Field(default="formal", pattern="^(formal|personal)$")
+    user_notes: str | None = Field(default=None, max_length=600)
+
+
+class MotivationLetterResponse(BaseModel):
+    letter: str
+    language: str
+    saved: bool = False  # persisted onto the tracked application
+
+
+# --- Interview simulator (stateless, /chat prefix) ---
+
+class InterviewContext(BaseModel):
+    scholarship_name: str | None = Field(default=None, max_length=160)
+    university_name: str | None = Field(default=None, max_length=160)
+    program_name: str | None = Field(default=None, max_length=160)
+    field: str | None = Field(default=None, max_length=120)
+
+
+class InterviewTurn(BaseModel):
+    role: str = Field(pattern="^(interviewer|student)$")
+    content: str = Field(min_length=1, max_length=1200)
+
+
+class InterviewRequest(BaseModel):
+    context: InterviewContext = Field(default_factory=InterviewContext)
+    history: list[InterviewTurn] = Field(default_factory=list, max_length=16)
+    action: str = Field(default="start", pattern="^(start|reply|finish)$")
+    language: str = Field(default="en", pattern="^(en|az)$")
+
+
+class InterviewFeedback(BaseModel):
+    strengths: list[str] = Field(default_factory=list)
+    improvements: list[str] = Field(default_factory=list)
+    overall: str = ""
+
+
+class InterviewResponse(BaseModel):
+    message: str
+    done: bool = False
+    feedback: InterviewFeedback | None = None
+    question_count: int = 0
+
+
 # --- Accounts + application tracker (Phase H) ---
 
 class RegisterRequest(BaseModel):
@@ -373,6 +426,7 @@ class ApplicationCreate(BaseModel):
 class ApplicationUpdate(BaseModel):
     status: str | None = Field(default=None, max_length=16)
     notes: str | None = Field(default=None, max_length=2000)
+    motivation_letter: str | None = Field(default=None, max_length=20000)
 
 
 class DocumentOut(BaseModel):
@@ -396,6 +450,7 @@ class ApplicationOut(BaseModel):
     application_url: str | None = None
     status: str
     notes: str | None = None
+    motivation_letter: str | None = None
     documents: list[DocumentOut] = Field(default_factory=list)
 
 

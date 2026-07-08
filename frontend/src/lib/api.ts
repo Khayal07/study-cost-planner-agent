@@ -259,6 +259,7 @@ export type ApplicationOut = {
   application_url: string | null;
   status: string;
   notes: string | null;
+  motivation_letter: string | null;
   documents: DocumentOut[];
 };
 
@@ -369,7 +370,7 @@ export async function createApplication(body: ApplicationCreate): Promise<Applic
 
 export async function updateApplication(
   id: number,
-  body: { status?: string; notes?: string },
+  body: { status?: string; notes?: string; motivation_letter?: string },
 ): Promise<ApplicationOut> {
   const res = await authed(`/applications/${id}`, {
     method: "PATCH",
@@ -514,6 +515,73 @@ export async function searchLiveScholarships(
     body: JSON.stringify({ country, field, degree_level, report_currency }),
   });
   if (!res.ok) throw new Error(`Live scholarship search failed: ${res.status}`);
+  return res.json();
+}
+
+// --- Motivation letter generator (auth) ---
+
+export type MotivationLetterResponse = {
+  letter: string;
+  language: string;
+  saved: boolean;
+};
+
+export async function generateMotivationLetter(body: {
+  application_id?: number | null;
+  scholarship_name: string;
+  provider?: string | null;
+  university_name?: string | null;
+  program_name?: string | null;
+  language?: "en" | "az";
+  tone?: "formal" | "personal";
+  user_notes?: string | null;
+}): Promise<MotivationLetterResponse> {
+  const res = await authed("/letters/motivation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const detail = (await res.json().catch(() => null))?.detail;
+    throw new Error(typeof detail === "string" ? detail : `Letter failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+// --- Interview simulator (stateless, /chat prefix) ---
+
+export type InterviewTurn = { role: "interviewer" | "student"; content: string };
+
+export type InterviewFeedback = {
+  strengths: string[];
+  improvements: string[];
+  overall: string;
+};
+
+export type InterviewResponse = {
+  message: string;
+  done: boolean;
+  feedback: InterviewFeedback | null;
+  question_count: number;
+};
+
+export async function postInterview(body: {
+  context?: {
+    scholarship_name?: string | null;
+    university_name?: string | null;
+    program_name?: string | null;
+    field?: string | null;
+  };
+  history: InterviewTurn[];
+  action: "start" | "reply" | "finish";
+  language?: "en" | "az";
+}): Promise<InterviewResponse> {
+  const res = await fetch(`${API_BASE_URL}/chat/interview`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Interview failed: ${res.status}`);
   return res.json();
 }
 

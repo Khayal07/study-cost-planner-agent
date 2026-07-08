@@ -43,6 +43,7 @@ def _to_out(app: Application) -> ApplicationOut:
         currency=app.currency, deadline=app.deadline,
         days_until_deadline=_days_until(app.deadline),
         application_url=app.application_url, status=app.status, notes=app.notes,
+        motivation_letter=app.motivation_letter,
         documents=[
             DocumentOut(id=d.id, name=d.name, done=d.done)
             for d in sorted(app.documents, key=lambda x: x.id)
@@ -117,6 +118,8 @@ def update_application(
         app.status = req.status
     if req.notes is not None:
         app.notes = req.notes
+    if req.motivation_letter is not None:
+        app.motivation_letter = req.motivation_letter
     session.commit()
     session.refresh(app)
     return _to_out(app)

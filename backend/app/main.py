@@ -38,7 +38,7 @@ app.add_middleware(
 # covers the paid live web-search endpoint; /auth blunts login brute-force attempts.
 app.add_middleware(
     RateLimitMiddleware,
-    protected_prefixes=("/plan", "/chat", "/export", "/scholarships", "/auth", "/forecast"),
+    protected_prefixes=("/plan", "/chat", "/export", "/scholarships", "/auth", "/forecast", "/letters"),
     trust_proxy_header=settings.trust_proxy_header,
 )
 
@@ -64,6 +64,8 @@ from app.api.meta import router as meta_router
 from app.api.plans import router as plans_router
 from app.api.scholarship_search import router as scholarship_search_router
 from app.api.forecast import router as forecast_router
+from app.api.letters import router as letters_router
+from app.api.interview import router as interview_router
 
 app.include_router(plan_router)
 app.include_router(chat_router)
@@ -74,3 +76,5 @@ app.include_router(meta_router)
 app.include_router(plans_router)
 app.include_router(scholarship_search_router)
 app.include_router(forecast_router)
+app.include_router(letters_router)
+app.include_router(interview_router)
