@@ -182,8 +182,16 @@ def load_seed(session: Session | None = None) -> dict:
                     session.flush()
                     program_ids[pd["name"]] = prog.id
                     counts["programs"] += 1
+                    # A program's tuition may carry its own source (pipeline-collected
+                    # programs cite their own fee page); otherwise it inherits the
+                    # university's shared fee source — same pattern as living items.
+                    if pd["tuition"].get("source"):
+                        tuition_src = _make_source(session, pd["tuition"]["source"])
+                        counts["sources"] += 1
+                    else:
+                        tuition_src = fee_src
                     _make_cost(session, raw=pd["tuition"], cost_type="tuition",
-                               scope_level="program", scope_id=prog.id, source_id=fee_src.id)
+                               scope_level="program", scope_id=prog.id, source_id=tuition_src.id)
                     counts["cost_items"] += 1
 
         # Optional top-level scholarships block (cited like every other figure).

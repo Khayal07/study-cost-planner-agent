@@ -32,6 +32,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # Seed data lives in the host repo: the data pipeline (python -m app.pipeline)
+    # writes staging files + merges data.real.json here, and those edits must
+    # survive image rebuilds. Boot-time seed reads the same content as before.
+    volumes:
+      - ./backend/db/seed:/code/db/seed
     # On boot: run migrations, seed (idempotent), then start the API with 2 workers
     command: >
       sh -c "python -m app.cli migrate &&

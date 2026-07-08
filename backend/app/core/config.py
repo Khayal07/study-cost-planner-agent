@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     scholarship_search_max_results: int = 6
     scholarship_search_timeout_seconds: float = 30.0
 
+    # --- Data-collection pipeline (python -m app.pipeline) ---
+    # Hard cap on paid web-search calls per collect run; the search model and
+    # timeout reuse the live-scholarship-search settings above.
+    pipeline_max_calls: int = 40
+
     # --- Uploads (transcript analysis + voice transcription) ---
     transcript_max_bytes: int = 5 * 1024 * 1024   # 5 MB image/PDF cap
     audio_max_bytes: int = 4 * 1024 * 1024        # ~90s of opus at 48kbps
