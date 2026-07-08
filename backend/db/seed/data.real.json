@@ -2107,6 +2107,28 @@
                 "valid_as_of": "2025-09-01",
                 "note": "University of Tartu Computer Science MSc tuition EUR 7,200/yr for non-EU/EEA students. Merit tuition waivers cover up to 50% for the best applicants (phased out for new non-EU students from 2026/27)."
               }
+            },
+            {
+              "name": "Medicine",
+              "field": "Medicine",
+              "degree_level": "bachelor",
+              "language": "English",
+              "duration_years": 6.0,
+              "tuition": {
+                "amount": 13200.0,
+                "currency": "EUR",
+                "period": "annual",
+                "confidence": "sourced",
+                "valid_as_of": "2026-07-08",
+                "note": "Tuition fee for non-EU international students.",
+                "source": {
+                  "url": "https://ut.ee/en/curriculum/medicine",
+                  "title": "Medicine | University of Tartu",
+                  "publisher": "University of Tartu",
+                  "source_type": "official_university",
+                  "accessed_date": "2026-07-08"
+                }
+              }
             }
           ]
         },
@@ -2926,7 +2948,7 @@
       ],
       "work": {
         "hours_cap": 20,
-        "hourly_wage": 13.50,
+        "hourly_wage": 13.5,
         "wage_currency": "EUR",
         "note": "Non-EEA students on eligible full-time courses may work 20 h/week in term and 40 h/week during holidays. National minimum wage 2025 = EUR 13.50/hour.",
         "source": {

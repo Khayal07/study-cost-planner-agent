@@ -104,6 +104,38 @@ Deterministic-math and intent unit tests (no DB/network needed):
 docker compose exec backend python -m pytest app/tests -q
 ```
 
+## Data pipeline (AI-assisted field coverage)
+
+Adds a **new field of study** (e.g. Medicine) across the universities already in the
+dataset: an OpenAI web-search model finds each university's program + tuition with a
+source URL, results land in a **staging file for human review**, and only an explicit
+`apply` merges them into `data.real.json` + the live DB. Nothing is written without
+review; every figure keeps a source URL + accessed date.
+
+```bash
+# 1. (free) See which universities would be searched — no API calls:
+docker compose exec backend python -m app.pipeline collect --field "Medicine" --plan-only
+
+# 2. (paid: ~1 web-search call per university, capped by PIPELINE_MAX_CALLS=40)
+docker compose exec backend python -m app.pipeline collect --field "Medicine"
+#    Optional filters: --country EE   --degree master   --limit 5
+
+# 3. Review the staging file (statuses: pending / not_offered / rejected):
+#    backend/db/seed/staging/medicine.json
+#    Edit or delete entries you don't trust — apply re-validates everything anyway.
+
+# 4. Merge approved entries into data.real.json + the live DB (no reseed, accounts survive):
+docker compose exec backend python -m app.pipeline apply --file db/seed/staging/medicine.json
+
+# 5. Check: the field appears immediately (DB-driven picker):
+curl http://localhost:8000/meta/options
+```
+
+Re-running `collect` is free for universities already covered (existing program,
+or any staging record — including `not_offered`). Validation rejects implausible
+tuition (per-country bands), non-whitelisted currencies and broken URLs; entries
+without a valid source URL are downgraded to `estimate` confidence.
+
 ## API endpoints
 
 | Method | Path | Auth | Purpose |

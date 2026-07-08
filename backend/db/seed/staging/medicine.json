@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "mode": "new_field",
+  "field": "Medicine",
+  "degree_level": null,
+  "model": "gpt-4o-mini-search-preview",
+  "created_at": "2026-07-08T15:18:02+00:00",
+  "entries": [
+    {
+      "country": "Estonia",
+      "country_iso": "EE",
+      "university": "Tallinn University of Technology",
+      "collected_at": "2026-07-08",
+      "validation": {
+        "errors": [],
+        "warnings": []
+      },
+      "raw": {
+        "not_offered": true
+      },
+      "status": "not_offered"
+    },
+    {
+      "country": "Estonia",
+      "country_iso": "EE",
+      "university": "University of Tartu",
+      "collected_at": "2026-07-08",
+      "validation": {
+        "errors": [],
+        "warnings": []
+      },
+      "raw": {
+        "program_name": "Medicine",
+        "degree_level": "bachelor",
+        "language": "English",
+        "duration_years": 6.0,
+        "tuition_amount": 13200.0,
+        "tuition_currency": "EUR",
+        "tuition_period": "annual",
+        "source_url": "https://ut.ee/en/curriculum/medicine",
+        "source_title": "Medicine | University of Tartu",
+        "note": "Tuition fee for non-EU international students."
+      },
+      "status": "applied",
+      "program": {
+        "name": "Medicine",
+        "field": "Medicine",
+        "degree_level": "bachelor",
+        "language": "English",
+        "duration_years": 6.0,
+        "tuition": {
+          "amount": 13200.0,
+          "currency": "EUR",
+          "period": "annual",
+          "confidence": "sourced",
+          "valid_as_of": "2026-07-08",
+          "note": "Tuition fee for non-EU international students.",
+          "source": {
+            "url": "https://ut.ee/en/curriculum/medicine",
+            "title": "Medicine | University of Tartu",
+            "publisher": "University of Tartu",
+            "source_type": "official_university",
+            "accessed_date": "2026-07-08"
+          }
+        }
+      }
+    }
+  ],
+  "updated_at": "2026-07-08T15:18:08+00:00"
+}
