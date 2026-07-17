@@ -98,6 +98,11 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
 
     @property
+    def is_production(self) -> bool:
+        """True when running with ENVIRONMENT=production (enables prod hardening)."""
+        return self.environment.lower() == "production"
+
+    @property
     def use_openai(self) -> bool:
         """Prefer OpenAI directly when a real key is configured."""
         return bool(self.openai_api_key and not self.openai_api_key.startswith("sk-xxx"))

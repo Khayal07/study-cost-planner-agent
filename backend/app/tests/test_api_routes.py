@@ -7,6 +7,20 @@ than full planning output.
 """
 from __future__ import annotations
 
+from app.main import _docs_urls
+
+
+def test_docs_disabled_in_production():
+    # In production all interactive docs surfaces are turned off; in dev they stay on.
+    assert _docs_urls(True) == {"docs_url": None, "redoc_url": None, "openapi_url": None}
+    assert _docs_urls(False) == {}
+
+
+def test_docs_served_in_development(client):
+    # The app is built with the default (development) environment, so the OpenAPI
+    # schema is reachable — this is the surface we suppress in production.
+    assert client.get("/openapi.json").status_code == 200
+
 
 def test_health_ok(client):
     r = client.get("/health")

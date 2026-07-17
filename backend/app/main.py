@@ -12,11 +12,25 @@ from app.core.config import settings
 from app.core.rate_limit import RateLimitMiddleware
 from app.core.security_headers import SecurityHeadersMiddleware
 
+def _docs_urls(is_production: bool) -> dict:
+    """Interactive API docs config for FastAPI.
+
+    Swagger UI (/docs), ReDoc (/redoc) and the raw OpenAPI schema (/openapi.json)
+    hand a caller a complete map of every endpoint and its shape. That's handy in
+    development but is needless attack-surface disclosure in production, so we turn
+    all three off there and keep them on locally.
+    """
+    if is_production:
+        return {"docs_url": None, "redoc_url": None, "openapi_url": None}
+    return {}
+
+
 app = FastAPI(
     title="Study Cost Planning Agent",
     description="Multi-agent system that plans the *total* real cost of studying abroad, "
     "grounded in sourced data.",
     version="0.1.0",
+    **_docs_urls(settings.is_production),
 )
 
 # Baseline hardening headers on every response (nosniff, deny framing, CSP, HSTS in prod).
