@@ -17,6 +17,7 @@ import {
   exportPdf,
   saveCurrentPlan,
   type CandidatePlan,
+  type LiveScholarship,
   type PlanningRequest,
   type PlanResult,
   type ScholarshipMatch,
@@ -62,6 +63,8 @@ export function PlanResults({
   const [rankBy, setRankBy] = useState<"cost" | "value">("cost");
   const [pinned, setPinned] = useState<number[]>([]);
   const [tracked, setTracked] = useState<Set<number>>(new Set());
+  // Live (web-found) awards have no dataset id, so they're tracked by name.
+  const [trackedLive, setTrackedLive] = useState<Set<string>>(new Set());
   const [showShareCard, setShowShareCard] = useState(false);
 
   function togglePin(programId: number) {
@@ -97,6 +100,30 @@ export function PlanResults({
         documents: m.documents_required,
       });
       setTracked((prev) => new Set(prev).add(m.scholarship_id));
+    } catch {
+      /* surfaced via disabled state staying off; user can retry */
+    }
+  }
+
+  async function trackLiveScholarship(r: LiveScholarship, candidate: CandidatePlan) {
+    if (!isAuthed) {
+      openAuth();
+      return;
+    }
+    try {
+      await createApplication({
+        scholarship_name: r.name,
+        // Flag the web origin so it's distinguishable from dataset awards in the tracker.
+        provider: r.provider ? `${r.provider} · Web` : "Web",
+        coverage_type: r.coverage_type,
+        estimated_value: r.annual_value,
+        currency: candidate.report_currency,
+        // Live deadlines are free-text ("varies by country"), not real dates — leave
+        // it unset so the deadline calendar/reminders stay accurate; the user can add one.
+        deadline: null,
+        application_url: r.official_url,
+      });
+      setTrackedLive((prev) => new Set(prev).add(r.name));
     } catch {
       /* surfaced via disabled state staying off; user can retry */
     }
@@ -434,6 +461,8 @@ export function PlanResults({
         candidate={top}
         onTrack={trackScholarship}
         trackedIds={tracked}
+        onTrackLive={trackLiveScholarship}
+        trackedLive={trackedLive}
         onExportLive={(sel, cand) =>
           exportPdf({ ...request, focus_program_id: cand.program_id, extra_scholarships: sel })
         }

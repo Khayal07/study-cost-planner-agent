@@ -159,6 +159,8 @@ function LiveScholarshipSearch({
   currency,
   totalAnnual,
   onExportLive,
+  onTrackLive,
+  trackedLive,
 }: {
   country: string;
   field: string;
@@ -166,6 +168,8 @@ function LiveScholarshipSearch({
   currency: string;
   totalAnnual: number;
   onExportLive?: (selected: LiveScholarship[]) => Promise<void> | void;
+  onTrackLive?: (r: LiveScholarship) => void;
+  trackedLive?: Set<string>;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -307,17 +311,38 @@ function LiveScholarshipSearch({
 
                         <div className="mt-2 flex items-center justify-between gap-2">
                           <span className="text-[11px] text-muted">AI-found · verify at source</span>
-                          {r.official_url && (
-                            <a
-                              href={r.official_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="btn-ghost px-2.5 py-1 text-xs"
-                            >
-                              Apply ↗
-                            </a>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {onTrackLive && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  // Inside a <label>, so stop the click from toggling the checkbox.
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  onTrackLive(r);
+                                }}
+                                disabled={trackedLive?.has(r.name)}
+                                className={
+                                  trackedLive?.has(r.name)
+                                    ? "chip bg-primary-weak text-primary"
+                                    : "btn-ghost px-2.5 py-1 text-xs"
+                                }
+                              >
+                                {trackedLive?.has(r.name) ? "Tracked ✓" : "+ Track"}
+                              </button>
+                            )}
+                            {r.official_url && (
+                              <a
+                                href={r.official_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="btn-ghost px-2.5 py-1 text-xs"
+                              >
+                                Apply ↗
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -365,11 +390,16 @@ export function ScholarshipPanel({
   candidate,
   onTrack,
   trackedIds,
+  onTrackLive,
+  trackedLive,
   onExportLive,
 }: {
   candidate: CandidatePlan;
   onTrack?: (m: ScholarshipMatch, candidate: CandidatePlan) => void;
   trackedIds?: Set<number>;
+  // When provided, a web-found award can be saved to the tracker (deadline left unset).
+  onTrackLive?: (r: LiveScholarship, candidate: CandidatePlan) => void;
+  trackedLive?: Set<string>;
   // When provided, selected live scholarships can be folded into a PDF for this candidate.
   onExportLive?: (selected: LiveScholarship[], candidate: CandidatePlan) => Promise<void> | void;
 }) {
@@ -397,6 +427,8 @@ export function ScholarshipPanel({
           degreeLevel={candidate.degree_level}
           currency={currency}
           totalAnnual={candidate.total_annual}
+          onTrackLive={onTrackLive ? (r) => onTrackLive(r, candidate) : undefined}
+          trackedLive={trackedLive}
           onExportLive={onExportLive ? (sel) => onExportLive(sel, candidate) : undefined}
         />
       </div>
@@ -478,6 +510,8 @@ export function ScholarshipPanel({
         degreeLevel={candidate.degree_level}
         currency={currency}
         totalAnnual={candidate.total_annual}
+        onTrackLive={onTrackLive ? (r) => onTrackLive(r, candidate) : undefined}
+        trackedLive={trackedLive}
         onExportLive={onExportLive ? (sel) => onExportLive(sel, candidate) : undefined}
       />
     </div>
