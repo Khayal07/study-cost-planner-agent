@@ -1,6 +1,6 @@
 # API reference
 
-Base URL: `http://localhost:8000` · Interactive docs (OpenAPI/Swagger): `/docs`
+Base URL: `http://localhost:8000` · Interactive docs (OpenAPI/Swagger): `/docs` (development only — disabled when `ENVIRONMENT=production`)
 
 **Auth:** protected routes require an `Authorization: Bearer <token>` header. Get a token
 from `/auth/register` or `/auth/login`.

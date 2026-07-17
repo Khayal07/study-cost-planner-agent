@@ -27,6 +27,7 @@ renderer, and validated file uploads.
 | File uploads | ✅ | Size caps enforced mid-stream (not trusting `Content-Length`), MIME allowlist **and** magic-byte checks, kept in memory (never written to disk). |
 | CORS | ✅ | Locked to configured origins; credentials off (bearer tokens); explicit method/header allowlist. |
 | Security headers | ✅ | `nosniff`, `X-Frame-Options: DENY`, strict CSP (`default-src 'none'`), `Referrer-Policy`, HSTS in production. |
+| API surface disclosure | ✅ | Interactive docs (`/docs`, `/redoc`, `/openapi.json`) served in development, **disabled in production** so the full endpoint map isn't handed out. |
 | Passwords | ✅ | bcrypt with per-password salt; registration requires ≥ 8 chars. |
 | Auth secrets in prod | ✅ | App refuses to boot in production with the default `JWT_SECRET`. |
 | Cost abuse on paid endpoints | ⚠️→✅ | Per-IP token bucket **plus** a per-IP daily cap on paid endpoints (see below). |
@@ -63,6 +64,18 @@ Whisper/web-search spend.
 The per-feature caps (`SCHOLARSHIP_SEARCH_DAILY_LIMIT`, `VOICE_DAILY_LIMIT`,
 `PIPELINE_MAX_CALLS`) provide a second, feature-specific line of defense.
 
+## Hardening pass 3 — live re-test + docs lockdown
+
+A live pentest against the running stack (auth throttle, spoofed `X-Forwarded-For`, JWT
+tampering incl. `alg=none`, cross-user IDOR on `/applications` and `/plans`, oversized/
+mismatched uploads, prompt injection, CORS) confirmed the posture above. One real gap
+surfaced: the interactive API docs were reachable in every environment.
+
+- `core/config.py` — `Settings.is_production` flag.
+- `main.py` — `_docs_urls()` disables `/docs`, `/redoc` and `/openapi.json` when
+  `ENVIRONMENT=production` (they stay on in dev). Verified live: prod → `404`, dev → `200`.
+- Tests added; **95/95 pass**.
+
 ## Known limitations (by design, for a course project)
 
 - **In-memory limiter.** Rate limits and daily caps reset on restart and are per-process.
@@ -73,7 +86,7 @@ The per-feature caps (`SCHOLARSHIP_SEARCH_DAILY_LIMIT`, `VOICE_DAILY_LIMIT`,
 
 ## Production checklist
 
-1. `ENVIRONMENT=production` (enforces HSTS + rejects the default JWT secret).
+1. `ENVIRONMENT=production` (enforces HSTS, rejects the default JWT secret, and disables the interactive API docs).
 2. Strong `JWT_SECRET` and `POSTGRES_PASSWORD`.
 3. `TRUST_PROXY_HEADER=true` **only** if behind a trusted reverse proxy.
 4. Restrict `CORS_ALLOW_ORIGINS` to your real frontend domain.

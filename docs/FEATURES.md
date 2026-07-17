@@ -36,6 +36,9 @@ On demand, an OpenAI web-search model finds **fresh** awards for a country/field
 - Cached per `(country, field, degree)` for `SCHOLARSHIP_CACHE_HOURS`.
 - Capped at `SCHOLARSHIP_SEARCH_DAILY_LIMIT` calls/day and `SCHOLARSHIP_SEARCH_MAX_RESULTS`.
 - Selected awards fold into the net-cost total and the PDF.
+- **Track it:** each web award has a **+ Track** button that saves it to the application
+  tracker (see §5). Their deadlines are free-text ("varies by country"), so the deadline is
+  left unset and the provider is suffixed **· Web** so web-found entries stay distinguishable.
 
 **Code:** `services/scholarship_search.py`, `api/scholarship_search.py`.
 
@@ -50,8 +53,8 @@ The UI offers a **Cost ↔ Value-after-aid** toggle while preserving the gross r
 
 - **Planner:** `/applications/plan` returns a deadline-then-value priority list with a
   "this week" action list and the union of required documents.
-- **Tracker:** signed-in users save awards, track status, and tick documents off —
-  persisted to their account and surviving reloads.
+- **Tracker:** signed-in users save awards (both dataset matches and web-found ones from
+  §3), track status, and tick documents off — persisted to their account and surviving reloads.
 - **Calendar export:** deadlines export to `.ics` (`lib/ics.ts`).
 
 **Code:** `services/application_planner.py`, `api/applications.py`.

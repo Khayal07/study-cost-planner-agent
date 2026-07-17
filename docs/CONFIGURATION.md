@@ -85,7 +85,7 @@ block a chat turn; on timeout the caller uses its deterministic path.
 
 | Variable | Default | What it does |
 |----------|---------|--------------|
-| `ENVIRONMENT` | `development` | Set to `production` to enforce hardened config at startup (HSTS on; refuses to boot with the default JWT secret). |
+| `ENVIRONMENT` | `development` | Set to `production` to enforce hardened config at startup (HSTS on; refuses to boot with the default JWT secret; disables the `/docs`, `/redoc` and `/openapi.json` interactive docs). |
 | `JWT_SECRET` | `dev-insecure-change-me` | **Must** be a strong value in production. |
 | `JWT_EXPIRE_MINUTES` | `10080` (7 days) | Token lifetime. |
 | `TRUST_PROXY_HEADER` | `false` | Only honour `X-Forwarded-For` when behind a trusted reverse proxy. Leaving it false prevents rate-limit bypass via a spoofed header. |
